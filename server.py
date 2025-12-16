@@ -1,18 +1,22 @@
 import os
 import json
 import shutil
-import base64  # 追加: 画像を文字にする機能
+import base64
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware  # ★追加 1
 
 app = FastAPI()
 
-# --- CORS設定（追加）---
+# ==========================================
+# ★追加 2: CORS（通信許可）設定
+# これがないと外部（bridge.py）からの接続が 403 で弾かれます
+# ==========================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # すべてのオリジンを許可
+    allow_origins=["*"],  # すべての接続元を許可
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,13 +37,17 @@ class ConnectionManager:
         print(">> Client Connected!")
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
         print(">> Client Disconnected")
 
     async def broadcast(self, message: str):
-        # 接続されている全てのクライアント（中継サーバ）にデータを送信
-        for connection in self.active_connections:
-            await connection.send_text(message)
+        # 切断されたクライアントが混ざっていないか確認しながら送信
+        for connection in self.active_connections[:]:
+            try:
+                await connection.send_text(message)
+            except:
+                self.disconnect(connection)
 
 manager = ConnectionManager()
 
@@ -57,6 +65,9 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WS Error: {e}")
         manager.disconnect(websocket)
 
 @app.post("/submit")
@@ -76,12 +87,12 @@ async def submit_data(
     # 1. 画像処理（Base64変換）
     image_data_b64 = ""
     if image:
-        # 一旦保存（バックアップ用）
+        # 一旦保存
         file_location = f"{UPLOAD_DIR}/{image.filename}"
         with open(file_location, "wb+") as file_object:
             shutil.copyfileobj(image.file, file_object)
         
-        # もう一度開いて、Base64（文字データ）に変換して読み込む
+        # Base64変換
         with open(file_location, "rb") as image_file:
             image_data_b64 = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -101,7 +112,7 @@ async def submit_data(
             "memory": desc_memory,
             "stream": desc_stream
         },
-        "image_data": image_data_b64, # 画像の実体（文字）を送る
+        "image_data": image_data_b64,
         "has_image": True if image_data_b64 else False
     }
 
