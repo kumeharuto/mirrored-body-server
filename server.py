@@ -9,6 +9,15 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
+# --- CORS設定（追加）---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # すべてのオリジンを許可
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # --- 設定 ---
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
