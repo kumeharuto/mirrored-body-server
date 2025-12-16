@@ -397,7 +397,41 @@
                 });
             }
 
-            // 送信処理
+            // 画像圧縮用の関数（新規追加）
+            function compressImage(file, maxWidth) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            // JPEG品質 0.7 (70%) で圧縮
+                            canvas.toBlob((blob) => {
+                                // 元のファイル名を引き継いで新しいFileオブジェクトを作る
+                                const newFile = new File([blob], file.name, { type: 'image/jpeg' });
+                                resolve(newFile);
+                            }, 'image/jpeg', 0.7);
+                        }
+                    }
+                });
+            }
+
+            // 送信処理（圧縮ロジック追加版）
             window.submitForm = async function() {
                 const overlay = document.getElementById('loading-overlay');
                 const statusText = document.getElementById('status-text');
@@ -412,17 +446,31 @@
                 const inputs = document.querySelectorAll('.clean-input');
                 const sliders = document.querySelectorAll('input[type=range]');
                 const areas = document.querySelectorAll('.clean-area');
-                const file = fileInput ? fileInput.files[0] : null;
+                const fileInput = document.getElementById('file-upload');
+                let file = fileInput ? fileInput.files[0] : null;
+
+                // ★ここで画像を圧縮！
+                if (file) {
+                    statusText.innerText = "記憶を圧縮しています..."; // 演出用テキスト
+                    try {
+                        // 最大幅1000pxにリサイズ
+                        file = await compressImage(file, 1000);
+                    } catch (e) {
+                        console.error("Compression failed", e);
+                    }
+                }
+                statusText.innerText = "紐解いています...";
 
                 const formData = new FormData();
                 formData.append('codename', inputs[0].value || "Unknown");
-                formData.append('age', inputs[1].value || 0);
+                formData.append('age', inputs[1].value || "0"); // 文字列として送る
                 formData.append('sense_sea_mt', sliders[0].value);
                 formData.append('sense_quiet_noise', sliders[1].value);
                 formData.append('sense_dark_light', sliders[2].value);
                 formData.append('desc_imagery', areas[0].value || "");
                 formData.append('desc_memory', areas[1].value || "");
                 formData.append('desc_stream', areas[2].value || "");
+                
                 if (file) formData.append('image', file);
 
                 try {
@@ -444,7 +492,7 @@
                         }, 1000);
 
                     } else {
-                        alert("送信エラー");
+                        alert("送信エラー: サーバーが混み合っている可能性があります");
                         if(overlay) overlay.style.opacity = '0';
                     }
                 } catch (error) {
