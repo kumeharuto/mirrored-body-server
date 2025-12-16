@@ -6,14 +6,13 @@ from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware  # ★追加 1
+# ▼▼▼ この行が抜けていました！これがないと動きません ▼▼▼
+from fastapi.middleware.cors import CORSMiddleware 
+# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 app = FastAPI()
 
-# ==========================================
-# ★追加 2: CORS（通信許可）設定
-# これがないと外部（bridge.py）からの接続が 403 で弾かれます
-# ==========================================
+# --- CORS（通信許可）設定 ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # すべての接続元を許可
