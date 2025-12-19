@@ -30,10 +30,9 @@
             --font-serif: 'Shippori Mincho', serif;
             --font-sans: 'Zen Kaku Gothic New', sans-serif;
             
-            /* === サイズ定義（大型化・バランス調整） === */
-            --thumb-size: 36px;       /* 玉の大きさ (大きく) */
-            --dot-size: 10px;         /* 目印の大きさ (大きく) */
-            --track-height: 6px;      /* 棒の太さ (太く) */
+            --thumb-size: 36px;
+            --dot-size: 10px;
+            --track-height: 6px;
         }
 
         body {
@@ -50,7 +49,29 @@
         .container {
             width: 100%; max-width: 500px; padding: 40px 30px;
             position: relative; z-index: 2;
+            min-height: 100vh; /* 全画面使う */
+            box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: center;
         }
+
+        /* === ナビゲーションボタン (ヘッダー) === */
+        .nav-header {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 20px 30px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 10;
+        }
+
+        .btn-nav {
+            background: transparent; border: none;
+            color: var(--text-dim); font-family: var(--font-serif);
+            font-size: 0.9rem; letter-spacing: 0.1em;
+            cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-nav:hover { color: var(--accent); }
+        .btn-nav.accent { color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; }
+        .btn-nav.accent:hover { background: var(--accent); color: #000; }
 
         /* === アニメーション === */
         .dissolve-out {
@@ -88,14 +109,13 @@
         
         .concept-text {
             font-family: var(--font-serif); font-size: 0.95rem; line-height: 2.2;
-            color: #ccc; margin-bottom: 60px; text-align: left;
-            text-align-last: center;
+            color: #ccc; margin-bottom: 60px; text-align: center;
         }
-        .concept-text p { margin-bottom: 1.5em; }
+        .concept-text p { margin-bottom: 1.5em; text-align-last: center; }
 
         /* 入力エリア */
         .row-group { display: flex; gap: 20px; margin-bottom: 35px; align-items: flex-end; }
-        .input-group { margin-bottom: 50px; /* スライダー間隔を少し広げる */ }
+        .input-group { margin-bottom: 50px; }
         label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; font-family: var(--font-sans); }
 
         .clean-input {
@@ -113,102 +133,63 @@
         }
         textarea.clean-area:focus { border-color: var(--accent); background: rgba(212, 175, 55, 0.05); }
 
-        /* === 修正: 完璧なスライダー === */
+        /* === Slider === */
         .slider-wrapper {
-            position: relative;
-            height: 50px;
-            width: 100%;
+            position: relative; height: 50px; width: 100%;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
         }
-        
         .slider-labels {
             display: flex; justify-content: space-between;
             font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;
             font-family: var(--font-serif);
         }
-
-        /* ★目印(Dots)コンテナ 兼 ビジュアルトラック
-           - 幅を「100% - 玉サイズ」にすることで、玉の中心の可動域と完全に一致させる
-           - 中央配置 (margin: auto)
-        */
         .slider-visual-track {
-            position: absolute;
-            left: 0; right: 0; margin: auto;
+            position: absolute; left: 0; right: 0; margin: auto;
             width: calc(100% - var(--thumb-size)); 
             height: var(--thumb-size);
-            pointer-events: none; /* クリックはinputに通す */
+            pointer-events: none;
             display: flex; justify-content: space-between; align-items: center;
             z-index: 0;
         }
-
-        /* ★自前の棒を描画 (Dotsコンテナの中に線を引く)
-           これにより「目印から目印まで」しか棒が存在しない状態を作る */
         .slider-visual-track::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: var(--track-height);
-            background: var(--accent); /* 純金 (透明度なし) */
-            border-radius: 4px;
+            content: ''; position: absolute;
+            width: 100%; height: var(--track-height);
+            background: var(--accent); border-radius: 4px;
             left: 0; top: 50%; transform: translateY(-50%);
             z-index: -1;
         }
-
-        /* 目印（丸い点） */
         .dot {
             width: var(--dot-size); height: var(--dot-size);
-            background: #222; /* 未選択時は黒っぽくして棒の上にのせる */
-            border: 2px solid var(--accent); /* 金色の縁取り */
-            border-radius: 50%;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            position: relative; z-index: 1;
+            background: #222; border: 2px solid var(--accent);
+            border-radius: 50%; transition: all 0.2s ease;
+            box-sizing: border-box; position: relative; z-index: 1;
         }
-        /* 選択時 */
         .dot.active {
-            background: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
+            background: var(--accent); box-shadow: 0 0 10px var(--accent);
             transform: scale(1.3);
         }
-
-        /* Input Range 本体 */
         input[type=range] {
-            -webkit-appearance: none;
-            width: 100%; /* 親要素いっぱい */
-            background: transparent;
-            position: relative;
-            z-index: 2;
-            margin: 0;
-            height: 100%;
+            -webkit-appearance: none; width: 100%; background: transparent;
+            position: relative; z-index: 2; margin: 0; height: 100%;
         }
-
-        /* ブラウザ標準の棒を消す (透明にする) */
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 100%;
-            background: transparent; /* 透明！ */
-            border: none;
+            width: 100%; height: 100%; background: transparent; border: none;
         }
-
-        /* ツマミ（玉） */
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            border: none; 
+            -webkit-appearance: none; border: none; 
             height: var(--thumb-size); width: var(--thumb-size);
-            border-radius: 50%;
-            background: var(--accent); /* 金色 */
+            border-radius: 50%; background: var(--accent);
             cursor: pointer;
-            /* 垂直中央寄せの計算 */
-            margin-top: calc((50px - var(--thumb-size)) / 2); /* Wrapper高さ(50)基準で中央へ */
+            margin-top: calc((50px - var(--thumb-size)) / 2);
             box-shadow: 0 0 15px var(--accent-glow);
             transition: transform 0.1s;
         }
         input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.1);
-            background: #FFF; /* タップ反応 */
+            transform: scale(1.1); background: #FFF;
         }
 
-        /* File Upload & Button */
+        /* File & Button */
         .file-box {
             display: block; padding: 30px; text-align: center; border: 1px solid var(--border);
             color: var(--text-dim); font-size: 0.9rem; cursor: pointer; transition: 0.4s;
@@ -220,12 +201,11 @@
             background: transparent; border: 1px solid var(--accent); color: var(--accent);
             padding: 20px 0; width: 100%; font-family: var(--font-serif); font-size: 1.1rem;
             letter-spacing: 0.3em; cursor: pointer; transition: all 0.3s ease;
-            position: relative; overflow: hidden;
-            margin-top: 50px;
+            position: relative; overflow: hidden; margin-top: 50px;
         }
         .btn-entry:hover { background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent-glow); }
 
-        /* Overlay */
+        /* === Loading Overlay === */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
@@ -234,18 +214,75 @@
         }
         .loading-text {
             font-family: var(--font-serif); font-size: 1.2rem; letter-spacing: 0.2em;
-            color: var(--accent); margin-bottom: 20px; text-align: center; line-height: 2;
+            color: var(--accent); margin-bottom: 40px; text-align: center; line-height: 2;
         }
         .blink { animation: breathe 2s infinite ease-in-out; }
         @keyframes breathe { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        .btn-cancel {
+            background: transparent; border: none; color: #555;
+            font-family: var(--font-sans); font-size: 0.85rem;
+            cursor: pointer; transition: 0.3s; padding: 10px 20px;
+            letter-spacing: 0.1em;
+        }
+        .btn-cancel:hover { color: #888; }
+
+        /* === About Overlay (New) === */
+        #about-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px);
+            z-index: 888; display: none; opacity: 0; transition: opacity 0.5s;
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+        #about-overlay.show { display: flex; opacity: 1; }
+        
+        .about-content {
+            width: 85%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+            color: #ccc; font-family: var(--font-serif); line-height: 2.4;
+            text-align: left; padding: 20px;
+        }
+        .about-content h3 { color: var(--accent); font-weight: 400; text-align: center; margin-bottom: 30px; }
+        .about-content p { margin-bottom: 2em; text-align-last: left; }
+        .close-btn {
+            margin-top: 30px; color: #fff; font-size: 2rem; cursor: pointer;
+            background: none; border: none;
+        }
 
     </style>
 </head>
 <body>
 
+    <div id="about-overlay">
+        <div class="about-content">
+            <h3>KARMIC IDENTITY<br><span style="font-size:0.7em;">- 業報の自己像 -</span></h3>
+            <p>
+                本作品は、鑑賞者の深層心理と記憶をAIによって解析し、<br>
+                「業（カルマ）」として可視化するインスタレーションです。
+            </p>
+            <p>
+                あなたが入力した断片的な言葉や選んだ感覚は、<br>
+                リアルタイムに生成される映像と音響へと変換され、<br>
+                この空間に一度きりの「あなたの浄土」を現出させます。
+            </p>
+            <p style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 40px;">
+                Concept & Design by<br>Digital Nature & Arts
+            </p>
+        </div>
+        <button class="close-btn" onclick="toggleAbout(false)">×</button>
+    </div>
+
+    <div id="loading-overlay">
+        <div id="status-text" class="loading-text blink">紐解いています...</div>
+        <button class="btn-cancel" onclick="forceReset()">× 中断して戻る</button>
+    </div>
+
     <div class="container">
         
         <div id="landing-page">
+            <div class="nav-header" style="justify-content: flex-end;">
+                <button class="btn-nav" onclick="toggleAbout(true)">ABOUT</button>
+            </div>
+
             <h1>KARMIC IDENTITY</h1>
             <div class="concept-text">
                 <p>
@@ -260,7 +297,6 @@
                 </p>
                 <p>
                 本名や連絡先は必要ありません。<br>
-                いまのあなたに近いと思うものを、<br>
                 直感で入力し、選んでください。<br>
                 ここで生まれた「あなたの業のかたち」を、<br>
                 この場限りのものとして、そっと手放してみてください。
@@ -270,6 +306,11 @@
         </div>
 
         <div id="form-page" class="hidden">
+            <div class="nav-header">
+                <button class="btn-nav" onclick="backToTitle()">← BACK</button>
+                <button class="btn-nav" onclick="toggleAbout(true)">ABOUT</button>
+            </div>
+
             <h1>PROFILE</h1>
             
             <div class="row-group">
@@ -339,24 +380,19 @@
         </div>
     </div>
 
-    <div id="loading-overlay">
-        <div id="status-text" class="loading-text blink">紐解いています...</div>
-    </div>
-
     <script>
         const WAIT_TIME = 30; 
+        let countdownTimer = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             
-            // ① 高速化した遷移アニメーション
+            // --- 画面遷移関数 ---
             window.goToForm = function() {
                 const landing = document.getElementById('landing-page');
                 const form = document.getElementById('form-page');
                 
-                // 1. 消える
                 landing.classList.add('dissolve-out');
                 
-                // 2. 0.6秒待つ
                 setTimeout(() => {
                     landing.classList.add('hidden'); 
                     form.classList.remove('hidden'); 
@@ -365,7 +401,71 @@
                 }, 550); 
             };
 
-            // 目盛り(Dots)制御
+            // ★ タイトルに戻る＆リセット処理
+            window.backToTitle = function() {
+                if(!confirm("入力内容を破棄してタイトルに戻りますか？")) return;
+                resetAllInputs();
+                forceReset(); // 画面遷移ロジックはこれを利用
+            };
+
+            // ★ 強制リセット（ローディング画面からの脱出用）
+            window.forceReset = function() {
+                const landing = document.getElementById('landing-page');
+                const form = document.getElementById('form-page');
+                const overlay = document.getElementById('loading-overlay');
+
+                // タイマー停止
+                if(countdownTimer) clearInterval(countdownTimer);
+
+                // オーバーレイ消去
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+
+                // フォームを隠してタイトルを表示
+                form.classList.remove('dissolve-in');
+                form.classList.add('hidden');
+                
+                landing.classList.remove('dissolve-out', 'hidden');
+                landing.style.opacity = '1';
+                landing.style.filter = 'blur(0px)';
+                landing.style.transform = 'scale(1)';
+                
+                window.scrollTo(0,0);
+            };
+
+            // ★ 入力内容のクリア
+            function resetAllInputs() {
+                // テキスト系
+                document.querySelectorAll('.clean-input, .clean-area').forEach(el => el.value = '');
+                // スライダー (中央=2に戻す)
+                document.querySelectorAll('input[type=range]').forEach(el => {
+                    el.value = 2;
+                    updateDots(el);
+                });
+                // ファイル
+                const fileInput = document.getElementById('file-upload');
+                if(fileInput) fileInput.value = '';
+                const fileBox = document.querySelector('.file-box');
+                if(fileBox) {
+                    fileBox.innerText = "+ Select Image";
+                    fileBox.style.borderColor = "#333333";
+                }
+            }
+
+            // --- ABOUT オーバーレイ制御 ---
+            window.toggleAbout = function(show) {
+                const overlay = document.getElementById('about-overlay');
+                if(show) {
+                    overlay.classList.add('show');
+                    // 少し遅れてopacityを1にする（transitionのため）
+                    setTimeout(() => overlay.style.opacity = '1', 10);
+                } else {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.classList.remove('show'), 500);
+                }
+            };
+
+            // --- スライダー制御 ---
             window.updateDots = function(rangeInput) {
                 const wrapper = rangeInput.closest('.slider-wrapper');
                 const dots = wrapper.querySelectorAll('.dot');
@@ -379,12 +479,10 @@
                     }
                 });
             };
-
             // 初期化
             document.querySelectorAll('input[type=range]').forEach(input => updateDots(input));
 
-
-            // ファイル選択
+            // --- ファイル選択制御 ---
             const fileInput = document.getElementById('file-upload');
             if (fileInput) {
                 fileInput.addEventListener('change', function(e){
@@ -397,7 +495,7 @@
                 });
             }
 
-            // 画像圧縮用の関数（新規追加）
+            // --- 画像圧縮 ---
             function compressImage(file, maxWidth) {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
@@ -420,9 +518,7 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
                             
-                            // JPEG品質 0.7 (70%) で圧縮
                             canvas.toBlob((blob) => {
-                                // 元のファイル名を引き継いで新しいFileオブジェクトを作る
                                 const newFile = new File([blob], file.name, { type: 'image/jpeg' });
                                 resolve(newFile);
                             }, 'image/jpeg', 0.7);
@@ -431,7 +527,7 @@
                 });
             }
 
-            // 送信処理（圧縮ロジック追加版）
+            // --- 送信処理 ---
             window.submitForm = async function() {
                 const overlay = document.getElementById('loading-overlay');
                 const statusText = document.getElementById('status-text');
@@ -449,11 +545,9 @@
                 const fileInput = document.getElementById('file-upload');
                 let file = fileInput ? fileInput.files[0] : null;
 
-                // ★ここで画像を圧縮！
                 if (file) {
-                    statusText.innerText = "記憶を圧縮しています..."; // 演出用テキスト
+                    statusText.innerText = "記憶を圧縮しています...";
                     try {
-                        // 最大幅1000pxにリサイズ
                         file = await compressImage(file, 1000);
                     } catch (e) {
                         console.error("Compression failed", e);
@@ -463,7 +557,7 @@
 
                 const formData = new FormData();
                 formData.append('codename', inputs[0].value || "Unknown");
-                formData.append('age', inputs[1].value || "0"); // 文字列として送る
+                formData.append('age', inputs[1].value || "0");
                 formData.append('sense_sea_mt', sliders[0].value);
                 formData.append('sense_quiet_noise', sliders[1].value);
                 formData.append('sense_dark_light', sliders[2].value);
@@ -477,14 +571,18 @@
                     const response = await fetch('/submit', { method: 'POST', body: formData });
 
                     if (response.ok) {
+                        // 送信成功時の処理
+                        resetAllInputs(); // ★送信直後に入力をクリアする（安全策）
+
                         statusText.classList.remove('blink');
                         statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${WAIT_TIME} 秒お待ちください`;
                         
                         let count = WAIT_TIME;
-                        const timer = setInterval(() => {
+                        // タイマーを変数に入れて管理（中断できるように）
+                        countdownTimer = setInterval(() => {
                             count--;
                             if(count <= 0) {
-                                clearInterval(timer);
+                                clearInterval(countdownTimer);
                                 location.reload(); 
                             } else {
                                 statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${count} 秒お待ちください`;
