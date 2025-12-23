@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KARMIC IDENTITY</title>
+    <title>Karma Portrait</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -34,50 +34,109 @@
             box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;
         }
 
-        /* === QRコードエリア === */
-        .qr-section {
-            margin-top: 40px; padding: 20px;
-            border: 1px solid var(--border);
-            display: flex; flex-direction: column; align-items: center;
-            background: rgba(255,255,255,0.02);
-            transition: 0.5s;
-            position: relative; /* ボタン配置用 */
+        /* === ★修正箇所：言語切り替えの仕組み (最強版) === */
+        /* bodyタグに lang-jp がついていたら、英語(.lang-en)を隠す */
+        body.lang-jp .lang-en { display: none !important; }
+        
+        /* bodyタグに lang-en がついていたら、日本語(.lang-jp)を隠す */
+        body.lang-en .lang-jp { display: none !important; }
+
+        /* === ナビゲーションヘッダー === */
+        .nav-header { 
+            position: absolute; top: 0; left: 0; width: 100%; 
+            padding: 20px 30px; box-sizing: border-box; 
+            display: flex; justify-content: space-between; align-items: flex-start; 
+            z-index: 10; pointer-events: none;
         }
-        .qr-section.received {
-            border-color: var(--accent);
-            background: rgba(212, 175, 55, 0.05);
+        .nav-left, .nav-right { pointer-events: auto; display: flex; align-items: center; gap: 15px; }
+        .nav-right { flex-direction: column; align-items: flex-end; gap: 10px; }
+
+        .btn-nav { 
+            background: transparent; border: none; 
+            color: var(--text-dim); font-family: var(--font-serif); 
+            font-size: 0.9rem; letter-spacing: 0.1em; 
+            cursor: pointer; transition: 0.3s; 
         }
-        #qrcode { margin: 15px 0; padding: 10px; background: #fff; border-radius: 4px; }
-        .qr-status { font-family: var(--font-serif); font-size: 0.9rem; color: var(--text-dim); margin-top: 10px; }
-        .received-thumb { 
-            max-width: 100%; max-height: 150px; margin-top: 15px; 
-            border: 1px solid var(--accent); display: none; 
+        .btn-nav:hover { color: var(--accent); text-shadow: 0 0 5px var(--accent-glow); }
+
+        /* === 言語切り替えスイッチ === */
+        .lang-switch {
+            display: flex; border: 1px solid #444; border-radius: 20px; overflow: hidden;
+            font-family: var(--font-sans); font-size: 0.75rem;
+        }
+        .lang-option {
+            padding: 5px 12px; cursor: pointer; transition: 0.3s; color: #666; background: rgba(0,0,0,0.5);
+        }
+        .lang-option.active {
+            background: var(--accent); color: #000; font-weight: bold;
         }
 
-        /* ★新規: リセットボタン (小さく表示) */
-        .btn-reset-img {
-            background: transparent; border: none;
-            color: #555; border-bottom: 1px solid #333;
-            font-size: 0.75rem; margin-top: 15px;
-            cursor: pointer; transition: 0.3s;
-            font-family: var(--font-sans);
-            display: none; /* 最初は隠す */
+        /* === ABOUT Overlay (タブ付き) === */
+        .overlay-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px);
+            z-index: 888; display: none; opacity: 0; transition: opacity 0.5s;
+            flex-direction: column; justify-content: center; align-items: center;
         }
-        .btn-reset-img:hover { color: var(--accent); border-color: var(--accent); }
+        .overlay-container.show { display: flex; opacity: 1; }
+        
+        .overlay-content {
+            width: 85%; max-width: 600px; max-height: 85vh; 
+            display: flex; flex-direction: column;
+        }
 
-        /* 他の既存スタイル */
-        .nav-header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px 30px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .btn-nav { background: transparent; border: none; color: var(--text-dim); font-family: var(--font-serif); font-size: 0.9rem; letter-spacing: 0.1em; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-        .btn-nav:hover { color: var(--accent); }
+        /* Tabs */
+        .tab-header {
+            display: flex; justify-content: center; gap: 40px; margin-bottom: 30px;
+            border-bottom: 1px solid #333; padding-bottom: 10px;
+        }
+        .tab-btn {
+            background: transparent; border: none; color: #666;
+            font-family: var(--font-serif); font-size: 1.1rem; letter-spacing: 0.1em;
+            cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .tab-btn.active { color: var(--accent); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -11px; left: 0; width: 100%;
+            height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Scrollable Text Area */
+        .tab-body {
+            overflow-y: auto; padding: 10px 20px;
+            color: #ccc; font-family: var(--font-serif); line-height: 2.2; text-align: left;
+        }
+        .tab-body::-webkit-scrollbar { width: 4px; }
+        .tab-body::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        .tab-pane { display: none; animation: fadeIn 0.4s ease; }
+        .tab-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .overlay-content h3 { color: var(--accent); font-weight: 400; text-align: center; margin-bottom: 30px; font-size: 1.3rem; }
+        .overlay-content h4 { color: #fff; font-weight: 500; margin-top: 40px; margin-bottom: 15px; border-left: 2px solid var(--accent); padding-left: 10px; letter-spacing: 0.1em; }
+        .overlay-content p { margin-bottom: 1.5em; text-align-last: left; font-size: 0.95rem; }
+        
+        .close-btn { 
+            align-self: center; margin-top: 20px; color: #fff; font-size: 2rem; 
+            cursor: pointer; background: none; border: none; transition: 0.3s; 
+        }
+        .close-btn:hover { color: var(--accent); transform: scale(1.1); }
+
+        /* === 既存スタイル === */
         .dissolve-out { animation: meltOut 0.6s cubic-bezier(0.5, 0, 0.1, 1) forwards; pointer-events: none; }
         @keyframes meltOut { 0% { opacity: 1; filter: blur(0px); transform: scale(1); } 100% { opacity: 0; filter: blur(10px); transform: scale(1.02); } }
         .dissolve-in { display: block !important; animation: formIn 0.4s ease-out forwards; }
         @keyframes formIn { 0% { opacity: 0; filter: blur(10px); transform: translateY(10px); } 100% { opacity: 1; filter: blur(0px); transform: translateY(0); } }
         .hidden { display: none; }
-        h1 { font-family: var(--font-serif); font-weight: 400; font-size: 1.6rem; text-align: center; margin-bottom: 40px; margin-top: 80px; letter-spacing: 0.15em; color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); line-height: 1.4; }
+        
+        h1 { font-family: var(--font-serif); font-weight: 400; font-size: 1.6rem; text-align: center; margin-bottom: 40px; margin-top: 60px; letter-spacing: 0.15em; color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); line-height: 1.4; }
         h2 { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 400; color: #fff; margin: 50px 0 30px 0; display: flex; align-items: center; border-left: 3px solid var(--accent); padding-left: 15px; }
+        
         .concept-text { font-family: var(--font-serif); font-size: 0.95rem; line-height: 2.2; color: #ccc; margin-bottom: 60px; text-align: center; }
         .concept-text p { margin-bottom: 1.5em; text-align-last: center; }
+        
+        /* Forms */
         .row-group { display: flex; gap: 20px; margin-bottom: 35px; align-items: flex-end; }
         .input-group { margin-bottom: 50px; }
         label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; font-family: var(--font-sans); }
@@ -85,6 +144,8 @@
         .clean-input:focus { border-bottom-color: var(--accent); }
         textarea.clean-area { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-serif); resize: none; outline: none; box-sizing: border-box; transition: 0.4s; line-height: 1.8; margin-top: 5px; border-radius: 2px; }
         textarea.clean-area:focus { border-color: var(--accent); background: rgba(212, 175, 55, 0.05); }
+        
+        /* Sliders */
         .slider-wrapper { position: relative; height: 50px; width: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px; font-family: var(--font-serif); }
         .slider-visual-track { position: absolute; left: 0; right: 0; margin: auto; width: calc(100% - var(--thumb-size)); height: var(--thumb-size); pointer-events: none; display: flex; justify-content: space-between; align-items: center; z-index: 0; }
@@ -95,32 +156,156 @@
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 100%; background: transparent; border: none; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; border: none; height: var(--thumb-size); width: var(--thumb-size); border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: calc((50px - var(--thumb-size)) / 2); box-shadow: 0 0 15px var(--accent-glow); transition: transform 0.1s; }
         input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); background: #FFF; }
+        
         .btn-entry { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 20px 0; width: 100%; font-family: var(--font-serif); font-size: 1.1rem; letter-spacing: 0.3em; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; margin-top: 50px; }
         .btn-entry:hover { background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent-glow); }
+        
+        /* QR Section */
+        .qr-section { margin-top: 40px; padding: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.02); transition: 0.5s; position: relative; }
+        .qr-section.received { border-color: var(--accent); background: rgba(212, 175, 55, 0.05); }
+        #qrcode { margin: 15px 0; padding: 10px; background: #fff; border-radius: 4px; }
+        .qr-status { font-family: var(--font-serif); font-size: 0.9rem; color: var(--text-dim); margin-top: 10px; }
+        .received-thumb { max-width: 100%; max-height: 150px; margin-top: 15px; border: 1px solid var(--accent); display: none; }
+        .btn-reset-img { background: transparent; border: none; color: #555; border-bottom: 1px solid #333; font-size: 0.75rem; margin-top: 15px; cursor: pointer; transition: 0.3s; font-family: var(--font-sans); display: none; }
+        .btn-reset-img:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Loading */
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 999; opacity: 0; pointer-events: none; transition: 0.8s; }
         .loading-text { font-family: var(--font-serif); font-size: 1.2rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 40px; text-align: center; line-height: 2; }
         .blink { animation: breathe 2s infinite ease-in-out; }
         @keyframes breathe { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
         .btn-cancel { background: transparent; border: none; color: #555; font-family: var(--font-sans); font-size: 0.85rem; cursor: pointer; transition: 0.3s; padding: 10px 20px; letter-spacing: 0.1em; }
         .btn-cancel:hover { color: #888; }
-        #about-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px); z-index: 888; display: none; opacity: 0; transition: opacity 0.5s; flex-direction: column; justify-content: center; align-items: center; }
-        #about-overlay.show { display: flex; opacity: 1; }
-        .about-content { width: 85%; max-width: 600px; max-height: 80vh; overflow-y: auto; color: #ccc; font-family: var(--font-serif); line-height: 2.4; text-align: left; padding: 20px; }
-        .about-content h3 { color: var(--accent); font-weight: 400; text-align: center; margin-bottom: 30px; }
-        .about-content p { margin-bottom: 2em; text-align-last: left; }
-        .close-btn { margin-top: 30px; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; }
+        /* Credits Section */
+        .credits {
+            margin-top: 60px; padding-top: 40px;
+            border-top: 1px solid #333;
+            text-align: center;
+            font-family: var(--font-sans); font-size: 0.8rem; color: #666;
+            line-height: 1.8; letter-spacing: 0.1em;
+        }
+        .credits span { display: block; margin-bottom: 5px; }
+        .credits .names { color: #aaa; margin-bottom: 20px; font-family: var(--font-serif); }
+        .credits .role { font-size: 0.7rem; color: var(--accent); margin-bottom: 2px; }
     </style>
 </head>
-<body>
+<body class="lang-jp">
 
-    <div id="about-overlay">
-        <div class="about-content">
-            <h3>KARMIC IDENTITY<br><span style="font-size:0.7em;">- 業報の自己像 -</span></h3>
-            <p>本作品は、鑑賞者の深層心理と記憶をAIによって解析し、「業（カルマ）」として可視化するインスタレーションです。</p>
-            <p>あなたが入力した断片的な言葉や選んだ感覚は、リアルタイムに生成される映像と音響へと変換され、この空間に一度きりの「あなたの浄土」を現出させます。</p>
-            <p style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 40px;">Concept & Design by<br>Digital Nature & Arts</p>
+    <div id="about-overlay" class="overlay-container">
+        <div class="overlay-content">
+            <div class="tab-header">
+                <button class="tab-btn active" onclick="switchTab('concept')">Concept</button>
+                <button class="tab-btn" onclick="switchTab('explanation')">Explanation</button>
+            </div>
+
+            <div class="tab-body">
+                
+                <div id="tab-concept" class="tab-pane active">
+                    <h3 class="lang-jp">Core Concept</h3>
+                    <h3 class="lang-en">Core Concept</h3>
+                    
+                    <p class="lang-jp">
+                        二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。<br><br>
+                        そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。
+                    </p>
+                    <p class="lang-en">
+                        In the two-mat tea room <i>Ryōshi-an</i>, a hanging-scroll–shaped monitor functions as a portal opening onto the interval between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within a computational darkness humans cannot traverse, and inscribes within it a one-time semiotic self-image: Karma Portrait.<br><br>
+                        What comes into being is a landscape in which emotions and desires—incorporated by the body prior to articulation—condense into swells of light and noise. The viewer is invited to relinquish the sign called “identity,” and to confront the image not as participation but as calibration: a quiet alignment with an embodied sense of “where one might return.”
+                    </p>
+
+                    <h4 class="lang-jp">Exhibition Mode:</h4>
+                    <h4 class="lang-en">Exhibition Mode:</h4>
+                    <p class="lang-jp">
+                        量子庵の掛軸に、常設のループ映像が静かに流れ続けるモードである。入力は必要ない。空間は待ち、光は呼吸し、仮想浄土の“気配”だけが反復される。ここでは作品は説明をしない。鑑賞者が「見る」前に、まず「暗さに馴染む」ことが優先される。
+                    </p>
+                    <p class="lang-en">
+                        Exhibition Mode sustains a permanent loop on the scroll of <i>Ryōshi-an</i>. No input is required. The space remains in a state of waiting; light appears to “breathe”; only the faint presence of a virtual Pure Land is reiterated. The work does not explain itself here. Before interpretation, the viewer is asked to acclimate—first to darkness, then to the threshold it makes perceptible.
+                    </p>
+
+                    <h4 class="lang-jp">Interactive Mode:</h4>
+                    <h4 class="lang-en">Interactive Mode:</h4>
+                    <p class="lang-jp">
+                        鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。<br><br>
+                        その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。
+                    </p>
+                    <p class="lang-en">
+                        Interactive Mode is activated through the viewer’s offering. Submitted fragments fall into computational obscurity and return without procedure—arriving as result rather than method. That result coheres, only once, as Karma Portrait.<br><br>
+                        The experience is structured not as co-creation but as verification: to release one’s semiotic self-description, and to overlay—gently and briefly—an embodied sense of “where to return” upon what is displayed.
+                    </p>
+                </div>
+
+                <div id="tab-explanation" class="tab-pane">
+                    <h4 class="lang-jp">量子庵</h4>
+                    <h4 class="lang-en"><i>Ryōshi-an</i></h4>
+                    <p class="lang-jp">
+                        二畳という最小の器に、最大の遠さを折り畳むための名である。<br>
+                        量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。量子庵は、過剰な情報から距離を取り、むしろ「演算だけが届く彼岸」を迎え入れるための暗室として設計される。光が少ないほど、像は強くなる。静けさが深いほど、閾値は薄くなる。
+                    </p>
+                    <p class="lang-en">
+                        <i>Ryōshi-an</i> names an attempt to fold maximal distance into a minimal vessel: a two-mat room.<br>
+                        “Quantum,” here, does not designate mere futurism; it refers to a tactile intuition that the world is not continuous, but woven from discontinuities—jumps, thresholds, probabilities. Designed as a darkroom, <i>Ryōshi-an</i> withdraws from the saturation of information and instead admits an “other shore” that arrives only through computation. The less light the room contains, the more forcefully the image asserts itself; the deeper the quiet, the thinner the threshold becomes.
+                    </p>
+
+                    <h4 class="lang-jp">Karma Portrait</h4>
+                    <h4 class="lang-en">Karma Portrait</h4>
+                    <p class="lang-jp">
+                        これは“顔”ではない。自己の似姿でもない。<br>
+                        鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。Karma Portraitは、その偏りが映像の秩序へと翻訳された、一度きりの記号的自己像である。言語化以前に身体が抱え込んだ輪郭が、光とノイズのうねりとして析出し、像になる。
+                    </p>
+                    <p class="lang-en">
+                        Karma Portrait is neither a face nor a likeness.<br>
+                        The viewer’s memories and choices are treated not as a psychological profile, but as karmic bias—an asymmetry, a tilt, a predisposition that precedes explanation. Karma Portrait is the one-time semiotic self-image produced when that bias is translated into the order of moving images. What the body held before language—its unresolved outline—precipitates as light, grain, and noise, and briefly becomes an image.
+                    </p>
+
+                    <h4 class="lang-jp">演算する彼岸</h4>
+                    <h4 class="lang-en">The Computed Higan</h4>
+                    <p class="lang-jp">
+                        彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。<br>
+                        人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。
+                    </p>
+                    <p class="lang-en">
+                        Higan may be less a “place over there” than a mode of arrival.<br>
+                        In the contemporary condition, answers can be generated at velocities beyond human comprehension, while nevertheless arriving as indisputable results. This work provisionally places Higan within that computational obscurity. Computation operates not to explain meaning, but to present a fact that remains valid even when explanation fails. The viewer encounters it not through understanding, but through fit—through an embodied calibration with what is shown.
+                    </p>
+
+                    <h4 class="lang-jp">二〇卌五</h4>
+                    <h4 class="lang-en">二〇卌五 (2045)</h4>
+                    <p class="lang-jp">
+                        二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。<br>
+                        そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。
+                    </p>
+                    <p class="lang-en">
+                        二〇卌五 is a notation rather than a date. By adding two strokes to the “二” of 二〇二五, it becomes 卌 (40), linking 2025 and 2045 as a single continuous line. The mark indicates a point at which “computation humans cannot follow” becomes ordinary, and results descend into daily life without the possibility of human-scale verification.<br>
+                        Proof detaches from the human subject; what remains is reception. While singularity is often narrated as a distant future, its shadow is already cast along the extension of the present.
+                    </p>
+                </div>
+            </div>
+                    <div class="credits">
+                <div style="margin-bottom: 20px;">
+                    <span class="role">Concept, Art Direction & Spatial Design</span>
+                    <span class="names">Yuna Sakai</span>
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <span class="role">Technical Direction & Engineering</span>
+                    <span class="names">Haruto Kume</span>
+                </div>
+                
+                <span style="font-size: 0.7rem; opacity: 0.5;">© 2025 KARMIC IDENTITY</span>
+            </div>
+            <button class="close-btn" onclick="toggleOverlay('about-overlay', false)">×</button>
         </div>
-        <button class="close-btn" onclick="toggleAbout(false)">×</button>
+        <!-- <div class="credits">
+                <div style="margin-bottom: 20px;">
+                    <span class="role">Concept, Art Direction & Spatial Design</span>
+                    <span class="names">Yuna Sakai</span>
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <span class="role">Technical Direction & Engineering</span>
+                    <span class="names">Haruto Kume</span>
+                </div>
+                
+                <span style="font-size: 0.7rem; opacity: 0.5;">© 2025 KARMIC IDENTITY</span>
+            </div> -->
     </div>
 
     <div id="loading-overlay">
@@ -131,66 +316,127 @@
     <div class="container">
         
         <div id="landing-page">
-            <div class="nav-header" style="justify-content: flex-end;">
-                <button class="btn-nav" onclick="toggleAbout(true)">ABOUT</button>
+            <div class="nav-header">
+                <div class="nav-left"></div>
+                <div class="nav-right">
+                    <div class="lang-switch">
+                        <div id="lang-btn-jp" class="lang-option active" onclick="setLanguage('jp')">JP</div>
+                        <div id="lang-btn-en" class="lang-option" onclick="setLanguage('en')">EN</div>
+                    </div>
+                    <button class="btn-nav" onclick="toggleOverlay('about-overlay', true)">ABOUT</button>
+                </div>
             </div>
-            <h1>KARMIC IDENTITY</h1>
+
+            <h1 class="lang-jp">Karma Portrait</h1>
+            <h1 class="lang-en">Karma Portrait</h1>
+
             <div class="concept-text">
-                <p>ここでは、いくつかの問いに答えることで、<br>あなたの記憶や心の在り方から<br>「Karmic Identity（業報の自己像）」をかたちづくります。</p>
-                <p>入力された言葉や選択は、ひとつの輪廻として再構成され、<br>泡影庵の掛け軸に、一度きりの映像として立ち上がる<br>「あなただけの浄土」となります。</p>
-                <p>本名や連絡先は必要ありません。<br>直感で入力し、選んでください。<br>ここで生まれた「あなたの業のかたち」を、<br>この場限りのものとして、そっと手放してみてください。</p>
+                <p class="lang-jp">
+                    二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいにひらく小さな境界です。<br>
+                    ここで入力される言葉と選択は、あなたの内側に沈んでいる記憶や癖──まだ説明になりきらない部分──を拾い上げるための、最小限の手がかりになります。
+                </p>
+                <p class="lang-jp">
+                    送信された内容は、そのまま「答え」として保存されるのではなく、ひとつの輪廻として再編成されます。<br>
+                    AIは人間には辿り着けない計算の暗がりで仮想浄土を組み上げ、その内部に一度きりの〈Karma Portrait〉を刻みます。
+                </p>
+                <p class="lang-jp">
+                    掛軸に現れるのは、あなたの“情報”ではなく、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズとして析出した風景です。
+                </p>
+
+                <p class="lang-en">
+                    Within the two-mat tea room <i>Ryōshi-an</i>, a hanging-scroll–shaped monitor operates as a small threshold—an aperture suspended between this shore and the other.<br>
+                    The words you enter and the choices you select are not intended to “describe” you; rather, they function as minimal semiotic cues for drawing up what remains prior to explanation: submerged memories, embodied predispositions, and the contours of feeling that have not yet been stabilized into narrative.
+                </p>
+                <p class="lang-en">
+                    What is submitted is not preserved as an answer. Instead, it is reorganized as a single cycle—recomposed as though it were a turn of transmigration.<br>
+                    In a computational obscurity that exceeds human reach, the system assembles a virtual Pure Land and inscribes, only once, a semiotic self-image: Karma Portrait.
+                </p>
+                <p class="lang-en">
+                    What appears on the scroll is not your “data,” but a landscape in which pre-verbal emotions and desires—held by the body before language—precipitate as light, grain, and noise.
+                </p>
             </div>
             <button class="btn-entry" onclick="goToForm()">ENTRY</button>
         </div>
 
         <div id="form-page" class="hidden">
             <div class="nav-header">
-                <button class="btn-nav" onclick="backToTitle()">← BACK</button>
-                <button class="btn-nav" onclick="toggleAbout(true)">ABOUT</button>
+                <div class="nav-left">
+                    <button class="btn-nav" onclick="backToTitle()">← BACK</button>
+                </div>
+                <div class="nav-right">
+                    <div class="lang-switch">
+                        <div id="lang-btn-jp-form" class="lang-option active" onclick="setLanguage('jp')">JP</div>
+                        <div id="lang-btn-en-form" class="lang-option" onclick="setLanguage('en')">EN</div>
+                    </div>
+                    <button class="btn-nav" onclick="toggleOverlay('about-overlay', true)">ABOUT</button>
+                </div>
             </div>
 
-            <h1>PROFILE</h1>
+            <h1 class="lang-jp">PROFILE</h1>
+            <h1 class="lang-en">PROFILE</h1>
+            
             <div class="row-group">
-                <div style="flex: 2;"><label>コードネーム</label><input type="text" class="clean-input" placeholder=""></div>
-                <div style="flex: 1;"><label>年齢</label><input type="number" class="clean-input" placeholder=""></div>
-            </div>
-
-            <h2>SENSE</h2>
-            <div class="input-group">
-                <div class="slider-labels"><span>海 (Sea)</span><span>山 (Mountain)</span></div>
-                <div class="slider-wrapper">
-                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-                    <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
+                <div style="flex: 2;">
+                    <label class="lang-jp">コードネーム</label><label class="lang-en">Codename</label>
+                    <input type="text" class="clean-input" placeholder="">
                 </div>
-            </div>
-            <div class="input-group">
-                <div class="slider-labels"><span>静寂 (Silence)</span><span>喧騒 (Noise)</span></div>
-                <div class="slider-wrapper">
-                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-                    <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
-                </div>
-            </div>
-            <div class="input-group">
-                <div class="slider-labels"><span>深淵 (Dark)</span><span>救済 (Light)</span></div>
-                <div class="slider-wrapper">
-                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-                    <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
+                <div style="flex: 1;">
+                    <label class="lang-jp">年齢</label><label class="lang-en">Age</label>
+                    <input type="number" class="clean-input" placeholder="">
                 </div>
             </div>
 
-            <h2>MIND DIVE</h2>
-            <div class="input-group"><label>心象風景の描写</label><textarea class="clean-area" rows="5" placeholder="今、見えている色や形を言葉にしてください..."></textarea></div>
-            <div class="input-group"><label>記憶の欠片</label><textarea class="clean-area" rows="3" placeholder="消えない記憶、あるいは予感について..."></textarea></div>
-            <div class="input-group"><label>意識の流れ</label><textarea class="clean-area" rows="2" placeholder="浮かんでくる言葉を3つ..."></textarea></div>
+            <h2 class="lang-jp">SENSE</h2>
+            <h2 class="lang-en">SENSE</h2>
+            
+            <div class="input-group">
+                <div class="slider-labels"><span class="lang-jp">海</span><span class="lang-en">Sea</span> <span class="lang-jp">山</span><span class="lang-en">Mountain</span></div>
+                <div class="slider-wrapper">
+                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                    <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
+                </div>
+            </div>
+            <div class="input-group">
+                <div class="slider-labels"><span class="lang-jp">静寂</span><span class="lang-en">Silence</span> <span class="lang-jp">喧騒</span><span class="lang-en">Noise</span></div>
+                <div class="slider-wrapper">
+                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                    <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
+                </div>
+            </div>
+            <div class="input-group">
+                <div class="slider-labels"><span class="lang-jp">深淵</span><span class="lang-en">Dark</span> <span class="lang-jp">救済</span><span class="lang-en">Light</span></div>
+                <div class="slider-wrapper">
+                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                    <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
+                </div>
+            </div>
+
+            <h2 class="lang-jp">MIND DIVE</h2>
+            <h2 class="lang-en">MIND DIVE</h2>
+
+            <div class="input-group">
+                <label class="lang-jp">心象風景の描写</label><label class="lang-en">Description of Imagery</label>
+                <textarea id="area-imagery" class="clean-area" rows="5"></textarea>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">記憶の欠片</label><label class="lang-en">Fragment of Memory</label>
+                <textarea id="area-memory" class="clean-area" rows="3"></textarea>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">意識の流れ</label><label class="lang-en">Stream of Consciousness</label>
+                <textarea id="area-stream" class="clean-area" rows="2"></textarea>
+            </div>
 
             <div class="qr-section">
-                <label>画像の奉納 (スマホ連携)</label>
+                <label class="lang-jp">画像の奉納 (スマホ連携)</label><label class="lang-en">Image Upload (via Smartphone)</label>
                 <div id="qrcode"></div>
-                <div id="qr-status" class="qr-status">スマホで読み取ってください</div>
+                <div id="qr-status" class="qr-status lang-jp">スマホで読み取ってください</div>
+                <div id="qr-status-en" class="qr-status lang-en" style="display:none">Scan with smartphone</div>
                 
                 <img id="received-image" class="received-thumb">
                 
-                <button id="reset-img-btn" class="btn-reset-img" onclick="resetImage()">奉納し直す</button>
+                <button id="reset-img-btn" class="btn-reset-img lang-jp" onclick="resetImage()">奉納し直す</button>
+                <button id="reset-img-btn-en" class="btn-reset-img lang-en" onclick="resetImage()" style="display:none;">Reset Image</button>
             </div>
 
             <button class="btn-entry" onclick="submitForm()">INITIATE</button>
@@ -202,157 +448,326 @@
         let countdownTimer = null;
         let mySessionId = ""; 
         let receivedImageBase64 = ""; 
+        let currentLang = 'jp'; 
 
+        const placeholders = {
+            jp: {
+                imagery: "今、見えている色や形を言葉にしてください...",
+                memory: "消えない記憶、あるいは予感について...",
+                stream: "浮かんでくる言葉を3つ..."
+            },
+            en: {
+                imagery: "Describe the colors and shapes you see in your mind...",
+                memory: "Regarding an indelible memory, or a premonition...",
+                stream: "Three words that float up..."
+            }
+        };
+
+        // --- 初期化処理 ---
         document.addEventListener('DOMContentLoaded', function() {
-            
-            // --- セッションID生成 ---
-            mySessionId = crypto.randomUUID(); 
-            
-            // --- QRコード生成 ---
-            const uploadUrl = `${window.location.origin}/static/upload.html?session_id=${mySessionId}`;
-            new QRCode(document.getElementById("qrcode"), {
-                text: uploadUrl,
-                width: 128, height: 128,
-                colorDark : "#000000", colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-
-            // --- WebSocket接続 ---
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-
-            ws.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === "satellite_image" && data.session_id === mySessionId) {
-                        const img = document.getElementById('received-image');
-                        img.src = "data:image/jpeg;base64," + data.image_data;
-                        img.style.display = "block";
-                        
-                        // ステータス更新 & QR隠す
-                        const section = document.querySelector('.qr-section');
-                        section.classList.add('received');
-                        document.getElementById('qr-status').innerText = "画像が奉納されました";
-                        document.getElementById('qrcode').style.display = 'none'; 
-
-                        // ★リセットボタンを表示
-                        document.getElementById('reset-img-btn').style.display = 'block';
-
-                        receivedImageBase64 = data.image_data;
-                    }
-                } catch(e) {}
-            };
-
-            // --- ★画像リセット処理 ---
-            window.resetImage = function() {
-                if(!confirm("奉納された記憶を破棄し、\n再び受け入れますか？")) return;
-
-                // 状態を初期化
-                receivedImageBase64 = "";
-                document.getElementById('received-image').style.display = 'none';
-                document.getElementById('received-image').src = "";
+            try {
+                if(window.crypto && window.crypto.randomUUID) {
+                    mySessionId = crypto.randomUUID();
+                } else {
+                    mySessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2);
+                }
                 
-                // QRコードを再表示
-                const section = document.querySelector('.qr-section');
-                section.classList.remove('received');
-                document.getElementById('qrcode').style.display = 'block';
-                document.getElementById('qr-status').innerText = "スマホで読み取ってください";
-                
-                // ボタンを隠す
-                document.getElementById('reset-img-btn').style.display = 'none';
-            };
+                // ★修正：初期化時に body のクラスをセット
+                setLanguage('jp');
 
-            // --- 画面遷移等 ---
-            window.goToForm = function() {
-                const landing = document.getElementById('landing-page');
-                const form = document.getElementById('form-page');
-                landing.classList.add('dissolve-out');
-                setTimeout(() => {
-                    landing.classList.add('hidden'); form.classList.remove('hidden'); form.classList.add('dissolve-in'); window.scrollTo(0,0);
-                }, 550); 
-            };
-            window.backToTitle = function() {
-                if(!confirm("入力内容を破棄してタイトルに戻りますか？")) return;
-                resetAllInputs(); forceReset();
-            };
-            window.forceReset = function() {
-                const landing = document.getElementById('landing-page');
-                const form = document.getElementById('form-page');
-                const overlay = document.getElementById('loading-overlay');
-                if(countdownTimer) clearInterval(countdownTimer);
-                overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
-                form.classList.remove('dissolve-in'); form.classList.add('hidden');
-                landing.classList.remove('dissolve-out', 'hidden'); landing.style.opacity = '1'; landing.style.filter = 'blur(0px)'; landing.style.transform = 'scale(1)';
-                window.scrollTo(0,0);
-                setTimeout(() => location.reload(), 500); 
-            };
+                connectWebSocket();
 
-            function resetAllInputs() {
-                document.querySelectorAll('.clean-input, .clean-area').forEach(el => el.value = '');
-                document.querySelectorAll('input[type=range]').forEach(el => { el.value = 2; updateDots(el); });
-                receivedImageBase64 = "";
+            } catch(e) { console.error("Init Error:", e); }
+        });
+
+        // --- WebSocket ---
+        function connectWebSocket() {
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === "satellite_image" && data.session_id === mySessionId) {
+                            const img = document.getElementById('received-image');
+                            if(img) {
+                                img.src = "data:image/jpeg;base64," + data.image_data;
+                                img.style.display = "block";
+                            }
+                            
+                            const section = document.querySelector('.qr-section');
+                            if(section) section.classList.add('received');
+                            
+                            const qr = document.getElementById('qrcode');
+                            if(qr) qr.style.display = 'none'; 
+                            
+                            // ステータス更新
+                            let statusEl = document.getElementById("temp-status");
+                            if(!statusEl) {
+                                statusEl = document.createElement('div');
+                                statusEl.id = "temp-status";
+                                statusEl.className = "qr-status";
+                                statusEl.style.color = "#D4AF37";
+                                if(section && img) section.insertBefore(statusEl, img);
+                            }
+                            statusEl.innerText = currentLang === 'jp' ? "画像が奉納されました" : "Image Received";
+
+                            // デフォルトテキストを隠す
+                            const defaultStatus = document.querySelectorAll('.qr-status');
+                            defaultStatus.forEach(el => {
+                                if(el.id !== "temp-status") el.style.display = 'none';
+                            });
+
+                            receivedImageBase64 = data.image_data;
+                            updateResetBtnVisibility();
+                        }
+                    } catch(e) { console.error("WS Message Error:", e); }
+                };
+            } catch(e) { console.error("WS Connect Error:", e); }
+        }
+
+        // --- ★修正：言語切り替え処理（Bodyクラス切り替え） ---
+        window.setLanguage = function(lang) {
+            currentLang = lang;
+            
+            // bodyのクラスを書き換えるだけでCSSが全部やってくれる
+            document.body.className = 'lang-' + lang;
+            
+            updateLanguageView(); // ボタンのアクティブ表示やプレースホルダーはJSでやる
+            updateQRCode();
+        };
+
+        function updateLanguageView() {
+            // スイッチのアクティブ化
+            const btnJp = document.getElementById('lang-btn-jp');
+            const btnEn = document.getElementById('lang-btn-en');
+            const btnJpForm = document.getElementById('lang-btn-jp-form');
+            const btnEnForm = document.getElementById('lang-btn-en-form');
+
+            if(btnJp) btnJp.classList.remove('active');
+            if(btnEn) btnEn.classList.remove('active');
+            if(btnJpForm) btnJpForm.classList.remove('active');
+            if(btnEnForm) btnEnForm.classList.remove('active');
+
+            if(currentLang === 'jp') {
+                if(btnJp) btnJp.classList.add('active');
+                if(btnJpForm) btnJpForm.classList.add('active');
+            } else {
+                if(btnEn) btnEn.classList.add('active');
+                if(btnEnForm) btnEnForm.classList.add('active');
             }
 
-            window.toggleAbout = function(show) {
-                const overlay = document.getElementById('about-overlay');
-                if(show) { overlay.classList.add('show'); setTimeout(() => overlay.style.opacity = '1', 10); } 
-                else { overlay.style.opacity = '0'; setTimeout(() => overlay.classList.remove('show'), 500); }
-            };
-            window.updateDots = function(rangeInput) {
-                const wrapper = rangeInput.closest('.slider-wrapper');
-                const dots = wrapper.querySelectorAll('.dot');
-                const val = parseInt(rangeInput.value);
-                dots.forEach((dot, index) => {
-                    if (index === val) dot.classList.add('active'); else dot.classList.remove('active');
+            // プレースホルダー切り替え
+            const area1 = document.getElementById('area-imagery');
+            const area2 = document.getElementById('area-memory');
+            const area3 = document.getElementById('area-stream');
+            
+            if(area1) area1.placeholder = placeholders[currentLang].imagery;
+            if(area2) area2.placeholder = placeholders[currentLang].memory;
+            if(area3) area3.placeholder = placeholders[currentLang].stream;
+
+            // QRステータス（画像受信済みの場合）
+            const statusEl = document.getElementById("temp-status");
+            if (statusEl) {
+                 statusEl.innerText = currentLang === 'jp' ? "画像が奉納されました" : "Image Received";
+            }
+            
+            updateResetBtnVisibility();
+        }
+
+        function updateResetBtnVisibility() {
+            const btnResetJp = document.getElementById('reset-img-btn');
+            const btnResetEn = document.getElementById('reset-img-btn-en');
+
+            if(btnResetJp) btnResetJp.style.display = 'none';
+            if(btnResetEn) btnResetEn.style.display = 'none';
+
+            if (receivedImageBase64) {
+                if(currentLang === 'jp' && btnResetJp) btnResetJp.style.display = 'block';
+                if(currentLang === 'en' && btnResetEn) btnResetEn.style.display = 'block';
+            }
+        }
+        
+        // --- QRコード更新 ---
+        function updateQRCode() {
+            const qrContainer = document.getElementById("qrcode");
+            if(!qrContainer) return;
+            
+            qrContainer.innerHTML = ""; 
+            
+            const uploadUrl = `${window.location.origin}/static/upload.html?session_id=${mySessionId}&lang=${currentLang}`;
+            
+            if(typeof QRCode !== 'undefined') {
+                new QRCode(qrContainer, {
+                    text: uploadUrl,
+                    width: 128, height: 128,
+                    colorDark : "#000000", colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
                 });
-            };
-            document.querySelectorAll('input[type=range]').forEach(input => updateDots(input));
+            }
+        }
 
-            // --- 送信処理 ---
-            window.submitForm = async function() {
-                const overlay = document.getElementById('loading-overlay');
-                const statusText = document.getElementById('status-text');
-                if(overlay) {
-                    overlay.style.opacity = '1'; overlay.style.pointerEvents = 'auto';
-                    statusText.innerText = "紐解いています..."; statusText.classList.add('blink');
-                }
+        // --- タブ切り替え ---
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(event && event.target) event.target.classList.add('active'); 
 
-                const inputs = document.querySelectorAll('.clean-input');
-                const sliders = document.querySelectorAll('input[type=range]');
-                const areas = document.querySelectorAll('.clean-area');
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            const targetPane = document.getElementById('tab-' + tabName);
+            if(targetPane) targetPane.classList.add('active');
+        };
 
-                const formData = new FormData();
-                formData.append('codename', inputs[0].value || "Unknown");
-                formData.append('age', inputs[1].value || "0");
-                formData.append('sense_sea_mt', sliders[0].value);
-                formData.append('sense_quiet_noise', sliders[1].value);
-                formData.append('sense_dark_light', sliders[2].value);
-                formData.append('desc_imagery', areas[0].value || "");
-                formData.append('desc_memory', areas[1].value || "");
-                formData.append('desc_stream', areas[2].value || "");
-                formData.append('image_b64', receivedImageBase64);
+        // --- Overlay制御 ---
+        window.toggleOverlay = function(id, show) {
+            const overlay = document.getElementById(id);
+            if(!overlay) return;
+            if(show) { 
+                overlay.classList.add('show'); 
+                setTimeout(() => overlay.style.opacity = '1', 10); 
+            } else { 
+                overlay.style.opacity = '0'; 
+                setTimeout(() => overlay.classList.remove('show'), 500); 
+            }
+        };
 
-                try {
-                    const response = await fetch('/submit', { method: 'POST', body: formData });
-                    if (response.ok) {
-                        resetAllInputs();
-                        statusText.classList.remove('blink');
-                        statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${WAIT_TIME} 秒お待ちください`;
-                        let count = WAIT_TIME;
-                        countdownTimer = setInterval(() => {
-                            count--;
-                            if(count <= 0) { clearInterval(countdownTimer); location.reload(); } 
-                            else { statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${count} 秒お待ちください`; }
-                        }, 1000);
-                    } else {
-                        alert("送信エラー"); if(overlay) overlay.style.opacity = '0';
+        // --- 画像リセット ---
+        window.resetImage = function() {
+            const msg = currentLang === 'jp' ? "奉納された記憶を破棄し、\n再び受け入れますか？" : "Discard this image and try again?";
+            if(!confirm(msg)) return;
+
+            receivedImageBase64 = "";
+            const img = document.getElementById('received-image');
+            if(img) { img.style.display = 'none'; img.src = ""; }
+            
+            const section = document.querySelector('.qr-section');
+            if(section) section.classList.remove('received');
+            
+            const qr = document.getElementById('qrcode');
+            if(qr) qr.style.display = 'block';
+            
+            const tempStatus = document.getElementById('temp-status');
+            if(tempStatus) tempStatus.remove();
+            
+            // 現在の言語設定に合わせて再描画（QRやステータス文字）
+            setLanguage(currentLang); 
+        };
+
+        // --- 画面遷移 ---
+        window.goToForm = function() {
+            const landing = document.getElementById('landing-page');
+            const form = document.getElementById('form-page');
+            if(landing) {
+                landing.classList.add('dissolve-out');
+                setTimeout(() => {
+                    landing.classList.add('hidden'); 
+                    if(form) {
+                        form.classList.remove('hidden'); 
+                        form.classList.add('dissolve-in'); 
+                        window.scrollTo(0,0);
                     }
-                } catch (error) {
-                    console.error("Error:", error); alert("サーバー未接続");
-                    if(overlay) overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
+                }, 550); 
+            }
+        };
+
+        window.backToTitle = function() {
+            const msg = currentLang === 'jp' ? "入力内容を破棄してタイトルに戻りますか？" : "Discard input and return to title?";
+            if(!confirm(msg)) return;
+            resetAllInputs(); forceReset();
+        };
+
+        window.forceReset = function() {
+            const landing = document.getElementById('landing-page');
+            const form = document.getElementById('form-page');
+            const overlay = document.getElementById('loading-overlay');
+            
+            if(countdownTimer) clearInterval(countdownTimer);
+            if(overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+            
+            if(form) { form.classList.remove('dissolve-in'); form.classList.add('hidden'); }
+            if(landing) {
+                landing.classList.remove('dissolve-out', 'hidden'); 
+                landing.style.opacity = '1'; landing.style.filter = 'blur(0px)'; landing.style.transform = 'scale(1)';
+            }
+            window.scrollTo(0,0);
+            setTimeout(() => location.reload(), 500); 
+        };
+
+        function resetAllInputs() {
+            document.querySelectorAll('.clean-input, .clean-area').forEach(el => el.value = '');
+            document.querySelectorAll('input[type=range]').forEach(el => { el.value = 2; updateDots(el); });
+            receivedImageBase64 = "";
+        }
+
+        window.updateDots = function(rangeInput) {
+            const wrapper = rangeInput.closest('.slider-wrapper');
+            const dots = wrapper.querySelectorAll('.dot');
+            const val = parseInt(rangeInput.value);
+            dots.forEach((dot, index) => {
+                if (index === val) dot.classList.add('active'); else dot.classList.remove('active');
+            });
+        };
+        // 初期化実行
+        document.querySelectorAll('input[type=range]').forEach(input => updateDots(input));
+
+        // --- 送信処理 ---
+        window.submitForm = async function() {
+            const overlay = document.getElementById('loading-overlay');
+            const statusText = document.getElementById('status-text');
+            if(overlay) {
+                overlay.style.opacity = '1'; overlay.style.pointerEvents = 'auto';
+                if(statusText) {
+                    statusText.innerText = currentLang === 'jp' ? "紐解いています..." : "Decoding...";
+                    statusText.classList.add('blink');
                 }
-            };
-        });
+            }
+
+            const inputs = document.querySelectorAll('.clean-input');
+            const sliders = document.querySelectorAll('input[type=range]');
+            const areas = document.querySelectorAll('.clean-area');
+
+            const formData = new FormData();
+            formData.append('codename', inputs[0].value || "Unknown");
+            formData.append('age', inputs[1].value || "0");
+            formData.append('sense_sea_mt', sliders[0].value);
+            formData.append('sense_quiet_noise', sliders[1].value);
+            formData.append('sense_dark_light', sliders[2].value);
+            formData.append('desc_imagery', areas[0].value || "");
+            formData.append('desc_memory', areas[1].value || "");
+            formData.append('desc_stream', areas[2].value || "");
+            formData.append('image_b64', receivedImageBase64);
+
+            try {
+                const response = await fetch('/submit', { method: 'POST', body: formData });
+                if (response.ok) {
+                    resetAllInputs();
+                    if(statusText) statusText.classList.remove('blink');
+                    
+                    let count = WAIT_TIME;
+                    const updateMsg = () => {
+                        if(statusText) {
+                            if(currentLang === 'jp') {
+                                statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${count} 秒お待ちください`;
+                            } else {
+                                statusText.innerHTML = `Initiated.<br>Generating...<br><br>Please wait ${count} seconds`;
+                            }
+                        }
+                    };
+                    updateMsg();
+
+                    countdownTimer = setInterval(() => {
+                        count--;
+                        if(count <= 0) { clearInterval(countdownTimer); location.reload(); } 
+                        else { updateMsg(); }
+                    }, 1000);
+                } else {
+                    alert("Error: Server Busy"); if(overlay) overlay.style.opacity = '0';
+                }
+            } catch (error) {
+                console.error("Error:", error); alert("Server Connection Error");
+                if(overlay) overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
+            }
+        };
     </script>
 </body>
 </html>

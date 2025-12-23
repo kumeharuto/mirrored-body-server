@@ -15,65 +15,53 @@
         }
         h2 { color: #D4AF37; margin-bottom: 20px; letter-spacing: 0.1em; }
         
-        /* メインコンテナ */
         #main-content {
             width: 100%; max-width: 400px;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* ファイル選択ボックス (兼プレビューエリア) */
         .file-box {
             border: 1px dashed #333; 
-            width: 100%; 
-            height: 250px; /* 高さを固定 */
+            width: 100%; height: 250px; 
             display: flex; justify-content: center; align-items: center;
             color: #888; transition: 0.3s; cursor: pointer;
             margin-bottom: 30px;
             background: rgba(255,255,255,0.02);
-            position: relative;
-            overflow: hidden;
-            border-radius: 4px;
+            position: relative; overflow: hidden; border-radius: 4px;
         }
         .file-box:hover { border-color: #D4AF37; color: #D4AF37; background: rgba(212, 175, 55, 0.05); }
         
-        /* プレビュー画像 */
         #preview-img {
             max-width: 100%; max-height: 100%;
-            object-fit: contain;
-            display: none; /* 最初は隠す */
-            z-index: 2;
+            object-fit: contain; display: none; z-index: 2;
         }
+        .file-box.has-image { border-style: solid; border-color: #D4AF37; }
 
-        /* プレビュー表示時の枠線変更 */
-        .file-box.has-image {
-            border-style: solid;
-            border-color: #D4AF37;
-        }
-
-        /* テキスト (+ Select Image) */
-        .placeholder-text {
-            font-size: 1rem; pointer-events: none; z-index: 1;
-        }
+        .placeholder-text { font-size: 1rem; pointer-events: none; z-index: 1; }
 
         .btn {
             background: transparent; border: 1px solid #D4AF37; color: #D4AF37;
             padding: 15px 60px; font-size: 1rem; letter-spacing: 0.2em;
-            cursor: pointer; transition: 0.3s;
-            margin-top: 10px; /* 少し間隔をあける */
-            width: 80%; /* 幅を広めに */
+            cursor: pointer; transition: 0.3s; margin-top: 10px; width: 80%;
         }
         .btn:active { background: #D4AF37; color: #000; }
         .btn:disabled { border-color: #555; color: #555; pointer-events: none; }
         
         .hidden { display: none !important; }
+        .lang-en { display: none; } /* 初期状態は非表示 */
     </style>
 </head>
 <body>
 
     <div id="main-content">
-        <h2>画像の奉納</h2>
-        <p style="color:#666; font-size:0.8rem; margin-bottom:30px;">
+        <h2 class="lang-jp">画像の奉納</h2>
+        <h2 class="lang-en">Image Offering</h2>
+        
+        <p class="lang-jp" style="color:#666; font-size:0.8rem; margin-bottom:30px;">
             タップして写真を選択してください
+        </p>
+        <p class="lang-en" style="color:#666; font-size:0.8rem; margin-bottom:30px;">
+            Tap to select an image
         </p>
 
         <label for="file-upload" class="file-box" id="file-label">
@@ -82,48 +70,54 @@
         </label>
         <input id="file-upload" type="file" style="display:none" accept="image/*">
 
-        <button class="btn" onclick="uploadImage()">送信</button>
+        <button class="btn lang-jp" onclick="uploadImage()">送信</button>
+        <button class="btn lang-en" onclick="uploadImage()">SEND</button>
     </div>
 
     <div id="success-msg" class="hidden">
-        <h2 style="font-size:1.5rem; margin-top: 20px;">奉納完了</h2>
-        <p style="line-height: 2;">
-            画像が転送されました。<br>
-            タブレットの画面をご確認ください。
+        <h2 class="lang-jp" style="font-size:1.5rem; margin-top: 20px;">奉納完了</h2>
+        <h2 class="lang-en" style="font-size:1.5rem; margin-top: 20px;">Received</h2>
+        
+        <p class="lang-jp" style="line-height: 2;">
+            画像が転送されました。<br>タブレットの画面をご確認ください。
+        </p>
+        <p class="lang-en" style="line-height: 2;">
+            Image transferred successfully.<br>Please check the tablet screen.
         </p>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session_id');
+        const lang = params.get('lang') || 'jp'; // URLから言語取得
 
         const fileInput = document.getElementById('file-upload');
         const fileLabel = document.getElementById('file-label');
         const previewImg = document.getElementById('preview-img');
         const placeholder = document.getElementById('placeholder');
 
-        // ★変更点: 画像が選ばれたらプレビューを表示する
+        // --- 言語設定の反映 ---
+        if (lang === 'en') {
+            document.querySelectorAll('.lang-jp').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'block');
+        } else {
+            // JP is default
+        }
+
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if(file) {
-                // FileReaderで画像を読み込む
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    // 画像を表示
                     previewImg.src = event.target.result;
                     previewImg.style.display = 'block';
-                    
-                    // 「+ Select Image」の文字を隠す
                     placeholder.style.display = 'none';
-                    
-                    // 枠線を金色にする
                     fileLabel.classList.add('has-image');
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // 画像圧縮関数 (変更なし)
         function compressImage(file, maxWidth) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -152,12 +146,14 @@
         }
 
         async function uploadImage() {
-            if (!fileInput.files[0]) return alert("画像を選択してください");
-            if (!sessionId) return alert("セッションエラー: QRコードを読み直してください");
+            if (!fileInput.files[0]) return alert(lang==='en' ? "Please select an image" : "画像を選択してください");
+            if (!sessionId) return alert(lang==='en' ? "Session Error: Rescan QR" : "セッションエラー: QRコードを読み直してください");
 
-            const btn = document.querySelector('.btn');
-            btn.innerText = "送信中...";
-            btn.disabled = true;
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(b => {
+                b.innerText = lang==='en' ? "Sending..." : "送信中...";
+                b.disabled = true;
+            });
 
             try {
                 const compressedFile = await compressImage(fileInput.files[0], 1000);
@@ -173,9 +169,11 @@
                     throw new Error("Upload failed");
                 }
             } catch (e) {
-                alert("送信エラー");
-                btn.innerText = "送信";
-                btn.disabled = false;
+                alert("Upload Error");
+                btns.forEach(b => {
+                    b.innerText = lang==='en' ? "SEND" : "送信";
+                    b.disabled = false;
+                });
             }
         }
     </script>
