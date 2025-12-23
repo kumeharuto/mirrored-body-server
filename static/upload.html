@@ -47,10 +47,12 @@
         .btn:active { background: #D4AF37; color: #000; }
         .btn:disabled { border-color: #555; color: #555; pointer-events: none; }
         
-        /* 完了画面用の画像スタイル */
+        /* 完了画面用の画像スタイル（センタリング修正） */
         #sent-result-img {
             max-width: 80%; max-height: 200px;
-            margin-top: 20px; border: 1px solid #D4AF37;
+            margin-top: 20px; 
+            margin-left: auto; margin-right: auto; /* これで真ん中に来ます */
+            border: 1px solid #D4AF37;
             display: none;
         }
 
@@ -112,7 +114,7 @@
         // 言語に応じたテキストの表示切替
         if (lang === 'en') {
             document.querySelectorAll('.lang-jp').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'block'); // block or inline-block
+            document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'block');
         } else {
             document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
         }
@@ -131,7 +133,7 @@
             }
         });
 
-        // 圧縮設定を少し強める (800px, 0.6)
+        // 圧縮設定 (800px, 0.6)
         function compressImage(file, maxWidth) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -152,7 +154,6 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // 画質を 0.6 に設定
                         canvas.toBlob((blob) => {
                             resolve(new File([blob], file.name, { type: 'image/jpeg' }));
                         }, 'image/jpeg', 0.6);
@@ -172,7 +173,6 @@
             });
 
             try {
-                // 圧縮 (1000px -> 800px に変更)
                 const compressedFile = await compressImage(fileInput.files[0], 800);
                 
                 const formData = new FormData();
@@ -182,8 +182,7 @@
                 const res = await fetch('/upload-satellite', { method: 'POST', body: formData });
                 
                 if(res.ok) {
-                    // ★成功したら完了画面に画像を表示
-                    // プレビュー用のソースをコピーして表示
+                    // 成功したら完了画面に画像を表示
                     sentResultImg.src = previewImg.src;
                     sentResultImg.style.display = 'block';
 
