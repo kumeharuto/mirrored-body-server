@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Image Upload</title>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #020202; color: #Eaeaea;
+            font-family: 'Shippori Mincho', serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; text-align: center;
+        }
+        h2 { color: #D4AF37; margin-bottom: 30px; letter-spacing: 0.1em; }
+        .file-box {
+            border: 1px solid #333; padding: 40px; width: 80%;
+            color: #888; transition: 0.3s; cursor: pointer;
+            margin-bottom: 30px;
+        }
+        .file-box.selected { border-color: #D4AF37; color: #D4AF37; }
+        .btn {
+            background: transparent; border: 1px solid #D4AF37; color: #D4AF37;
+            padding: 15px 40px; font-size: 1rem; letter-spacing: 0.2em;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn:active { background: #D4AF37; color: #000; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="main-content">
+        <h2>画像の奉納</h2>
+        <p style="color:#666; font-size:0.8rem; margin-bottom:40px;">
+            あなたの記憶にある風景を<br>選択してください
+        </p>
+
+        <label for="file-upload" class="file-box" id="file-label">
+            + Select Image
+        </label>
+        <input id="file-upload" type="file" style="display:none" accept="image/*">
+
+        <button class="btn" onclick="uploadImage()">送信</button>
+    </div>
+
+    <div id="success-msg" class="hidden">
+        <h2 style="font-size:1.5rem;">奉納完了</h2>
+        <p>タブレットの画面をご確認ください</p>
+    </div>
+
+    <script>
+        // URLからセッションIDを取得
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session_id');
+
+        const fileInput = document.getElementById('file-upload');
+        const fileLabel = document.getElementById('file-label');
+
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files[0]) {
+                fileLabel.innerText = e.target.files[0].name;
+                fileLabel.classList.add('selected');
+            }
+        });
+
+        // 画像圧縮関数
+        function compressImage(file, maxWidth) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', 0.7);
+                    }
+                }
+            });
+        }
+
+        async function uploadImage() {
+            if (!fileInput.files[0]) return alert("画像を選択してください");
+            if (!sessionId) return alert("セッションエラー: QRコードを読み直してください");
+
+            const btn = document.querySelector('.btn');
+            btn.innerText = "送信中...";
+            btn.disabled = true;
+
+            try {
+                const compressedFile = await compressImage(fileInput.files[0], 1000);
+                const formData = new FormData();
+                formData.append('session_id', sessionId);
+                formData.append('image', compressedFile);
+
+                const res = await fetch('/upload-satellite', { method: 'POST', body: formData });
+                if(res.ok) {
+                    document.getElementById('main-content').classList.add('hidden');
+                    document.getElementById('success-msg').classList.remove('hidden');
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (e) {
+                alert("送信エラー");
+                btn.innerText = "送信";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

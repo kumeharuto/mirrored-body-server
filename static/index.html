@@ -4,251 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KARMIC IDENTITY</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
-        /* === 徹底的な選択禁止 === */
-        * {
-            -webkit-user-select: none; user-select: none;
-            -webkit-touch-callout: none;
-        }
-        input, textarea {
-            -webkit-user-select: text !important;
-            user-select: text !important;
-            -webkit-touch-callout: default !important;
-        }
-
+        /* === 基本スタイル (前回と同じ) === */
+        * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        input, textarea { -webkit-user-select: text !important; user-select: text !important; -webkit-touch-callout: default !important; }
         :root {
-            --bg-color: #020202;
-            --text-main: #Eaeaea;
-            --text-dim: #888;
-            --accent: #D4AF37;         
-            --accent-glow: rgba(212, 175, 55, 0.5);
+            --bg-color: #020202; --text-main: #Eaeaea; --text-dim: #888;
+            --accent: #D4AF37; --accent-glow: rgba(212, 175, 55, 0.5);
             --border: #333333;
-            --font-serif: 'Shippori Mincho', serif;
-            --font-sans: 'Zen Kaku Gothic New', sans-serif;
-            
-            --thumb-size: 36px;
-            --dot-size: 10px;
-            --track-height: 6px;
+            --font-serif: 'Shippori Mincho', serif; --font-sans: 'Zen Kaku Gothic New', sans-serif;
+            --thumb-size: 36px; --dot-size: 10px; --track-height: 6px;
         }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            margin: 0; padding: 0;
-            min-height: 100vh;
+            background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-sans);
+            margin: 0; padding: 0; min-height: 100vh;
             display: flex; justify-content: center; align-items: center;
-            letter-spacing: 0.08em;
-            overflow-x: hidden;
+            letter-spacing: 0.08em; overflow-x: hidden;
         }
-
         .container {
             width: 100%; max-width: 500px; padding: 40px 30px;
-            position: relative; z-index: 2;
-            min-height: 100vh; /* 全画面使う */
-            box-sizing: border-box;
-            display: flex; flex-direction: column; justify-content: center;
+            position: relative; z-index: 2; min-height: 100vh;
+            box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;
         }
 
-        /* === ナビゲーションボタン (ヘッダー) === */
-        .nav-header {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 20px 30px; box-sizing: border-box;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 10;
+        /* === QRコードエリア (新規) === */
+        .qr-section {
+            margin-top: 40px; padding: 20px;
+            border: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(255,255,255,0.02);
+            transition: 0.5s;
+        }
+        .qr-section.received {
+            border-color: var(--accent);
+            background: rgba(212, 175, 55, 0.05);
+        }
+        #qrcode { margin: 15px 0; padding: 10px; background: #fff; border-radius: 4px; }
+        .qr-status { font-family: var(--font-serif); font-size: 0.9rem; color: var(--text-dim); margin-top: 10px; }
+        .received-thumb { 
+            max-width: 100%; max-height: 150px; margin-top: 15px; 
+            border: 1px solid var(--accent); display: none; 
         }
 
-        .btn-nav {
-            background: transparent; border: none;
-            color: var(--text-dim); font-family: var(--font-serif);
-            font-size: 0.9rem; letter-spacing: 0.1em;
-            cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; gap: 8px;
-        }
+        /* 他の既存スタイル (省略せず記載) */
+        .nav-header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px 30px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .btn-nav { background: transparent; border: none; color: var(--text-dim); font-family: var(--font-serif); font-size: 0.9rem; letter-spacing: 0.1em; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-nav:hover { color: var(--accent); }
-        .btn-nav.accent { color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; }
-        .btn-nav.accent:hover { background: var(--accent); color: #000; }
-
-        /* === アニメーション === */
-        .dissolve-out {
-            animation: meltOut 0.6s cubic-bezier(0.5, 0, 0.1, 1) forwards;
-            pointer-events: none;
-        }
-        @keyframes meltOut {
-            0% { opacity: 1; filter: blur(0px); transform: scale(1); }
-            100% { opacity: 0; filter: blur(10px); transform: scale(1.02); }
-        }
-
-        .dissolve-in {
-            display: block !important;
-            animation: formIn 0.4s ease-out forwards;
-        }
-        @keyframes formIn {
-            0% { opacity: 0; filter: blur(10px); transform: translateY(10px); }
-            100% { opacity: 1; filter: blur(0px); transform: translateY(0); }
-        }
-
+        .dissolve-out { animation: meltOut 0.6s cubic-bezier(0.5, 0, 0.1, 1) forwards; pointer-events: none; }
+        @keyframes meltOut { 0% { opacity: 1; filter: blur(0px); transform: scale(1); } 100% { opacity: 0; filter: blur(10px); transform: scale(1.02); } }
+        .dissolve-in { display: block !important; animation: formIn 0.4s ease-out forwards; }
+        @keyframes formIn { 0% { opacity: 0; filter: blur(10px); transform: translateY(10px); } 100% { opacity: 1; filter: blur(0px); transform: translateY(0); } }
         .hidden { display: none; }
-
-        /* タイトル・テキスト */
-        h1 {
-            font-family: var(--font-serif); font-weight: 400; font-size: 1.6rem;
-            text-align: center; margin-bottom: 40px; letter-spacing: 0.15em;
-            color: var(--accent); text-shadow: 0 0 15px var(--accent-glow);
-            line-height: 1.4;
-            margin-top: 80px;
-        }
-        h2 {
-            font-family: var(--font-serif); font-size: 1.1rem; font-weight: 400; color: #fff;
-            margin: 50px 0 30px 0; display: flex; align-items: center;
-            border-left: 3px solid var(--accent); padding-left: 15px;
-        }
-        
-        .concept-text {
-            font-family: var(--font-serif); font-size: 0.95rem; line-height: 2.2;
-            color: #ccc; margin-bottom: 60px; text-align: center;
-        }
+        h1 { font-family: var(--font-serif); font-weight: 400; font-size: 1.6rem; text-align: center; margin-bottom: 40px; margin-top: 80px; letter-spacing: 0.15em; color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); line-height: 1.4; }
+        h2 { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 400; color: #fff; margin: 50px 0 30px 0; display: flex; align-items: center; border-left: 3px solid var(--accent); padding-left: 15px; }
+        .concept-text { font-family: var(--font-serif); font-size: 0.95rem; line-height: 2.2; color: #ccc; margin-bottom: 60px; text-align: center; }
         .concept-text p { margin-bottom: 1.5em; text-align-last: center; }
-
-        /* 入力エリア */
         .row-group { display: flex; gap: 20px; margin-bottom: 35px; align-items: flex-end; }
         .input-group { margin-bottom: 50px; }
         label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; font-family: var(--font-sans); }
-
-        .clean-input {
-            width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border);
-            color: #fff; padding: 10px 0; font-size: 1.1rem; font-family: var(--font-serif);
-            outline: none; transition: 0.4s; border-radius: 0;
-        }
+        .clean-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); color: #fff; padding: 10px 0; font-size: 1.1rem; font-family: var(--font-serif); outline: none; transition: 0.4s; border-radius: 0; }
         .clean-input:focus { border-bottom-color: var(--accent); }
-        
-        textarea.clean-area {
-            width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-            color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-serif);
-            resize: none; outline: none; box-sizing: border-box; transition: 0.4s;
-            line-height: 1.8; margin-top: 5px; border-radius: 2px;
-        }
+        textarea.clean-area { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-serif); resize: none; outline: none; box-sizing: border-box; transition: 0.4s; line-height: 1.8; margin-top: 5px; border-radius: 2px; }
         textarea.clean-area:focus { border-color: var(--accent); background: rgba(212, 175, 55, 0.05); }
-
-        /* === Slider === */
-        .slider-wrapper {
-            position: relative; height: 50px; width: 100%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-        }
-        .slider-labels {
-            display: flex; justify-content: space-between;
-            font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;
-            font-family: var(--font-serif);
-        }
-        .slider-visual-track {
-            position: absolute; left: 0; right: 0; margin: auto;
-            width: calc(100% - var(--thumb-size)); 
-            height: var(--thumb-size);
-            pointer-events: none;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 0;
-        }
-        .slider-visual-track::before {
-            content: ''; position: absolute;
-            width: 100%; height: var(--track-height);
-            background: var(--accent); border-radius: 4px;
-            left: 0; top: 50%; transform: translateY(-50%);
-            z-index: -1;
-        }
-        .dot {
-            width: var(--dot-size); height: var(--dot-size);
-            background: #222; border: 2px solid var(--accent);
-            border-radius: 50%; transition: all 0.2s ease;
-            box-sizing: border-box; position: relative; z-index: 1;
-        }
-        .dot.active {
-            background: var(--accent); box-shadow: 0 0 10px var(--accent);
-            transform: scale(1.3);
-        }
-        input[type=range] {
-            -webkit-appearance: none; width: 100%; background: transparent;
-            position: relative; z-index: 2; margin: 0; height: 100%;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 100%; background: transparent; border: none;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; border: none; 
-            height: var(--thumb-size); width: var(--thumb-size);
-            border-radius: 50%; background: var(--accent);
-            cursor: pointer;
-            margin-top: calc((50px - var(--thumb-size)) / 2);
-            box-shadow: 0 0 15px var(--accent-glow);
-            transition: transform 0.1s;
-        }
-        input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.1); background: #FFF;
-        }
-
-        /* File & Button */
-        .file-box {
-            display: block; padding: 30px; text-align: center; border: 1px solid var(--border);
-            color: var(--text-dim); font-size: 0.9rem; cursor: pointer; transition: 0.4s;
-            font-family: var(--font-sans);
-        }
-        .file-box:hover { border-color: var(--accent); color: var(--accent); background: rgba(212, 175, 55, 0.05); }
-
-        .btn-entry {
-            background: transparent; border: 1px solid var(--accent); color: var(--accent);
-            padding: 20px 0; width: 100%; font-family: var(--font-serif); font-size: 1.1rem;
-            letter-spacing: 0.3em; cursor: pointer; transition: all 0.3s ease;
-            position: relative; overflow: hidden; margin-top: 50px;
-        }
+        .slider-wrapper { position: relative; height: 50px; width: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px; font-family: var(--font-serif); }
+        .slider-visual-track { position: absolute; left: 0; right: 0; margin: auto; width: calc(100% - var(--thumb-size)); height: var(--thumb-size); pointer-events: none; display: flex; justify-content: space-between; align-items: center; z-index: 0; }
+        .slider-visual-track::before { content: ''; position: absolute; width: 100%; height: var(--track-height); background: var(--accent); border-radius: 4px; left: 0; top: 50%; transform: translateY(-50%); z-index: -1; }
+        .dot { width: var(--dot-size); height: var(--dot-size); background: #222; border: 2px solid var(--accent); border-radius: 50%; transition: all 0.2s ease; box-sizing: border-box; position: relative; z-index: 1; }
+        .dot.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); transform: scale(1.3); }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; position: relative; z-index: 2; margin: 0; height: 100%; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 100%; background: transparent; border: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; border: none; height: var(--thumb-size); width: var(--thumb-size); border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: calc((50px - var(--thumb-size)) / 2); box-shadow: 0 0 15px var(--accent-glow); transition: transform 0.1s; }
+        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); background: #FFF; }
+        .btn-entry { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 20px 0; width: 100%; font-family: var(--font-serif); font-size: 1.1rem; letter-spacing: 0.3em; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; margin-top: 50px; }
         .btn-entry:hover { background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent-glow); }
-
-        /* === Loading Overlay === */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 999; opacity: 0; pointer-events: none; transition: 0.8s;
-        }
-        .loading-text {
-            font-family: var(--font-serif); font-size: 1.2rem; letter-spacing: 0.2em;
-            color: var(--accent); margin-bottom: 40px; text-align: center; line-height: 2;
-        }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 999; opacity: 0; pointer-events: none; transition: 0.8s; }
+        .loading-text { font-family: var(--font-serif); font-size: 1.2rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 40px; text-align: center; line-height: 2; }
         .blink { animation: breathe 2s infinite ease-in-out; }
         @keyframes breathe { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
-
-        .btn-cancel {
-            background: transparent; border: none; color: #555;
-            font-family: var(--font-sans); font-size: 0.85rem;
-            cursor: pointer; transition: 0.3s; padding: 10px 20px;
-            letter-spacing: 0.1em;
-        }
+        .btn-cancel { background: transparent; border: none; color: #555; font-family: var(--font-sans); font-size: 0.85rem; cursor: pointer; transition: 0.3s; padding: 10px 20px; letter-spacing: 0.1em; }
         .btn-cancel:hover { color: #888; }
-
-        /* === About Overlay (New) === */
-        #about-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px);
-            z-index: 888; display: none; opacity: 0; transition: opacity 0.5s;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
+        #about-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px); z-index: 888; display: none; opacity: 0; transition: opacity 0.5s; flex-direction: column; justify-content: center; align-items: center; }
         #about-overlay.show { display: flex; opacity: 1; }
-        
-        .about-content {
-            width: 85%; max-width: 600px; max-height: 80vh; overflow-y: auto;
-            color: #ccc; font-family: var(--font-serif); line-height: 2.4;
-            text-align: left; padding: 20px;
-        }
+        .about-content { width: 85%; max-width: 600px; max-height: 80vh; overflow-y: auto; color: #ccc; font-family: var(--font-serif); line-height: 2.4; text-align: left; padding: 20px; }
         .about-content h3 { color: var(--accent); font-weight: 400; text-align: center; margin-bottom: 30px; }
         .about-content p { margin-bottom: 2em; text-align-last: left; }
-        .close-btn {
-            margin-top: 30px; color: #fff; font-size: 2rem; cursor: pointer;
-            background: none; border: none;
-        }
-
+        .close-btn { margin-top: 30px; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; }
     </style>
 </head>
 <body>
@@ -256,18 +104,9 @@
     <div id="about-overlay">
         <div class="about-content">
             <h3>KARMIC IDENTITY<br><span style="font-size:0.7em;">- 業報の自己像 -</span></h3>
-            <p>
-                本作品は、鑑賞者の深層心理と記憶をAIによって解析し、<br>
-                「業（カルマ）」として可視化するインスタレーションです。
-            </p>
-            <p>
-                あなたが入力した断片的な言葉や選んだ感覚は、<br>
-                リアルタイムに生成される映像と音響へと変換され、<br>
-                この空間に一度きりの「あなたの浄土」を現出させます。
-            </p>
-            <p style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 40px;">
-                Concept & Design by<br>Digital Nature & Arts
-            </p>
+            <p>本作品は、鑑賞者の深層心理と記憶をAIによって解析し、「業（カルマ）」として可視化するインスタレーションです。</p>
+            <p>あなたが入力した断片的な言葉や選んだ感覚は、リアルタイムに生成される映像と音響へと変換され、この空間に一度きりの「あなたの浄土」を現出させます。</p>
+            <p style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 40px;">Concept & Design by<br>Digital Nature & Arts</p>
         </div>
         <button class="close-btn" onclick="toggleAbout(false)">×</button>
     </div>
@@ -283,25 +122,11 @@
             <div class="nav-header" style="justify-content: flex-end;">
                 <button class="btn-nav" onclick="toggleAbout(true)">ABOUT</button>
             </div>
-
             <h1>KARMIC IDENTITY</h1>
             <div class="concept-text">
-                <p>
-                ここでは、いくつかの問いに答えることで、<br>
-                あなたの記憶や心の在り方から<br>
-                「Karmic Identity（業報の自己像）」をかたちづくります。
-                </p>
-                <p>
-                入力された言葉や選択は、ひとつの輪廻として再構成され、<br>
-                泡影庵の掛け軸に、一度きりの映像として立ち上がる<br>
-                「あなただけの浄土」となります。
-                </p>
-                <p>
-                本名や連絡先は必要ありません。<br>
-                直感で入力し、選んでください。<br>
-                ここで生まれた「あなたの業のかたち」を、<br>
-                この場限りのものとして、そっと手放してみてください。
-                </p>
+                <p>ここでは、いくつかの問いに答えることで、<br>あなたの記憶や心の在り方から<br>「Karmic Identity（業報の自己像）」をかたちづくります。</p>
+                <p>入力された言葉や選択は、ひとつの輪廻として再構成され、<br>泡影庵の掛け軸に、一度きりの映像として立ち上がる<br>「あなただけの浄土」となります。</p>
+                <p>本名や連絡先は必要ありません。<br>直感で入力し、選んでください。<br>ここで生まれた「あなたの業のかたち」を、<br>この場限りのものとして、そっと手放してみてください。</p>
             </div>
             <button class="btn-entry" onclick="goToForm()">ENTRY</button>
         </div>
@@ -313,68 +138,44 @@
             </div>
 
             <h1>PROFILE</h1>
-            
             <div class="row-group">
-                <div style="flex: 2;">
-                    <label>コードネーム</label>
-                    <input type="text" class="clean-input" placeholder="">
-                </div>
-                <div style="flex: 1;">
-                    <label>年齢</label>
-                    <input type="number" class="clean-input" placeholder="">
-                </div>
+                <div style="flex: 2;"><label>コードネーム</label><input type="text" class="clean-input" placeholder=""></div>
+                <div style="flex: 1;"><label>年齢</label><input type="number" class="clean-input" placeholder=""></div>
             </div>
 
             <h2>SENSE</h2>
-            
             <div class="input-group">
                 <div class="slider-labels"><span>海 (Sea)</span><span>山 (Mountain)</span></div>
                 <div class="slider-wrapper">
-                    <div class="slider-visual-track">
-                        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
-                    </div>
+                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
                     <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
                 </div>
             </div>
-
             <div class="input-group">
                 <div class="slider-labels"><span>静寂 (Silence)</span><span>喧騒 (Noise)</span></div>
                 <div class="slider-wrapper">
-                    <div class="slider-visual-track">
-                        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
-                    </div>
+                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
                     <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
                 </div>
             </div>
-
             <div class="input-group">
                 <div class="slider-labels"><span>深淵 (Dark)</span><span>救済 (Light)</span></div>
                 <div class="slider-wrapper">
-                    <div class="slider-visual-track">
-                        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
-                    </div>
+                    <div class="slider-visual-track"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
                     <input type="range" min="0" max="4" step="1" value="2" oninput="updateDots(this)">
                 </div>
             </div>
 
             <h2>MIND DIVE</h2>
-            <div class="input-group">
-                <label>心象風景の描写</label>
-                <textarea class="clean-area" rows="5" placeholder="今、見えている色や形を言葉にしてください..."></textarea>
-            </div>
-            <div class="input-group">
-                <label>記憶の欠片</label>
-                <textarea class="clean-area" rows="3" placeholder="消えない記憶、あるいは予感について..."></textarea>
-            </div>
-            <div class="input-group">
-                <label>意識の流れ</label>
-                <textarea class="clean-area" rows="2" placeholder="浮かんでくる言葉を3つ..."></textarea>
-            </div>
+            <div class="input-group"><label>心象風景の描写</label><textarea class="clean-area" rows="5" placeholder="今、見えている色や形を言葉にしてください..."></textarea></div>
+            <div class="input-group"><label>記憶の欠片</label><textarea class="clean-area" rows="3" placeholder="消えない記憶、あるいは予感について..."></textarea></div>
+            <div class="input-group"><label>意識の流れ</label><textarea class="clean-area" rows="2" placeholder="浮かんでくる言葉を3つ..."></textarea></div>
 
-            <div class="input-group" style="margin-top:40px;">
-                <label style="margin-bottom:15px; display:block;">画像の奉納 (任意)</label>
-                <label for="file-upload" class="file-box">+ Select Image</label>
-                <input id="file-upload" type="file" style="display:none" accept="image/*">
+            <div class="qr-section">
+                <label>画像の奉納 (スマホ連携)</label>
+                <div id="qrcode"></div>
+                <div id="qr-status" class="qr-status">スマホで読み取ってください</div>
+                <img id="received-image" class="received-thumb">
             </div>
 
             <button class="btn-entry" onclick="submitForm()">INITIATE</button>
@@ -384,177 +185,110 @@
     <script>
         const WAIT_TIME = 30; 
         let countdownTimer = null;
+        let mySessionId = ""; 
+        let receivedImageBase64 = ""; // スマホから届いた画像をここに保持
 
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- 画面遷移関数 ---
+            // --- セッションID生成 ---
+            mySessionId = crypto.randomUUID(); 
+            
+            // --- QRコード生成 ---
+            // ※URLは自分のRenderのURLに合わせてください
+            const uploadUrl = `${window.location.origin}/static/upload.html?session_id=${mySessionId}`;
+            new QRCode(document.getElementById("qrcode"), {
+                text: uploadUrl,
+                width: 128, height: 128,
+                colorDark : "#000000", colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // --- WebSocket接続 (画像受信待ち) ---
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+            ws.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    // 自分宛の画像データなら反応する
+                    if (data.type === "satellite_image" && data.session_id === mySessionId) {
+                        // 画像を表示
+                        const img = document.getElementById('received-image');
+                        img.src = "data:image/jpeg;base64," + data.image_data;
+                        img.style.display = "block";
+                        
+                        // ステータス更新
+                        const section = document.querySelector('.qr-section');
+                        section.classList.add('received');
+                        document.getElementById('qr-status').innerText = "画像が奉納されました";
+                        document.getElementById('qrcode').style.display = 'none'; // QRを隠す
+
+                        // 送信用変数に保存
+                        receivedImageBase64 = data.image_data;
+                    }
+                } catch(e) {}
+            };
+
+            // --- 画面遷移 ---
             window.goToForm = function() {
                 const landing = document.getElementById('landing-page');
                 const form = document.getElementById('form-page');
-                
                 landing.classList.add('dissolve-out');
-                
                 setTimeout(() => {
-                    landing.classList.add('hidden'); 
-                    form.classList.remove('hidden'); 
-                    form.classList.add('dissolve-in'); 
-                    window.scrollTo(0,0);
+                    landing.classList.add('hidden'); form.classList.remove('hidden'); form.classList.add('dissolve-in'); window.scrollTo(0,0);
                 }, 550); 
             };
-
-            // ★ タイトルに戻る＆リセット処理
             window.backToTitle = function() {
                 if(!confirm("入力内容を破棄してタイトルに戻りますか？")) return;
-                resetAllInputs();
-                forceReset(); // 画面遷移ロジックはこれを利用
+                resetAllInputs(); forceReset();
             };
-
-            // ★ 強制リセット（ローディング画面からの脱出用）
             window.forceReset = function() {
                 const landing = document.getElementById('landing-page');
                 const form = document.getElementById('form-page');
                 const overlay = document.getElementById('loading-overlay');
-
-                // タイマー停止
                 if(countdownTimer) clearInterval(countdownTimer);
-
-                // オーバーレイ消去
-                overlay.style.opacity = '0';
-                overlay.style.pointerEvents = 'none';
-
-                // フォームを隠してタイトルを表示
-                form.classList.remove('dissolve-in');
-                form.classList.add('hidden');
-                
-                landing.classList.remove('dissolve-out', 'hidden');
-                landing.style.opacity = '1';
-                landing.style.filter = 'blur(0px)';
-                landing.style.transform = 'scale(1)';
-                
+                overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
+                form.classList.remove('dissolve-in'); form.classList.add('hidden');
+                landing.classList.remove('dissolve-out', 'hidden'); landing.style.opacity = '1'; landing.style.filter = 'blur(0px)'; landing.style.transform = 'scale(1)';
                 window.scrollTo(0,0);
+                
+                // ★リセット時にセッションIDも更新する（新しい人扱い）
+                setTimeout(() => location.reload(), 500); 
             };
 
-            // ★ 入力内容のクリア
             function resetAllInputs() {
-                // テキスト系
                 document.querySelectorAll('.clean-input, .clean-area').forEach(el => el.value = '');
-                // スライダー (中央=2に戻す)
-                document.querySelectorAll('input[type=range]').forEach(el => {
-                    el.value = 2;
-                    updateDots(el);
-                });
-                // ファイル
-                const fileInput = document.getElementById('file-upload');
-                if(fileInput) fileInput.value = '';
-                const fileBox = document.querySelector('.file-box');
-                if(fileBox) {
-                    fileBox.innerText = "+ Select Image";
-                    fileBox.style.borderColor = "#333333";
-                }
+                document.querySelectorAll('input[type=range]').forEach(el => { el.value = 2; updateDots(el); });
+                receivedImageBase64 = ""; // 画像もクリア
             }
 
-            // --- ABOUT オーバーレイ制御 ---
             window.toggleAbout = function(show) {
                 const overlay = document.getElementById('about-overlay');
-                if(show) {
-                    overlay.classList.add('show');
-                    // 少し遅れてopacityを1にする（transitionのため）
-                    setTimeout(() => overlay.style.opacity = '1', 10);
-                } else {
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.classList.remove('show'), 500);
-                }
+                if(show) { overlay.classList.add('show'); setTimeout(() => overlay.style.opacity = '1', 10); } 
+                else { overlay.style.opacity = '0'; setTimeout(() => overlay.classList.remove('show'), 500); }
             };
-
-            // --- スライダー制御 ---
             window.updateDots = function(rangeInput) {
                 const wrapper = rangeInput.closest('.slider-wrapper');
                 const dots = wrapper.querySelectorAll('.dot');
                 const val = parseInt(rangeInput.value);
-                
                 dots.forEach((dot, index) => {
-                    if (index === val) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
+                    if (index === val) dot.classList.add('active'); else dot.classList.remove('active');
                 });
             };
-            // 初期化
             document.querySelectorAll('input[type=range]').forEach(input => updateDots(input));
-
-            // --- ファイル選択制御 ---
-            const fileInput = document.getElementById('file-upload');
-            if (fileInput) {
-                fileInput.addEventListener('change', function(e){
-                    const fileName = e.target.files[0] ? e.target.files[0].name : "+ Select Image";
-                    const fileBox = document.querySelector('.file-box');
-                    if (fileBox) {
-                        fileBox.innerText = fileName;
-                        fileBox.style.borderColor = "#D4AF37";
-                    }
-                });
-            }
-
-            // --- 画像圧縮 ---
-            function compressImage(file, maxWidth) {
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = function(event) {
-                        const img = new Image();
-                        img.src = event.target.result;
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > maxWidth) {
-                                height *= maxWidth / width;
-                                width = maxWidth;
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            
-                            canvas.toBlob((blob) => {
-                                const newFile = new File([blob], file.name, { type: 'image/jpeg' });
-                                resolve(newFile);
-                            }, 'image/jpeg', 0.7);
-                        }
-                    }
-                });
-            }
 
             // --- 送信処理 ---
             window.submitForm = async function() {
                 const overlay = document.getElementById('loading-overlay');
                 const statusText = document.getElementById('status-text');
-                
                 if(overlay) {
-                    overlay.style.opacity = '1';
-                    overlay.style.pointerEvents = 'auto';
-                    statusText.innerText = "紐解いています...";
-                    statusText.classList.add('blink');
+                    overlay.style.opacity = '1'; overlay.style.pointerEvents = 'auto';
+                    statusText.innerText = "紐解いています..."; statusText.classList.add('blink');
                 }
 
                 const inputs = document.querySelectorAll('.clean-input');
                 const sliders = document.querySelectorAll('input[type=range]');
                 const areas = document.querySelectorAll('.clean-area');
-                const fileInput = document.getElementById('file-upload');
-                let file = fileInput ? fileInput.files[0] : null;
-
-                if (file) {
-                    statusText.innerText = "記憶を圧縮しています...";
-                    try {
-                        file = await compressImage(file, 1000);
-                    } catch (e) {
-                        console.error("Compression failed", e);
-                    }
-                }
-                statusText.innerText = "紐解いています...";
 
                 const formData = new FormData();
                 formData.append('codename', inputs[0].value || "Unknown");
@@ -566,39 +300,27 @@
                 formData.append('desc_memory', areas[1].value || "");
                 formData.append('desc_stream', areas[2].value || "");
                 
-                if (file) formData.append('image', file);
+                // ★スマホから届いた画像があればここで合体させる
+                formData.append('image_b64', receivedImageBase64);
 
                 try {
                     const response = await fetch('/submit', { method: 'POST', body: formData });
-
                     if (response.ok) {
-                        // 送信成功時の処理
-                        resetAllInputs(); // ★送信直後に入力をクリアする（安全策）
-
+                        resetAllInputs();
                         statusText.classList.remove('blink');
                         statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${WAIT_TIME} 秒お待ちください`;
-                        
                         let count = WAIT_TIME;
-                        // タイマーを変数に入れて管理（中断できるように）
                         countdownTimer = setInterval(() => {
                             count--;
-                            if(count <= 0) {
-                                clearInterval(countdownTimer);
-                                location.reload(); 
-                            } else {
-                                statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${count} 秒お待ちください`;
-                            }
+                            if(count <= 0) { clearInterval(countdownTimer); location.reload(); } 
+                            else { statusText.innerHTML = `奉納されました。<br>生成を開始します。<br><br>あと ${count} 秒お待ちください`; }
                         }, 1000);
-
                     } else {
-                        alert("送信エラー: サーバーが混み合っている可能性があります");
-                        if(overlay) overlay.style.opacity = '0';
+                        alert("送信エラー"); if(overlay) overlay.style.opacity = '0';
                     }
                 } catch (error) {
-                    console.error("Error:", error);
-                    alert("サーバー未接続");
-                    if(overlay) overlay.style.opacity = '0';
-                    overlay.style.pointerEvents = 'none';
+                    console.error("Error:", error); alert("サーバー未接続");
+                    if(overlay) overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none';
                 }
             };
         });

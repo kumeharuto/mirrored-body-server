@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 import base64
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,17 +26,15 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # --- WebSocket管理 ---
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-        print(">> Client Connected!")
 
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
-        print(">> Client Disconnected")
 
     async def broadcast(self, message: str):
         for connection in self.active_connections[:]:
@@ -47,10 +45,12 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+# staticフォルダをマウント（upload.htmlなどを配信するため）
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def get():
+    # タブレット用メイン画面
     with open("static/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(f.read())
 
@@ -62,15 +62,37 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-    except Exception as e:
-        print(f"WS Error: {e}")
-        manager.disconnect(websocket)
 
-# ★修正版: どんなデータが来ても受け入れる最強の受信口
+# --- [新規] スマホからの画像アップロード用 ---
+@app.post("/upload-satellite")
+async def upload_satellite(
+    session_id: str = Form(...),
+    image: UploadFile = File(...)
+):
+    print(f"Satellite Upload: {session_id}")
+    
+    # 画像をBase64に変換
+    image_data_b64 = ""
+    if image:
+        content = await image.read()
+        image_data_b64 = base64.b64encode(content).decode('utf-8')
+    
+    # WebSocketでタブレットに通知
+    # 全員に送るが、タブレット側で session_id を見て自分宛か判断する
+    message = {
+        "type": "satellite_image",
+        "session_id": session_id,
+        "image_data": image_data_b64,
+        "filename": image.filename
+    }
+    await manager.broadcast(json.dumps(message, ensure_ascii=False))
+    
+    return {"status": "success"}
+
+# --- 既存のメイン送信フォーム ---
 @app.post("/submit")
 async def submit_data(
     codename: str = Form(...),
-    # ageをintではなくstrで受け取ることで、空文字エラーを回避
     age: str = Form("0"), 
     sense_sea_mt: int = Form(...),
     sense_quiet_noise: int = Form(...),
@@ -78,33 +100,16 @@ async def submit_data(
     desc_imagery: str = Form(""),
     desc_memory: str = Form(""),
     desc_stream: str = Form(""),
-    # 画像を完全に任意(Optional)にする
-    image: Optional[UploadFile] = File(None)
+    # 画像はBase64文字列として受け取る形に変更（タブレットが保持しているため）
+    image_b64: str = Form("") 
 ):
     print(f"Received Data from: {codename}")
 
-    # 1. 年齢の安全な変換（文字なら0にする）
     try:
         safe_age = int(age)
     except:
         safe_age = 0
 
-    # 2. 画像処理（Base64変換）
-    image_data_b64 = ""
-    if image and image.filename:
-        try:
-            # 一旦保存
-            file_location = f"{UPLOAD_DIR}/{image.filename}"
-            with open(file_location, "wb+") as file_object:
-                shutil.copyfileobj(image.file, file_object)
-            
-            # Base64変換
-            with open(file_location, "rb") as image_file:
-                image_data_b64 = base64.b64encode(image_file.read()).decode('utf-8')
-        except Exception as e:
-            print(f"Image Error: {e}") # 画像でコケても止まらないようにする
-
-    # 3. データセット作成
     payload = {
         "identity": {
             "name": codename,
@@ -120,11 +125,11 @@ async def submit_data(
             "memory": desc_memory,
             "stream": desc_stream
         },
-        "image_data": image_data_b64,
-        "has_image": True if image_data_b64 else False
+        "image_data": image_b64,
+        "has_image": True if image_b64 else False
     }
 
-    # 4. 中継サーバへ送信
+    # Bridgeへ送信
     await manager.broadcast(json.dumps(payload, ensure_ascii=False))
     
     return {"status": "success"}
