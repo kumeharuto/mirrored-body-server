@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
-        /* === 基本スタイル (前回と同じ) === */
+        /* === 基本スタイル === */
         * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; -webkit-touch-callout: default !important; }
         :root {
@@ -34,13 +34,14 @@
             box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;
         }
 
-        /* === QRコードエリア (新規) === */
+        /* === QRコードエリア === */
         .qr-section {
             margin-top: 40px; padding: 20px;
             border: 1px solid var(--border);
             display: flex; flex-direction: column; align-items: center;
             background: rgba(255,255,255,0.02);
             transition: 0.5s;
+            position: relative; /* ボタン配置用 */
         }
         .qr-section.received {
             border-color: var(--accent);
@@ -53,7 +54,18 @@
             border: 1px solid var(--accent); display: none; 
         }
 
-        /* 他の既存スタイル (省略せず記載) */
+        /* ★新規: リセットボタン (小さく表示) */
+        .btn-reset-img {
+            background: transparent; border: none;
+            color: #555; border-bottom: 1px solid #333;
+            font-size: 0.75rem; margin-top: 15px;
+            cursor: pointer; transition: 0.3s;
+            font-family: var(--font-sans);
+            display: none; /* 最初は隠す */
+        }
+        .btn-reset-img:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* 他の既存スタイル */
         .nav-header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px 30px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         .btn-nav { background: transparent; border: none; color: var(--text-dim); font-family: var(--font-serif); font-size: 0.9rem; letter-spacing: 0.1em; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-nav:hover { color: var(--accent); }
@@ -175,7 +187,10 @@
                 <label>画像の奉納 (スマホ連携)</label>
                 <div id="qrcode"></div>
                 <div id="qr-status" class="qr-status">スマホで読み取ってください</div>
+                
                 <img id="received-image" class="received-thumb">
+                
+                <button id="reset-img-btn" class="btn-reset-img" onclick="resetImage()">奉納し直す</button>
             </div>
 
             <button class="btn-entry" onclick="submitForm()">INITIATE</button>
@@ -186,7 +201,7 @@
         const WAIT_TIME = 30; 
         let countdownTimer = null;
         let mySessionId = ""; 
-        let receivedImageBase64 = ""; // スマホから届いた画像をここに保持
+        let receivedImageBase64 = ""; 
 
         document.addEventListener('DOMContentLoaded', function() {
             
@@ -194,7 +209,6 @@
             mySessionId = crypto.randomUUID(); 
             
             // --- QRコード生成 ---
-            // ※URLは自分のRenderのURLに合わせてください
             const uploadUrl = `${window.location.origin}/static/upload.html?session_id=${mySessionId}`;
             new QRCode(document.getElementById("qrcode"), {
                 text: uploadUrl,
@@ -203,33 +217,52 @@
                 correctLevel : QRCode.CorrectLevel.H
             });
 
-            // --- WebSocket接続 (画像受信待ち) ---
+            // --- WebSocket接続 ---
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
             ws.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
-                    // 自分宛の画像データなら反応する
                     if (data.type === "satellite_image" && data.session_id === mySessionId) {
-                        // 画像を表示
                         const img = document.getElementById('received-image');
                         img.src = "data:image/jpeg;base64," + data.image_data;
                         img.style.display = "block";
                         
-                        // ステータス更新
+                        // ステータス更新 & QR隠す
                         const section = document.querySelector('.qr-section');
                         section.classList.add('received');
                         document.getElementById('qr-status').innerText = "画像が奉納されました";
-                        document.getElementById('qrcode').style.display = 'none'; // QRを隠す
+                        document.getElementById('qrcode').style.display = 'none'; 
 
-                        // 送信用変数に保存
+                        // ★リセットボタンを表示
+                        document.getElementById('reset-img-btn').style.display = 'block';
+
                         receivedImageBase64 = data.image_data;
                     }
                 } catch(e) {}
             };
 
-            // --- 画面遷移 ---
+            // --- ★画像リセット処理 ---
+            window.resetImage = function() {
+                if(!confirm("奉納された記憶を破棄し、\n再び受け入れますか？")) return;
+
+                // 状態を初期化
+                receivedImageBase64 = "";
+                document.getElementById('received-image').style.display = 'none';
+                document.getElementById('received-image').src = "";
+                
+                // QRコードを再表示
+                const section = document.querySelector('.qr-section');
+                section.classList.remove('received');
+                document.getElementById('qrcode').style.display = 'block';
+                document.getElementById('qr-status').innerText = "スマホで読み取ってください";
+                
+                // ボタンを隠す
+                document.getElementById('reset-img-btn').style.display = 'none';
+            };
+
+            // --- 画面遷移等 ---
             window.goToForm = function() {
                 const landing = document.getElementById('landing-page');
                 const form = document.getElementById('form-page');
@@ -251,15 +284,13 @@
                 form.classList.remove('dissolve-in'); form.classList.add('hidden');
                 landing.classList.remove('dissolve-out', 'hidden'); landing.style.opacity = '1'; landing.style.filter = 'blur(0px)'; landing.style.transform = 'scale(1)';
                 window.scrollTo(0,0);
-                
-                // ★リセット時にセッションIDも更新する（新しい人扱い）
                 setTimeout(() => location.reload(), 500); 
             };
 
             function resetAllInputs() {
                 document.querySelectorAll('.clean-input, .clean-area').forEach(el => el.value = '');
                 document.querySelectorAll('input[type=range]').forEach(el => { el.value = 2; updateDots(el); });
-                receivedImageBase64 = ""; // 画像もクリア
+                receivedImageBase64 = "";
             }
 
             window.toggleAbout = function(show) {
@@ -299,8 +330,6 @@
                 formData.append('desc_imagery', areas[0].value || "");
                 formData.append('desc_memory', areas[1].value || "");
                 formData.append('desc_stream', areas[2].value || "");
-                
-                // ★スマホから届いた画像があればここで合体させる
                 formData.append('image_b64', receivedImageBase64);
 
                 try {
