@@ -177,16 +177,47 @@
         .btn-cancel { background: transparent; border: none; color: #555; font-family: var(--font-sans); font-size: 0.85rem; cursor: pointer; transition: 0.3s; padding: 10px 20px; letter-spacing: 0.1em; }
         .btn-cancel:hover { color: #888; }
         /* Credits Section */
+        /* Credits Section (修正版) */
         .credits {
-            margin-top: 60px; padding-top: 40px;
+            margin-top: 30px;  /* 上の間隔を詰める (60px -> 30px) */
+            padding-top: 20px; /* 線の上の間隔を詰める (40px -> 20px) */
             border-top: 1px solid #333;
             text-align: center;
-            font-family: var(--font-sans); font-size: 0.8rem; color: #666;
-            line-height: 1.8; letter-spacing: 0.1em;
+            font-family: var(--font-sans);
+            color: #666;
+            line-height: 1.4; /* 行間を詰める */
+            letter-spacing: 0.05em;
         }
-        .credits span { display: block; margin-bottom: 5px; }
-        .credits .names { color: #aaa; margin-bottom: 20px; font-family: var(--font-serif); }
-        .credits .role { font-size: 0.7rem; color: var(--accent); margin-bottom: 2px; }
+        
+        /* 各人物のブロック */
+        .credit-person {
+            margin-bottom: 10px; /* 人物同士の間隔を詰める */
+        }
+
+        .credits span {
+            display: block;
+        }
+
+        /* 名前 */
+        .credits .names {
+            color: #aaa;
+            font-family: var(--font-serif);
+            font-size: 0.65rem; /* 文字サイズを小さく */
+        }
+
+        /* 役割 */
+        .credits .role {
+            font-size: 0.55rem; /* 文字サイズを小さく */
+            color: var(--accent);
+            margin-bottom: 2px; /* 名前との間隔を少し空ける */
+        }
+
+        /* コピーライト */
+        .credits .copyright {
+            font-size: 0.55rem; /* 文字サイズを小さく */
+            opacity: 0.5;
+            margin-top: 15px; /* 上との間隔 */
+        }
     </style>
 </head>
 <body class="lang-jp">
@@ -280,17 +311,20 @@
                     </p>
                 </div>
             </div>
-                    <div class="credits">
-                <div style="margin-bottom: 20px;">
+            <div class="credits">
+                <div class="credit-person">
                     <span class="role">Concept, Art Direction & Spatial Design</span>
                     <span class="names">Yuna Sakai</span>
                 </div>
-                <div style="margin-bottom: 25px;">
+                <div class="credit-person">
                     <span class="role">Technical Direction & Engineering</span>
                     <span class="names">Haruto Kume</span>
                 </div>
                 
-                <span style="font-size: 0.7rem; opacity: 0.5;">© 2025 KARMIC IDENTITY</span>
+                <span class="copyright">© 2025 KARMIC IDENTITY</span>
+            </div>
+                
+                <!-- <span style="font-size: 0.7rem; opacity: 0.5;">© 2025 KARMIC IDENTITY</span> -->
             </div>
             <button class="close-btn" onclick="toggleOverlay('about-overlay', false)">×</button>
         </div>

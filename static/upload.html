@@ -47,11 +47,18 @@
         .btn:active { background: #D4AF37; color: #000; }
         .btn:disabled { border-color: #555; color: #555; pointer-events: none; }
         
+        /* 完了画面用の画像スタイル */
+        #sent-result-img {
+            max-width: 80%; max-height: 200px;
+            margin-top: 20px; border: 1px solid #D4AF37;
+            display: none;
+        }
+
         .hidden { display: none !important; }
-        .lang-en { display: none; } /* 初期状態は非表示 */
+        .lang-en { display: none; }
     </style>
 </head>
-<body>
+<body class="lang-jp">
 
     <div id="main-content">
         <h2 class="lang-jp">画像の奉納</h2>
@@ -84,24 +91,30 @@
         <p class="lang-en" style="line-height: 2;">
             Image transferred successfully.<br>Please check the tablet screen.
         </p>
+        
+        <img id="sent-result-img" src="">
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session_id');
-        const lang = params.get('lang') || 'jp'; // URLから言語取得
+        const lang = params.get('lang') || 'jp';
+
+        // 言語設定
+        document.body.className = 'lang-' + lang;
 
         const fileInput = document.getElementById('file-upload');
         const fileLabel = document.getElementById('file-label');
         const previewImg = document.getElementById('preview-img');
         const placeholder = document.getElementById('placeholder');
+        const sentResultImg = document.getElementById('sent-result-img');
 
-        // --- 言語設定の反映 ---
+        // 言語に応じたテキストの表示切替
         if (lang === 'en') {
             document.querySelectorAll('.lang-jp').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'block'); // block or inline-block
         } else {
-            // JP is default
+            document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
         }
 
         fileInput.addEventListener('change', (e) => {
@@ -118,6 +131,7 @@
             }
         });
 
+        // 圧縮設定を少し強める (800px, 0.6)
         function compressImage(file, maxWidth) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -137,9 +151,11 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 画質を 0.6 に設定
                         canvas.toBlob((blob) => {
                             resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-                        }, 'image/jpeg', 0.7);
+                        }, 'image/jpeg', 0.6);
                     }
                 }
             });
@@ -156,20 +172,30 @@
             });
 
             try {
-                const compressedFile = await compressImage(fileInput.files[0], 1000);
+                // 圧縮 (1000px -> 800px に変更)
+                const compressedFile = await compressImage(fileInput.files[0], 800);
+                
                 const formData = new FormData();
                 formData.append('session_id', sessionId);
                 formData.append('image', compressedFile);
 
                 const res = await fetch('/upload-satellite', { method: 'POST', body: formData });
+                
                 if(res.ok) {
+                    // ★成功したら完了画面に画像を表示
+                    // プレビュー用のソースをコピーして表示
+                    sentResultImg.src = previewImg.src;
+                    sentResultImg.style.display = 'block';
+
                     document.getElementById('main-content').classList.add('hidden');
                     document.getElementById('success-msg').classList.remove('hidden');
                 } else {
-                    throw new Error("Upload failed");
+                    const errText = await res.text();
+                    throw new Error("Server Error: " + errText);
                 }
             } catch (e) {
-                alert("Upload Error");
+                console.error(e);
+                alert(lang==='en' ? "Upload Failed. Please try again." : "送信に失敗しました。\n通信環境を確認して再試行してください。");
                 btns.forEach(b => {
                     b.innerText = lang==='en' ? "SEND" : "送信";
                     b.disabled = false;
