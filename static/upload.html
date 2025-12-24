@@ -48,14 +48,14 @@
         .btn:active { background: #D4AF37; color: #000; }
         .btn:disabled { border-color: #555; color: #555; pointer-events: none; }
 
-        /* ABOUT Button (on Success) */
+        /* ABOUT Button */
         .btn-about {
             margin-top: 30px;
             font-size: 0.9rem; border-bottom: 1px solid #666; 
             padding-bottom: 2px; color: #888; border: none; background: none;
-            cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: 0.3s; letter-spacing: 0.1em;
         }
-        .btn-about:hover { color: #D4AF37; }
+        .btn-about:hover { color: #D4AF37; border-color: #D4AF37; }
 
         /* Social Icons */
         .social-links {
@@ -81,31 +81,60 @@
             pointer-events: none; z-index: 5; font-family: sans-serif; letter-spacing: 0.1em;
         }
 
-        /* ABOUT Overlay (Mobile) */
+        /* === ABOUT Overlay (Mobile) === */
         .overlay-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px);
             z-index: 999; display: none; opacity: 0; transition: opacity 0.5s;
-            flex-direction: column; align-items: center;
-            padding-top: 40px; box-sizing: border-box;
+            flex-direction: column; align-items: center; justify-content: center;
         }
         .overlay-container.show { display: flex; opacity: 1; }
         
         .overlay-content {
-            width: 90%; max-width: 600px; height: 80vh; 
+            width: 90%; max-width: 600px; height: 85vh; 
             display: flex; flex-direction: column;
             color: #ccc; text-align: left;
         }
         
-        /* Tab Styles (Copied) */
-        .tab-header { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        /* Tab Styles */
+        .tab-header { 
+            display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; 
+            border-bottom: 1px solid #333; padding-bottom: 10px; flex-shrink: 0;
+        }
         .tab-btn { background: transparent; border: none; color: #666; font-family: 'Shippori Mincho', serif; font-size: 1rem; cursor: pointer; transition: 0.3s; position: relative; }
         .tab-btn.active { color: #D4AF37; }
-        .tab-body { overflow-y: auto; padding: 10px; line-height: 1.8; font-size: 0.9rem; }
-        .tab-pane { display: none; }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -11px; left: 0; width: 100%;
+            height: 2px; background: #D4AF37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Scroll Area */
+        .tab-body { 
+            flex: 1; overflow-y: auto; padding: 0 10px; 
+            line-height: 1.8; font-size: 0.9rem; min-height: 0; /* Flexbox scroll fix */
+        }
+        .tab-pane { display: none; animation: fadeIn 0.4s ease; }
         .tab-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography inside Overlay */
+        .overlay-content h3 { color: #D4AF37; font-weight: 400; text-align: center; margin-bottom: 30px; font-size: 1.2rem; }
+        .overlay-content h4 { color: #fff; font-weight: 500; margin-top: 30px; margin-bottom: 10px; border-left: 2px solid #D4AF37; padding-left: 10px; letter-spacing: 0.1em; font-size: 1rem;}
+        .overlay-content p { margin-bottom: 1.5em; text-align-last: left; font-size: 0.85rem; }
+
+        /* Credits in Overlay */
+        .credits {
+            margin-top: 20px; padding-top: 15px; border-top: 1px solid #333;
+            text-align: center; font-family: sans-serif; color: #666;
+            line-height: 1.4; letter-spacing: 0.05em; flex-shrink: 0;
+        }
+        .credit-person { margin-bottom: 10px; }
+        .credits span { display: block; }
+        .credits .names { color: #aaa; font-family: 'Shippori Mincho', serif; font-size: 0.65rem; }
+        .credits .role { font-size: 0.55rem; color: #D4AF37; margin-bottom: 2px; }
+        .credits .copyright { font-size: 0.55rem; opacity: 0.5; margin-top: 10px; }
         
-        .close-btn { margin-top: 20px; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; }
+        .close-btn { margin-top: 15px; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; align-self: center; flex-shrink: 0;}
 
         .hidden { display: none !important; }
         .lang-en { display: none; }
@@ -147,8 +176,7 @@
         
         <img id="sent-result-img" src="">
 
-        <button class="btn-about lang-jp" onclick="toggleOverlay(true)">この作品について</button>
-        <button class="btn-about lang-en" onclick="toggleOverlay(true)">About this work</button>
+        <button class="btn-about" onclick="toggleOverlay(true)">ABOUT</button>
 
         <div class="social-links">
             <a href="https://www.instagram.com/gokurakufinearts?igsh=MWl6OW42OWY1NXc3OA==" target="_blank">
@@ -186,6 +214,26 @@
                         In the two-mat tea room <i>Ryōshi-an</i>, a hanging-scroll–shaped monitor functions as a portal opening onto the interval between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within a computational darkness humans cannot traverse, and inscribes within it a one-time semiotic self-image: Karma Portrait.<br><br>
                         What comes into being is a landscape in which emotions and desires—incorporated by the body prior to articulation—condense into swells of light and noise. The viewer is invited to relinquish the sign called “identity,” and to confront the image not as participation but as calibration: a quiet alignment with an embodied sense of “where one might return.”
                     </p>
+
+                    <h4 class="lang-jp">Exhibition Mode:</h4>
+                    <h4 class="lang-en">Exhibition Mode:</h4>
+                    <p class="lang-jp">
+                        量子庵の掛軸に、常設のループ映像が静かに流れ続けるモードである。入力は必要ない。空間は待ち、光は呼吸し、仮想浄土の“気配”だけが反復される。ここでは作品は説明をしない。鑑賞者が「見る」前に、まず「暗さに馴染む」ことが優先される。
+                    </p>
+                    <p class="lang-en">
+                        Exhibition Mode sustains a permanent loop on the scroll of <i>Ryōshi-an</i>. No input is required. The space remains in a state of waiting; light appears to “breathe”; only the faint presence of a virtual Pure Land is reiterated. The work does not explain itself here. Before interpretation, the viewer is asked to acclimate—first to darkness, then to the threshold it makes perceptible.
+                    </p>
+
+                    <h4 class="lang-jp">Interactive Mode:</h4>
+                    <h4 class="lang-en">Interactive Mode:</h4>
+                    <p class="lang-jp">
+                        鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。<br><br>
+                        その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。
+                    </p>
+                    <p class="lang-en">
+                        Interactive Mode is activated through the viewer’s offering. Submitted fragments fall into computational obscurity and return without procedure—arriving as result rather than method. That result coheres, only once, as Karma Portrait.<br><br>
+                        The experience is structured not as co-creation but as verification: to release one’s semiotic self-description, and to overlay—gently and briefly—an embodied sense of “where to return” upon what is displayed.
+                    </p>
                 </div>
                 <div id="tab-explanation" class="tab-pane">
                     <h4 class="lang-jp">量子庵</h4>
@@ -209,7 +257,41 @@
                         Karma Portrait is neither a face nor a likeness.<br>
                         The viewer’s memories and choices are treated not as a psychological profile, but as karmic bias—an asymmetry, a tilt, a predisposition that precedes explanation. Karma Portrait is the one-time semiotic self-image produced when that bias is translated into the order of moving images. What the body held before language—its unresolved outline—precipitates as light, grain, and noise, and briefly becomes an image.
                     </p>
+
+                    <h4 class="lang-jp">演算する彼岸</h4>
+                    <h4 class="lang-en">The Computed Higan</h4>
+                    <p class="lang-jp">
+                        彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。<br>
+                        人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。
+                    </p>
+                    <p class="lang-en">
+                        Higan may be less a “place over there” than a mode of arrival.<br>
+                        In the contemporary condition, answers can be generated at velocities beyond human comprehension, while nevertheless arriving as indisputable results. This work provisionally places Higan within that computational obscurity. Computation operates not to explain meaning, but to present a fact that remains valid even when explanation fails. The viewer encounters it not through understanding, but through fit—through an embodied calibration with what is shown.
+                    </p>
+
+                    <h4 class="lang-jp">二〇卌五</h4>
+                    <h4 class="lang-en">二〇卌五 (2045)</h4>
+                    <p class="lang-jp">
+                        二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。<br>
+                        そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。
+                    </p>
+                    <p class="lang-en">
+                        二〇卌五 is a notation rather than a date. By adding two strokes to the “二” of 二〇二五, it becomes 卌 (40), linking 2025 and 2045 as a single continuous line. The mark indicates a point at which “computation humans cannot follow” becomes ordinary, and results descend into daily life without the possibility of human-scale verification.<br>
+                        Proof detaches from the human subject; what remains is reception. While singularity is often narrated as a distant future, its shadow is already cast along the extension of the present.
+                    </p>
                 </div>
+            </div>
+
+            <div class="credits">
+                <div class="credit-person">
+                    <span class="role">Concept, Art Direction & Spatial Design</span>
+                    <span class="names">Yuna Sakai</span>
+                </div>
+                <div class="credit-person">
+                    <span class="role">Technical Direction & Engineering</span>
+                    <span class="names">Haruto Kume</span>
+                </div>
+                <span class="copyright">© 2025 KARMIC IDENTITY</span>
             </div>
             
             <button class="close-btn" onclick="toggleOverlay(false)">×</button>
@@ -325,6 +407,8 @@
             if(show) {
                 overlay.classList.add('show');
                 setTimeout(() => overlay.style.opacity = '1', 10);
+                const scrollArea = document.getElementById('overlay-scroll-area');
+                if(scrollArea) scrollArea.scrollTop = 0;
             } else {
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.classList.remove('show'), 500);
