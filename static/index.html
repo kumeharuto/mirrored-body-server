@@ -32,13 +32,11 @@
             width: 100%; max-width: 500px; padding: 40px 30px;
             position: relative; z-index: 2; min-height: 100vh;
             box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;
+            padding-bottom: 60px; /* フッターとかぶらないように */
         }
 
-        /* === ★修正箇所：言語切り替えの仕組み (最強版) === */
-        /* bodyタグに lang-jp がついていたら、英語(.lang-en)を隠す */
+        /* === 言語制御クラス === */
         body.lang-jp .lang-en { display: none !important; }
-        
-        /* bodyタグに lang-en がついていたら、日本語(.lang-jp)を隠す */
         body.lang-en .lang-jp { display: none !important; }
 
         /* === ナビゲーションヘッダー === */
@@ -123,6 +121,26 @@
         }
         .close-btn:hover { color: var(--accent); transform: scale(1.1); }
 
+        /* === Credits Section (共通) === */
+        .credits {
+            margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;
+            text-align: center; font-family: var(--font-sans); color: #666;
+            line-height: 1.4; letter-spacing: 0.05em;
+        }
+        .credit-person { margin-bottom: 10px; }
+        .credits span { display: block; }
+        .credits .names { color: #aaa; font-family: var(--font-serif); font-size: 0.65rem; }
+        .credits .role { font-size: 0.55rem; color: var(--accent); margin-bottom: 2px; }
+        .credits .copyright { font-size: 0.55rem; opacity: 0.5; margin-top: 15px; }
+
+        /* メイン画面最下部の固定フッター */
+        .main-footer {
+            position: fixed; bottom: 15px; left: 0; width: 100%;
+            text-align: center; font-size: 0.6rem; color: #444;
+            pointer-events: none; z-index: 5;
+            font-family: var(--font-sans); letter-spacing: 0.1em;
+        }
+
         /* === 既存スタイル === */
         .dissolve-out { animation: meltOut 0.6s cubic-bezier(0.5, 0, 0.1, 1) forwards; pointer-events: none; }
         @keyframes meltOut { 0% { opacity: 1; filter: blur(0px); transform: scale(1); } 100% { opacity: 0; filter: blur(10px); transform: scale(1.02); } }
@@ -173,51 +191,8 @@
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 999; opacity: 0; pointer-events: none; transition: 0.8s; }
         .loading-text { font-family: var(--font-serif); font-size: 1.2rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 40px; text-align: center; line-height: 2; }
         .blink { animation: breathe 2s infinite ease-in-out; }
-        @keyframes breathe { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
         .btn-cancel { background: transparent; border: none; color: #555; font-family: var(--font-sans); font-size: 0.85rem; cursor: pointer; transition: 0.3s; padding: 10px 20px; letter-spacing: 0.1em; }
         .btn-cancel:hover { color: #888; }
-        /* Credits Section */
-        /* Credits Section (修正版) */
-        .credits {
-            margin-top: 30px;  /* 上の間隔を詰める (60px -> 30px) */
-            padding-top: 20px; /* 線の上の間隔を詰める (40px -> 20px) */
-            border-top: 1px solid #333;
-            text-align: center;
-            font-family: var(--font-sans);
-            color: #666;
-            line-height: 1.4; /* 行間を詰める */
-            letter-spacing: 0.05em;
-        }
-        
-        /* 各人物のブロック */
-        .credit-person {
-            margin-bottom: 10px; /* 人物同士の間隔を詰める */
-        }
-
-        .credits span {
-            display: block;
-        }
-
-        /* 名前 */
-        .credits .names {
-            color: #aaa;
-            font-family: var(--font-serif);
-            font-size: 0.65rem; /* 文字サイズを小さく */
-        }
-
-        /* 役割 */
-        .credits .role {
-            font-size: 0.55rem; /* 文字サイズを小さく */
-            color: var(--accent);
-            margin-bottom: 2px; /* 名前との間隔を少し空ける */
-        }
-
-        /* コピーライト */
-        .credits .copyright {
-            font-size: 0.55rem; /* 文字サイズを小さく */
-            opacity: 0.5;
-            margin-top: 15px; /* 上との間隔 */
-        }
     </style>
 </head>
 <body class="lang-jp">
@@ -229,7 +204,7 @@
                 <button class="tab-btn" onclick="switchTab('explanation')">Explanation</button>
             </div>
 
-            <div class="tab-body">
+            <div id="overlay-scroll-area" class="tab-body">
                 
                 <div id="tab-concept" class="tab-pane active">
                     <h3 class="lang-jp">Core Concept</h3>
@@ -311,6 +286,7 @@
                     </p>
                 </div>
             </div>
+
             <div class="credits">
                 <div class="credit-person">
                     <span class="role">Concept, Art Direction & Spatial Design</span>
@@ -320,26 +296,11 @@
                     <span class="role">Technical Direction & Engineering</span>
                     <span class="names">Haruto Kume</span>
                 </div>
-                
                 <span class="copyright">© 2025 KARMIC IDENTITY</span>
             </div>
-                
-                <!-- <span style="font-size: 0.7rem; opacity: 0.5;">© 2025 KARMIC IDENTITY</span> -->
-            </div>
+            
             <button class="close-btn" onclick="toggleOverlay('about-overlay', false)">×</button>
         </div>
-        <!-- <div class="credits">
-                <div style="margin-bottom: 20px;">
-                    <span class="role">Concept, Art Direction & Spatial Design</span>
-                    <span class="names">Yuna Sakai</span>
-                </div>
-                <div style="margin-bottom: 25px;">
-                    <span class="role">Technical Direction & Engineering</span>
-                    <span class="names">Haruto Kume</span>
-                </div>
-                
-                <span style="font-size: 0.7rem; opacity: 0.5;">© 2025 KARMIC IDENTITY</span>
-            </div> -->
     </div>
 
     <div id="loading-overlay">
@@ -477,6 +438,10 @@
         </div>
     </div>
 
+    <div class="main-footer">
+        © 2025 KARMIC IDENTITY
+    </div>
+
     <script>
         const WAIT_TIME = 30; 
         let countdownTimer = null;
@@ -506,7 +471,6 @@
                     mySessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2);
                 }
                 
-                // ★修正：初期化時に body のクラスをセット
                 setLanguage('jp');
 
                 connectWebSocket();
@@ -536,7 +500,6 @@
                             const qr = document.getElementById('qrcode');
                             if(qr) qr.style.display = 'none'; 
                             
-                            // ステータス更新
                             let statusEl = document.getElementById("temp-status");
                             if(!statusEl) {
                                 statusEl = document.createElement('div');
@@ -547,7 +510,6 @@
                             }
                             statusEl.innerText = currentLang === 'jp' ? "画像が奉納されました" : "Image Received";
 
-                            // デフォルトテキストを隠す
                             const defaultStatus = document.querySelectorAll('.qr-status');
                             defaultStatus.forEach(el => {
                                 if(el.id !== "temp-status") el.style.display = 'none';
@@ -561,19 +523,15 @@
             } catch(e) { console.error("WS Connect Error:", e); }
         }
 
-        // --- ★修正：言語切り替え処理（Bodyクラス切り替え） ---
+        // --- 言語切り替え処理 ---
         window.setLanguage = function(lang) {
             currentLang = lang;
-            
-            // bodyのクラスを書き換えるだけでCSSが全部やってくれる
             document.body.className = 'lang-' + lang;
-            
-            updateLanguageView(); // ボタンのアクティブ表示やプレースホルダーはJSでやる
+            updateLanguageView();
             updateQRCode();
         };
 
         function updateLanguageView() {
-            // スイッチのアクティブ化
             const btnJp = document.getElementById('lang-btn-jp');
             const btnEn = document.getElementById('lang-btn-en');
             const btnJpForm = document.getElementById('lang-btn-jp-form');
@@ -592,7 +550,6 @@
                 if(btnEnForm) btnEnForm.classList.add('active');
             }
 
-            // プレースホルダー切り替え
             const area1 = document.getElementById('area-imagery');
             const area2 = document.getElementById('area-memory');
             const area3 = document.getElementById('area-stream');
@@ -601,7 +558,6 @@
             if(area2) area2.placeholder = placeholders[currentLang].memory;
             if(area3) area3.placeholder = placeholders[currentLang].stream;
 
-            // QRステータス（画像受信済みの場合）
             const statusEl = document.getElementById("temp-status");
             if (statusEl) {
                  statusEl.innerText = currentLang === 'jp' ? "画像が奉納されました" : "Image Received";
@@ -642,7 +598,7 @@
             }
         }
 
-        // --- タブ切り替え ---
+        // --- タブ切り替え & スクロールリセット ---
         window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if(event && event.target) event.target.classList.add('active'); 
@@ -650,6 +606,10 @@
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             const targetPane = document.getElementById('tab-' + tabName);
             if(targetPane) targetPane.classList.add('active');
+
+            // ★追加: スクロール位置をリセット
+            const scrollArea = document.getElementById('overlay-scroll-area');
+            if(scrollArea) scrollArea.scrollTop = 0;
         };
 
         // --- Overlay制御 ---
@@ -659,6 +619,9 @@
             if(show) { 
                 overlay.classList.add('show'); 
                 setTimeout(() => overlay.style.opacity = '1', 10); 
+                // Overlayを開くときはスクロールをリセット
+                const scrollArea = document.getElementById('overlay-scroll-area');
+                if(scrollArea) scrollArea.scrollTop = 0;
             } else { 
                 overlay.style.opacity = '0'; 
                 setTimeout(() => overlay.classList.remove('show'), 500); 
@@ -683,7 +646,6 @@
             const tempStatus = document.getElementById('temp-status');
             if(tempStatus) tempStatus.remove();
             
-            // 現在の言語設定に合わせて再描画（QRやステータス文字）
             setLanguage(currentLang); 
         };
 
@@ -741,7 +703,6 @@
                 if (index === val) dot.classList.add('active'); else dot.classList.remove('active');
             });
         };
-        // 初期化実行
         document.querySelectorAll('input[type=range]').forEach(input => updateDots(input));
 
         // --- 送信処理 ---
