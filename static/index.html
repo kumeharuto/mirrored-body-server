@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Karma Portrait</title>
     
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +34,7 @@
             width: 100%; max-width: 500px; padding: 40px 30px;
             position: relative; z-index: 2; min-height: 100vh;
             box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;
-            padding-bottom: 60px; /* フッターとかぶらないように */
+            padding-bottom: 60px;
         }
 
         /* === 言語制御クラス === */
@@ -121,7 +123,7 @@
         }
         .close-btn:hover { color: var(--accent); transform: scale(1.1); }
 
-        /* === Credits Section (共通) === */
+        /* === Credits Section === */
         .credits {
             margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;
             text-align: center; font-family: var(--font-sans); color: #666;
@@ -133,7 +135,7 @@
         .credits .role { font-size: 0.55rem; color: var(--accent); margin-bottom: 2px; }
         .credits .copyright { font-size: 0.55rem; opacity: 0.5; margin-top: 15px; }
 
-        /* メイン画面最下部の固定フッター */
+        /* Main Footer */
         .main-footer {
             position: fixed; bottom: 15px; left: 0; width: 100%;
             text-align: center; font-size: 0.6rem; color: #444;
@@ -318,7 +320,7 @@
                         <div id="lang-btn-jp" class="lang-option active" onclick="setLanguage('jp')">JP</div>
                         <div id="lang-btn-en" class="lang-option" onclick="setLanguage('en')">EN</div>
                     </div>
-                    <button class="btn-nav" onclick="toggleOverlay('about-overlay', true)">ABOUT</button>
+                    <button class="btn-nav" onclick="toggleOverlay('about-overlay', true)">ABOUT US</button>
                 </div>
             </div>
 
@@ -363,7 +365,7 @@
                         <div id="lang-btn-jp-form" class="lang-option active" onclick="setLanguage('jp')">JP</div>
                         <div id="lang-btn-en-form" class="lang-option" onclick="setLanguage('en')">EN</div>
                     </div>
-                    <button class="btn-nav" onclick="toggleOverlay('about-overlay', true)">ABOUT</button>
+                    <button class="btn-nav" onclick="toggleOverlay('about-overlay', true)">ABOUT US</button>
                 </div>
             </div>
 
@@ -604,8 +606,7 @@
             if(event && event.target) event.target.classList.add('active'); 
 
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            const targetPane = document.getElementById('tab-' + tabName);
-            if(targetPane) targetPane.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
 
             // ★追加: スクロール位置をリセット
             const scrollArea = document.getElementById('overlay-scroll-area');
