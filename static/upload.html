@@ -6,6 +6,7 @@
     <title>Image Upload</title>
     
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3Cpath d='M2.93 8.8h18.14'/%3E%3Cpath d='M2.93 15.2h18.14'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="/static/icon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -62,7 +63,7 @@
 
         /* Social Icons */
         .social-links {
-            margin-top: 30px; display: flex; gap: 20px; justify-content: center;
+            margin-top: 30px; display: flex; gap: 20px; justify-content: center; align-items: center;
         }
         .social-icon {
             width: 24px; height: 24px; fill: #666; transition: 0.3s;
@@ -114,7 +115,7 @@
         /* Scroll Area */
         .tab-body { 
             flex: 1; overflow-y: auto; padding: 0 10px; 
-            line-height: 1.8; font-size: 0.9rem; min-height: 0; /* Flexbox scroll fix */
+            line-height: 1.8; font-size: 0.9rem; min-height: 0; 
         }
         .tab-pane { display: none; animation: fadeIn 0.4s ease; }
         .tab-pane.active { display: block; }
@@ -189,7 +190,7 @@
                 <svg class="social-icon" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             </a>
             <a href="https://www.gokurakufinearts.com/" target="_blank">
-                <svg class="social-icon" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm1 16.057v-3.057h-2v3.057c-2.316-.252-4.305-1.536-5.592-3.492l1.396-1.396c.666 1.054 1.677 1.832 2.89 2.121v-8.582c-1.213.289-2.224 1.067-2.89 2.121l-1.396-1.396c1.287-1.956 3.276-3.24 5.592-3.492v3.057h2v-3.057c2.316.252 4.305 1.536 5.592 3.492l-1.396 1.396c-.666-1.054-1.677-1.832-2.89-2.121v8.582c1.213-.289 2.224-1.067 2.89-2.121l1.396 1.396c-1.287 1.956-3.276 3.24-5.592 3.492z"/></svg>
+                <svg class="social-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.91-4.33-3.56zm2.95-8H5.08c.96-1.65 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>
             </a>
             <a href="https://gkrkfnrts.official.ec/" target="_blank">
                 <svg class="social-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
