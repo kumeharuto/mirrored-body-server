@@ -1,29 +1,19 @@
-import os
-import json
-import shutil
-import base64
-from typing import Optional, List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, UploadFile, File
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from typing import List, Optional
+import json
+import asyncio
+import base64
 
 app = FastAPI()
 
-# --- CORS設定 ---
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# 静的ファイルの配信
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="static")
 
-# --- 設定 ---
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# --- WebSocket管理 ---
+# WebSocket接続管理
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -33,27 +23,22 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
+        self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
-        for connection in self.active_connections[:]:
+        for connection in self.active_connections:
             try:
                 await connection.send_text(message)
             except:
-                self.disconnect(connection)
+                pass
 
 manager = ConnectionManager()
 
-# staticフォルダをマウント（upload.htmlなどを配信するため）
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 @app.get("/")
-async def get():
-    # タブレット用メイン画面
-    with open("static/index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(f.read())
+async def get(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
+# WebSocketエンドポイント
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -63,73 +48,71 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# --- [新規] スマホからの画像アップロード用 ---
+# 画像アップロード (スマホ -> サーバー -> タブレット)
 @app.post("/upload-satellite")
-async def upload_satellite(
-    session_id: str = Form(...),
-    image: UploadFile = File(...)
-):
-    print(f"Satellite Upload: {session_id}")
+async def upload_satellite(session_id: str = Form(...), image: UploadFile = File(...)):
+    contents = await image.read()
+    b64_image = base64.b64encode(contents).decode('utf-8')
     
-    # 画像をBase64に変換
-    image_data_b64 = ""
-    if image:
-        content = await image.read()
-        image_data_b64 = base64.b64encode(content).decode('utf-8')
-    
-    # WebSocketでタブレットに通知
-    # 全員に送るが、タブレット側で session_id を見て自分宛か判断する
-    message = {
+    # タブレット(index.html)へ通知
+    msg = json.dumps({
         "type": "satellite_image",
         "session_id": session_id,
-        "image_data": image_data_b64,
-        "filename": image.filename
-    }
-    await manager.broadcast(json.dumps(message, ensure_ascii=False))
-    
-    return {"status": "success"}
+        "image_data": b64_image
+    })
+    await manager.broadcast(msg)
+    return JSONResponse({"status": "ok"})
 
-# --- 既存のメイン送信フォーム ---
+# ★修正: 新しい設問フォームの受付定義
 @app.post("/submit")
-async def submit_data(
-    codename: str = Form(...),
-    age: str = Form("0"), 
-    sense_sea_mt: int = Form(...),
-    sense_quiet_noise: int = Form(...),
-    sense_dark_light: int = Form(...),
-    desc_imagery: str = Form(""),
-    desc_memory: str = Form(""),
-    desc_stream: str = Form(""),
-    # 画像はBase64文字列として受け取る形に変更（タブレットが保持しているため）
-    image_b64: str = Form("") 
+async def submit(
+    nickname: str = Form(...),
+    special_existence: str = Form(""),
+    favorite_smell: str = Form(""),
+    
+    slider_noise_silence: int = Form(2),
+    slider_city_country: int = Form(2),
+    slider_reality_fantasy: int = Form(2),
+    
+    slider_hell_time: int = Form(1),
+    text_dream: str = Form(""),
+    text_setback: str = Form(""),
+    text_lost_release: str = Form(""),
+    
+    slider_return_element: int = Form(1),
+    slider_go_north_south: int = Form(2),
+    
+    image_b64: str = Form("")
 ):
-    print(f"Received Data from: {codename}")
-
-    try:
-        safe_age = int(age)
-    except:
-        safe_age = 0
-
-    payload = {
+    # データ構築（Bridgeへ送るJSONを作成）
+    data = {
+        "type": "form_submission",
         "identity": {
-            "name": codename,
-            "age": safe_age
+            "nickname": nickname,
+            "special_existence": special_existence,
+            "favorite_smell": favorite_smell
         },
-        "sliders": {
-            "sea_mt": sense_sea_mt,
-            "quiet_noise": sense_quiet_noise,
-            "dark_light": sense_dark_light
+        "seishun": {
+            "noise_silence": slider_noise_silence,
+            "city_country": slider_city_country,
+            "reality_fantasy": slider_reality_fantasy
         },
-        "text": {
-            "imagery": desc_imagery,
-            "memory": desc_memory,
-            "stream": desc_stream
+        "shuka": {
+            "hell_time": slider_hell_time, # 0:Past, 1:Present, 2:Future
+            "dream": text_dream
+        },
+        "hakuto": {
+            "setback": text_setback,
+            "lost_release": text_lost_release
+        },
+        "gento": {
+            "return_element": slider_return_element, # 0:Sea, 1:Soil, 2:Sky
+            "go_north_south": slider_go_north_south
         },
         "image_data": image_b64,
-        "has_image": True if image_b64 else False
+        "has_image": bool(image_b64)
     }
 
-    # Bridgeへ送信
-    await manager.broadcast(json.dumps(payload, ensure_ascii=False))
-    
-    return {"status": "success"}
+    # Bridge(AI)へ送信
+    await manager.broadcast(json.dumps(data))
+    return JSONResponse({"status": "ok"})

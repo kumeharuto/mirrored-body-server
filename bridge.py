@@ -1,177 +1,251 @@
 import asyncio
-import websockets
 import json
-import base64
 import os
+import base64
 import time
+import requests 
+from datetime import datetime
+
+import websockets
 from pythonosc import udp_client
-from openai import AsyncOpenAI
-# 鍵ファイルから読み込み
-from secret import OPENAI_KEY
+from openai import OpenAI
+
+# 秘密鍵の読み込み
+import secret
 
 # ==========================================
-# ★設定エリア
+# 設定エリア
 # ==========================================
-WEBSOCKET_URL = "wss://karmic-identity.onrender.com/ws"
-OPENAI_API_KEY = OPENAI_KEY
+# TouchDesignerへの送り先
+OSC_IP = "127.0.0.1"
+OSC_PORT = 9000
 
-# AIへの命令
+# サーバーのWebSocket URL (本番環境のURLに合わせてください)
+# 例: "wss://karma-portrait.onrender.com/ws"
+WEBSOCKET_URL = "wss://karmic-identity.onrender.com/ws" 
+# ※もしローカルテスト中なら "ws://localhost:8000/ws"
+
+# 保存フォルダ
+IMAGE_DIR = "received_images"
+VIDEO_DIR = "generated_videos"
+os.makedirs(IMAGE_DIR, exist_ok=True)
+os.makedirs(VIDEO_DIR, exist_ok=True)
+
+# AIへの命令（Karma Portrait用）
 SYSTEM_PROMPT = """
-あなたは深層心理解析システムです。
-入力された情報から、以下のパラメータをJSONのみで出力してください。
-画像がある場合は、その視覚的印象も解析に含めてください。
+あなたはインスタレーション作品『Karma Portrait (業報の自己像)』のシステムです。
+入力されたユーザーの「5つのフェーズ（黄土・青春・朱夏・白冬・玄冬）」に関する回答から、
+その人物の内面に潜む「業（カルマ）」を解析し、以下のJSON形式のみで出力してください。
 
+【入力データの解釈】
+- 黄土 (Odo): 原点。名前、特別な存在、匂い。
+- 青春 (Seishun): 志向性。静寂(0)-喧騒(4)、都市(0)-田舎(4)、現実(0)-夢想(4)。
+- 朱夏 (Shuka): 修羅。苦悩の時系列(0:過去/1:現在/2:未来)と、夢。
+- 白冬 (Hakuto): 喪失。挫折と手放せないもの。
+- 玄冬 (Gento): 帰結。還る場所(0:海/1:土/2:空)と向かう方角(0:北-4:南)。
+
+【出力JSONフォーマット】
 {
-  "visual_impression": "画像に何が映っているか、または画像の雰囲気（画像がない場合は『なし』）",
-  "emotion_valance": -1.0〜1.0 (ネガティブ〜ポジティブ),
-  "emotion_arousal": 0.0〜1.0 (静けさ〜激しさ),
-  "color_hex": "#RRGGBB" (感情色),
-  "keywords": ["単語1", "単語2", "単語3"],
-  "poetic_message": "30文字以内の抽象的な詩"
+  "visual_impression": "ユーザーの回答から想起される抽象的な映像のプロンプト（英語）。例: A lonely figure walking in a snowy field, cinematic lighting...",
+  "emotion_valance": -1.0〜1.0 (悲しみ/ネガティブ 〜 喜び/ポジティブ),
+  "emotion_arousal": 0.0〜1.0 (静寂 〜 激しさ),
+  "karma_color": "#RRGGBB" (その人の業を表す色),
+  "keywords": ["日本語キーワード1", "日本語キーワード2", "日本語キーワード3"],
+  "poetic_message": "回答全体を総括するような、30文字以内の抽象的で詩的な日本語のメッセージ"
 }
 """
 
-OSC_IP = "127.0.0.1"
-OSC_PORT = 9000
-DOWNLOAD_DIR = "downloaded_images"
-os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+# ==========================================
+# システム初期化
+# ==========================================
+print("Bridge System (Karma Portrait v2) Starting...")
 
+client = OpenAI(api_key=secret.OPENAI_KEY)
 osc_client = udp_client.SimpleUDPClient(OSC_IP, OSC_PORT)
-ai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-# 画像をBase64テキストに変換する関数
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
-
-# ★ここがハイブリッド解析の心臓部
-async def analyze_with_hybrid_ai(text_data, image_path):
-    print(">> AI解析を開始します...")
+# ==========================================
+# Stability AI 動画生成関数
+# ==========================================
+def generate_video(image_path):
+    print(f"🎬 動画生成を開始します: {image_path}")
+    api_key = secret.STABILITY_KEY
     
-    # ユーザーの入力テキスト
-    text_content = f"""
-    心象風景: {text_data.get('imagery', 'なし')}
-    記憶: {text_data.get('memory', 'なし')}
-    意識の流れ: {text_data.get('stream', 'なし')}
-    """
-
     try:
-        # A. 画像がある場合 -> GPT-4o (Vision) を使用
-        if image_path and image_path != "none" and image_path != "error":
-            print(">> [モード] GPT-4o (Vision対応) で解析中...")
-            
-            base64_image = encode_image(image_path)
-            
-            response = await ai_client.chat.completions.create(
-                model="gpt-4o", # 高性能モデル
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": text_content},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{base64_image}",
-                                    "detail": "low" # lowにするとさらに節約になります(85トークン固定)
-                                }
-                            }
-                        ]
-                    }
-                ],
-                temperature=0.7,
-                response_format={"type": "json_object"}
+        # 生成リクエスト (POST)
+        url = "https://api.stability.ai/v2beta/image-to-video"
+        
+        with open(image_path, "rb") as file:
+            response = requests.post(
+                url,
+                headers={"authorization": f"Bearer {api_key}"},
+                files={"image": file},
+                data={
+                    "seed": 0,
+                    "cfg_scale": 1.8,
+                    "motion_bucket_id": 127
+                },
             )
-
-        # B. 画像がない場合 -> GPT-3.5 Turbo (節約モード) を使用
-        else:
-            print(">> [モード] GPT-3.5 Turbo (テキストのみ) で解析中...")
             
-            response = await ai_client.chat.completions.create(
-                model="gpt-3.5-turbo", # 節約モデル
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": text_content}
-                ],
-                temperature=0.7,
-                response_format={"type": "json_object"}
+        if response.status_code != 200:
+            print(f"❌ 生成リクエスト失敗: {response.text}")
+            return "none"
+            
+        generation_id = response.json().get('id')
+        print(f"⏳ 生成中... ID: {generation_id}")
+        
+        # 完了待ちループ (Polling)
+        for i in range(30): # 最大60秒待機
+            time.sleep(2) 
+            res = requests.get(
+                f"{url}/result/{generation_id}",
+                headers={
+                    'authorization': f"Bearer {api_key}",
+                    'accept': "video/*"
+                },
             )
-
-        result_json = response.choices[0].message.content
-        print(f">> AI回答: {result_json}")
-        return json.loads(result_json)
+            
+            if res.status_code == 202:
+                print(".", end="", flush=True)
+                continue
+            
+            elif res.status_code == 200:
+                print("\n✨ 生成完了！")
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                save_path = os.path.join(VIDEO_DIR, f"video_{timestamp}.mp4")
+                
+                with open(save_path, 'wb') as f:
+                    f.write(res.content)
+                
+                return os.path.abspath(save_path)
+            
+            else:
+                print(f"\n❌ エラー: {res.json()}")
+                return "none"
+                
+        print("\n❌ タイムアウト")
+        return "none"
 
     except Exception as e:
-        print(f"!! AI解析エラー: {e}")
-        return {
-            "emotion_valance": 0, "emotion_arousal": 0,
-            "color_hex": "#000000", "keywords": ["Error"],
-            "poetic_message": "解析不能の闇"
-        }
+        print(f"❌ 動画生成例外: {e}")
+        return "none"
 
-async def listen():
-    print(f"Bridge System (Hybrid AI) Starting...")
+
+# ==========================================
+# メイン処理
+# ==========================================
+async def process_data(data):
+    # ユーザー情報の取得
+    identity = data.get('identity', {})
+    seishun = data.get('seishun', {})
+    shuka = data.get('shuka', {})
+    hakuto = data.get('hakuto', {})
+    gento = data.get('gento', {})
+
+    print("\n-----------------------------------")
+    print(f"Karma Entry Received: {identity.get('nickname')}")
+
+    # 1. 画像保存
+    saved_image_path = "none"
+    if data.get("has_image") and data.get("image_data"):
+        try:
+            # Base64ヘッダがある場合は除去
+            b64_str = data["image_data"]
+            if "base64," in b64_str:
+                b64_str = b64_str.split("base64,")[1]
+            
+            image_data = base64.b64decode(b64_str)
+            filename = f"karma_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+            saved_image_path = os.path.join(IMAGE_DIR, filename)
+            
+            with open(saved_image_path, "wb") as f:
+                f.write(image_data)
+            
+            saved_image_path = os.path.abspath(saved_image_path)
+            print(f"Image Saved: {saved_image_path}")
+            
+        except Exception as e:
+            print(f"Image Save Error: {e}")
+
+    # 2. GPT-4 テキスト解析
+    print("AI Analysis (Karma Parsing)...")
     
-    origin = WEBSOCKET_URL.replace("wss://", "https://").replace("/ws", "")
-    custom_headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "Origin": origin
-    }
+    # プロンプトの構築
+    user_input_text = f"""
+    [黄土] Name: {identity.get('nickname')}, Special: {identity.get('special_existence')}, Smell: {identity.get('favorite_smell')}
+    [青春] Noise(0)-Silence(4): {seishun.get('noise_silence')}, City(0)-Country(4): {seishun.get('city_country')}, Reality(0)-Fantasy(4): {seishun.get('reality_fantasy')}
+    [朱夏] Hell Time (0:Past,1:Present,2:Future): {shuka.get('hell_time')}, Dream: {shuka.get('dream')}
+    [白冬] Setback: {hakuto.get('setback')}, Lost/Release: {hakuto.get('lost_release')}
+    [玄冬] Return (0:Sea,1:Soil,2:Sky): {gento.get('return_element')}, Go (0:North-4:South): {gento.get('go_north_south')}
+    """
+    
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_input_text}
+    ]
 
+    # 画像がある場合はGPT-4o Visionを使用
+    if saved_image_path != "none":
+        messages[1]["content"] = [
+            {"type": "text", "text": user_input_text},
+            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{data['image_data']}"}}
+        ]
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            response_format={"type": "json_object"}
+        )
+        result_json = response.choices[0].message.content
+        result_data = json.loads(result_json)
+        
+        # パス情報を追加
+        result_data["original_image_path"] = saved_image_path
+        
+        # ★動画生成 (画像がある場合のみ)
+        generated_video_path = "none"
+        if saved_image_path != "none":
+            generated_video_path = generate_video(saved_image_path)
+        
+        result_data["video_path"] = generated_video_path
+
+        # 3. TouchDesignerへ送信 (OSC)
+        final_json_str = json.dumps(result_data, ensure_ascii=False)
+        osc_client.send_message("/karmic_data", final_json_str)
+        
+        print(">> Sent to TouchDesigner:")
+        print(f"   Message: {result_data.get('poetic_message')}")
+        print(f"   Video: {result_data.get('video_path')}")
+
+    except Exception as e:
+        print(f"AI Error: {e}")
+
+# ==========================================
+# WebSocket受信ループ
+# ==========================================
+async def listen():
+    custom_headers = {"User-Agent": "Bridge/1.0"}
+    
     while True:
         try:
             print(f">> 接続中: {WEBSOCKET_URL}")
-            async with websockets.connect(WEBSOCKET_URL, extra_headers=custom_headers) as websocket:
+            async with websockets.connect(WEBSOCKET_URL, additional_headers=custom_headers) as websocket:
                 print("### 接続成功！データ待機中... ###")
                 
                 while True:
                     message = await websocket.recv()
-                    print("\n[受信] データを受け取りました")
+                    data = json.loads(message)
                     
-                    try:
-                        data = json.loads(message)
+                    if data.get("type") == "satellite_image":
+                        continue # スマホ画像転送イベントは無視
+                        
+                    if data.get("type") == "form_submission":
+                        await process_data(data)
 
-                        # 1. 画像保存処理
-                        saved_path = "none"
-                        if data.get("has_image") and data.get("image_data"):
-                            try:
-                                print(">> 画像保存中...")
-                                image_bytes = base64.b64decode(data["image_data"])
-                                filename = f"image_{int(time.time())}.jpg"
-                                filepath = os.path.abspath(os.path.join(DOWNLOAD_DIR, filename))
-                                with open(filepath, "wb") as f:
-                                    f.write(image_bytes)
-                                saved_path = filepath
-                            except:
-                                saved_path = "error"
-                        data["image_path"] = saved_path
-                        if "image_data" in data: del data["image_data"]
-
-                        # 2. ハイブリッドAI解析
-                        # 画像パスを渡して、AI関数側で判断させる
-                        ai_result = await analyze_with_hybrid_ai(data.get("text", {}), saved_path)
-                        data["ai_analysis"] = ai_result
-
-                        # 3. TouchDesignerへ送信
-                        json_str = json.dumps(data, ensure_ascii=False)
-                        osc_client.send_message("/json", json_str)
-                        print(f"[転送] TouchDesignerへ送信完了")
-
-                    except json.JSONDecodeError:
-                        pass
-                    except Exception as e:
-                        print(f"処理エラー: {e}")
-
-        except websockets.exceptions.ConnectionClosed:
-            print("### サーバーから切断 ###")
         except Exception as e:
             print(f"接続エラー: {e}")
-        
-        await asyncio.sleep(5)
+            print("3秒後に再接続します...")
+            await asyncio.sleep(3)
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(listen())
-    except KeyboardInterrupt:
-        print("\n終了します")
+    asyncio.run(listen())
