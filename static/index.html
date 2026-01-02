@@ -19,10 +19,8 @@
         input, textarea { -webkit-user-select: text !important; user-select: text !important; outline: none; }
         
         :root {
-            --bg-color: #050505;
+            --bg-color: #000000;
             --text-color: #ffffff;
-            --border-color: #ffffff;
-            --dim-color: #888888;
             --font-main: 'Shippori Mincho', serif;
             --thumb-size: 28px;
         }
@@ -37,219 +35,203 @@
             overflow-x: hidden;
         }
 
-        /* === TEXTURE UTILITIES (マーブル模様) === */
-        .marble-text {
-            background-image: url('/static/texture.jpg');
-            background-size: cover;
-            background-position: center;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-weight: 700;
-        }
+        /* === ANIMATIONS (じわっと遷移) === */
+        .dissolve-out { animation: fadeOut 0.8s ease-in-out forwards; pointer-events: none; }
+        .dissolve-in { display: block !important; animation: fadeIn 0.8s ease-in-out forwards; }
         
-        .marble-bg {
-            background-image: url('/static/texture.jpg');
-            background-size: cover;
-            background-position: center;
-        }
+        @keyframes fadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(5px); } }
+        @keyframes fadeIn { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
 
         .container {
             width: 100%; max-width: 600px;
-            padding: 20px;
-            padding-top: 100px; /* Header space */
-            padding-bottom: 80px; /* Footer space */
+            padding: 20px; padding-top: 100px; padding-bottom: 80px;
             position: relative;
         }
 
         /* === HEADER === */
         .header-fixed {
-            position: fixed; top: 0; left: 0; width: 100%;
-            height: 80px;
-            background: rgba(5, 5, 5, 0.9);
-            backdrop-filter: blur(10px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
             z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0 25px;
         }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
         
-        .header-left button {
-            background: none; border: none; color: #fff;
-            font-family: var(--font-main); font-size: 1rem; cursor: pointer;
-            display: flex; align-items: center; gap: 5px;
-        }
-
-        .header-title {
-            font-size: 1.5rem; letter-spacing: 0.1em;
-            text-align: center;
-            position: absolute; left: 50%; transform: translateX(-50%);
-            white-space: nowrap;
-        }
-
-        /* Language Switch (Pill Shape) */
+        /* Language Switch */
         .lang-switch {
-            display: flex;
-            border: 1px solid #fff;
-            border-radius: 20px;
-            overflow: hidden;
-            font-size: 0.8rem;
+            display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.75rem;
         }
-        .lang-option {
-            padding: 5px 12px; cursor: pointer; transition: 0.3s;
-            background: #000; color: #fff;
-        }
+        .lang-option { padding: 4px 12px; cursor: pointer; transition: 0.3s; background: #000; color: #fff; }
         .lang-option.active {
+            background-image: url('/static/texture.jpg'); background-size: cover; color: #fff; font-weight: bold;
+        }
+
+        /* Title with Marble Gradient */
+        .header-title {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 1.4rem; letter-spacing: 0.1em; font-weight: 500;
+        }
+        .title-gradient {
             background-image: url('/static/texture.jpg');
-            background-size: cover;
-            color: #fff; /* text-shadow might be needed depending on texture */
-            font-weight: bold;
+            background-size: cover; background-position: center;
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
         }
 
-        /* === SECTIONS === */
-        .section-header {
-            text-align: center;
-            margin-top: 60px; margin-bottom: 40px;
+        /* === HAMBURGER MENU === */
+        .hamburger {
+            width: 35px; height: 24px; cursor: pointer; position: relative; z-index: 200;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        .section-header h2 {
-            font-size: 1.4rem; font-weight: 500; letter-spacing: 0.2em;
-            margin: 0; color: #fff;
+        .hamburger span {
+            display: block; width: 100%; height: 2px; background: #fff; transition: 0.4s;
         }
-        .section-header .sub {
-            font-size: 0.8rem; color: var(--dim-color); letter-spacing: 0.1em;
-            margin-top: 5px; display: block; font-family: sans-serif;
-        }
+        /* Open State */
+        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
 
-        /* === INPUTS === */
-        .input-group { margin-bottom: 50px; }
-        .row-group { display: flex; gap: 30px; align-items: flex-end; }
+        /* === MENU OVERLAY === */
+        #menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 150;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        #menu-overlay.show { opacity: 1; pointer-events: auto; }
         
-        label {
-            display: block; font-size: 0.9rem; color: #fff;
-            margin-bottom: 15px; letter-spacing: 0.05em;
+        .menu-list { list-style: none; padding: 0; text-align: center; }
+        .menu-list li { margin: 40px 0; }
+        
+        /* Menu Item: Hover/Activeでマーブル化 */
+        .menu-item {
+            font-size: 1.8rem; color: #fff; text-decoration: none; letter-spacing: 0.2em;
+            font-family: var(--font-main); cursor: pointer; transition: 0.3s;
         }
+        .menu-item:hover, .menu-item:active {
+            background-image: url('/static/texture.jpg');
+            background-size: cover; background-position: center;
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+            font-weight: 700; transform: scale(1.05);
+        }
+        .menu-sub { font-size: 0.8rem; color: #888; display: block; margin-top: 5px; letter-spacing: 0.1em; }
+
+        /* === BUTTONS (枠線マーブル -> 全体マーブル) === */
+        .btn-marble {
+            display: block; width: 100%; max-width: 320px; margin: 60px auto;
+            padding: 20px;
+            font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
+            cursor: pointer; background: transparent; color: #fff;
+            
+            /* 枠線をマーブルに */
+            border: 2px solid transparent;
+            border-image: url('/static/texture.jpg') 1;
+            transition: all 0.5s ease; /* じわっと変化 */
+        }
+        
+        .btn-marble:active, .btn-marble:hover {
+            /* 押下・ホバーで全体をマーブルに */
+            background-image: url('/static/texture.jpg');
+            background-size: cover; background-position: center;
+            color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        /* === CONTENT OVERLAY === */
+        #content-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 140;
+            display: none; flex-direction: column; padding: 100px 20px 40px;
+            overflow-y: auto; box-sizing: border-box;
+        }
+        #content-overlay.show { display: flex; animation: fadeIn 0.5s; }
+
+        .content-body { max-width: 600px; margin: 0 auto; color: #ccc; line-height: 2.2; font-size: 0.95rem; text-align: left; }
+        .content-body h3 { 
+            color: transparent; 
+            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; background-clip: text; background-size: cover;
+            text-align: center; margin-bottom: 40px; font-size: 1.5rem; 
+        }
+        .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 50px; margin-bottom: 20px; letter-spacing: 0.1em; }
+
+        /* === FORM STYLES === */
+        .section-header { text-align: center; margin-top: 80px; margin-bottom: 40px; }
+        /* 指定通りh2は白文字 */
+        .section-header h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: 0.2em; margin: 0; color: #fff; }
+        .section-header .sub { font-size: 0.85rem; color: #888; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
+
+        .input-group { margin-bottom: 50px; }
+        .row-group { display: flex; gap: 30px; align-items: flex-end; margin-bottom: 40px; }
+        
+        label { display: block; font-size: 0.9rem; color: #fff; margin-bottom: 15px; letter-spacing: 0.05em; }
         
         .clean-input {
-            width: 100%; background: transparent;
-            border: none; border-bottom: 1px solid #fff;
-            color: #fff; padding: 10px 0;
-            font-size: 1.2rem; font-family: var(--font-main);
-            border-radius: 0;
+            width: 100%; background: transparent; border: none; border-bottom: 1px solid #fff;
+            color: #fff; padding: 10px 0; font-size: 1.2rem; font-family: var(--font-main);
+            border-radius: 0; transition: 0.3s;
         }
+        .clean-input:focus { border-bottom: 2px solid #fff; }
         
         .clean-area {
-            width: 100%; background: transparent;
-            border: 1px solid #fff;
-            color: #fff; padding: 15px;
-            font-size: 1rem; font-family: var(--font-main);
-            resize: none; border-radius: 0;
-            line-height: 1.6;
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #fff;
+            color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-main);
+            resize: none; border-radius: 0; line-height: 1.8; transition: 0.3s;
         }
+        .clean-area:focus { background: rgba(255,255,255,0.1); }
 
-        /* === CUSTOM SLIDER (Marble Style) === */
-        .slider-container {
-            position: relative;
-            width: 100%;
-            height: 60px; /* Touch area height */
-            display: flex; align-items: center; justify-content: center;
-        }
+        /* === SLIDER === */
+        .slider-wrapper { position: relative; width: 100%; height: 60px; display: flex; align-items: center; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 10px; color: #fff; letter-spacing: 0.1em; }
         
-        .slider-labels {
-            display: flex; justify-content: space-between;
-            font-size: 0.9rem; margin-bottom: 10px;
-        }
-
-        /* Visual Track with Dots */
         .visual-track {
-            position: absolute; width: 100%; height: 2px;
-            background: #fff;
-            top: 50%; transform: translateY(-50%);
+            position: absolute; width: 100%; height: 2px; background: #fff;
+            top: 50%; transform: translateY(-50%); z-index: 0;
             display: flex; justify-content: space-between; align-items: center;
-            pointer-events: none; z-index: 0;
         }
-        
-        /* The Dots on the track */
-        .track-dot {
-            width: 12px; height: 12px;
-            border-radius: 50%;
-            background: #000;
-            border: 2px solid #fff;
-            box-sizing: border-box;
-        }
+        .track-dot { width: 12px; height: 12px; border-radius: 50%; background: #000; border: 2px solid #fff; }
 
-        /* The Input Range itself */
         input[type=range] {
-            -webkit-appearance: none;
-            width: 100%; height: 100%;
-            background: transparent;
-            position: absolute; top: 0; left: 0;
-            z-index: 2; margin: 0; cursor: pointer;
+            -webkit-appearance: none; width: 100%; height: 100%; background: transparent;
+            position: absolute; top: 0; left: 0; z-index: 2; margin: 0; cursor: pointer;
         }
-        
-        /* Slider Thumb (The Marble Planet) */
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: var(--thumb-size); width: var(--thumb-size);
+            -webkit-appearance: none; height: var(--thumb-size); width: var(--thumb-size);
             border-radius: 50%;
-            background-image: url('/static/texture.jpg'); /* Texture here */
-            background-size: 150%; /* Zoom in texture slightly */
-            background-position: center;
-            border: 2px solid #fff;
-            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+            background-image: url('/static/texture.jpg'); background-size: 150%; background-position: center;
+            border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3);
             transition: transform 0.1s;
         }
         input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
-
-        /* === BUTTONS === */
-        .btn-entry {
-            display: block; width: 100%; max-width: 300px; margin: 60px auto;
-            padding: 20px;
-            background: transparent;
-            border: 1px solid #fff; /* Simple white border per image 2 */
-            color: #fff;
-            font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
-            cursor: pointer; position: relative; overflow: hidden;
-            transition: 0.3s;
-        }
-        
-        .btn-entry::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('/static/texture.jpg');
-            background-size: cover;
-            opacity: 0; transition: 0.3s; z-index: -1;
-        }
-        .btn-entry:hover { border-color: transparent; }
-        .btn-entry:hover::before { opacity: 1; }
-
-        /* === QR SECTION === */
-        .qr-section {
-            border: 1px solid #fff;
-            padding: 30px; text-align: center;
-            margin-top: 60px;
-        }
-        #qrcode { 
-            background: #fff; padding: 10px; display: inline-block; 
-            margin: 20px 0;
-        }
-        .received-thumb {
-            max-width: 100%; height: auto; border: 2px solid #fff;
-            margin-top: 20px; display: none;
-        }
 
         /* === UTILS === */
         .hidden { display: none !important; }
         .lang-jp .lang-en { display: none; }
         .lang-en .lang-jp { display: none; }
         
-        /* Loading Overlay */
+        .qr-section { border: 1px solid #fff; padding: 30px; text-align: center; margin-top: 60px; }
+        #qrcode { background: #fff; padding: 10px; display: inline-block; margin: 20px 0; }
+        .received-thumb { max-width: 100%; height: auto; border: 1px solid #fff; margin-top: 20px; display: none; }
+
+        /* Loading */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.5s;
         }
-        .loading-text { font-size: 1.5rem; letter-spacing: 0.2em; color: #fff; animation: blink 2s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        .loading-text { 
+            font-size: 1.5rem; letter-spacing: 0.2em; color: transparent;
+            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; background-clip: text; background-size: cover;
+            animation: breathe 2s infinite; 
+        }
+        @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Credits */
+        .credits-section { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; line-height: 1.6; }
+        .credit-role { color: #888; font-size: 0.7rem; display: block; margin-bottom: 2px; }
+        .credit-name { display: block; margin-bottom: 15px; font-family: var(--font-main); }
 
     </style>
 </head>
@@ -257,25 +239,92 @@
 
     <div class="header-fixed">
         <div class="header-left">
-            <button onclick="backToTitle()" id="btn-back" class="hidden">← BACK</button>
-        </div>
-        <div class="header-title marble-text">KARMA PORTRAIT</div>
-        <div class="header-right">
+            <button onclick="backToTitle()" id="btn-back" class="hidden" style="background:none; border:none; color:#fff; font-family:var(--font-main); cursor:pointer;">← BACK</button>
             <div class="lang-switch">
                 <div id="lang-btn-jp" class="lang-option active" onclick="setLanguage('jp')">JP</div>
                 <div id="lang-btn-en" class="lang-option" onclick="setLanguage('en')">EN</div>
+            </div>
+        </div>
+        
+        <div class="header-title">
+            <span class="title-gradient">Karma Portrait</span>
+        </div>
+
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <div id="menu-overlay">
+        <ul class="menu-list">
+            <li>
+                <div class="menu-item" onclick="menuAction('top')">TOP</div>
+                <span class="menu-sub">トップページ</span>
+            </li>
+            <li>
+                <div class="menu-item" onclick="menuAction('concept')">CONCEPT</div>
+                <span class="menu-sub">コンセプト</span>
+            </li>
+            <li>
+                <div class="menu-item" onclick="menuAction('explanation')">EXPLANATION</div>
+                <span class="menu-sub">作品＆用語解説</span>
+            </li>
+            <li>
+                <div class="menu-item" onclick="menuAction('about')">ABOUT US</div>
+                <span class="menu-sub">プロジェクト紹介</span>
+            </li>
+        </ul>
+    </div>
+
+    <div id="content-overlay">
+        <div style="text-align:right; margin-bottom:20px;">
+            <button onclick="closeContent()" style="background:none; border:none; color:#fff; font-size:2rem; cursor:pointer;">×</button>
+        </div>
+        
+        <div id="content-body-concept" class="content-body hidden">
+            <h3 class="lang-jp">Core Concept</h3><h3 class="lang-en">Core Concept</h3>
+            <p class="lang-jp">
+                二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。<br><br>
+                そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。
+            </p>
+            <p class="lang-en">
+                In the two-mat tea room <i>Ryōshi-an</i>, a hanging-scroll–shaped monitor functions as a portal opening onto the interval between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within a computational darkness humans cannot traverse, and inscribes within it a one-time semiotic self-image: Karma Portrait.<br><br>
+                What comes into being is a landscape in which emotions and desires—incorporated by the body prior to articulation—condense into swells of light and noise.
+            </p>
+        </div>
+        
+        <div id="content-body-explanation" class="content-body hidden">
+            <h3 class="lang-jp">Explanation</h3><h3 class="lang-en">Explanation</h3>
+            <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryōshi-an</h4>
+            <p class="lang-jp">二畳という最小の器に、最大の遠さを折り畳むための名である。<br>量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。</p>
+            <p class="lang-en">Ryōshi-an names an attempt to fold maximal distance into a minimal vessel: a two-mat room.</p>
+            
+            <h4 class="lang-jp">Karma Portrait</h4><h4 class="lang-en">Karma Portrait</h4>
+            <p class="lang-jp">これは“顔”ではない。自己の似姿でもない。<br>鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。</p>
+            <p class="lang-en">Karma Portrait is neither a face nor a likeness. The viewer’s memories and choices are treated not as a psychological profile, but as karmic bias.</p>
+        </div>
+
+        <div id="content-body-about" class="content-body hidden">
+            <h3 class="lang-jp">About Us</h3><h3 class="lang-en">About Us</h3>
+            <div class="credits-section" style="border:none;">
+                <span class="credit-role">Concept, Art Direction & Spatial Design</span>
+                <span class="credit-name">Yuna Sakai</span>
+                <span class="credit-role">Technical Direction & Engineering</span>
+                <span class="credit-name">Haruto Kume</span>
+                <p style="margin-top:30px;">© 2025 KARMIC IDENTITY</p>
             </div>
         </div>
     </div>
 
     <div class="container">
         <div id="landing-page">
-            <div style="height: 10vh;"></div>
+            <div style="height: 15vh;"></div>
+            
             <div class="section-header">
-                <h2 class="marble-text" style="font-size: 2rem;">CONCEPT</h2>
+                <h2 style="font-size: 2rem; color: #fff; letter-spacing: 0.2em;">Karma Portrait</h2>
             </div>
             
-            <div style="text-align: center; line-height: 2.5; font-size: 0.95rem; margin-bottom: 50px;">
+            <div style="text-align: center; line-height: 2.5; font-size: 0.9rem; margin-bottom: 60px; color:#ddd;">
                 <p class="lang-jp">
                     二畳の茶室「量子庵」の掛軸型モニターは、<br>
                     此岸と彼岸のあわいにひらく小さな境界です。<br><br>
@@ -287,16 +336,16 @@
                 </p>
                 <p class="lang-en">
                     The hanging scroll monitor in the tea room "Ryoshi-an"<br>
-                    is a small boundary opening between this world and the other.<br><br>
+                    is a small boundary opening between this world and the other.<br>
                     Your words and choices become minimal cues<br>
-                    to pick up memories and habits sunk deep within you.<br><br>
+                    to pick up memories and habits sunk deep within you.<br>
                     AI constructs a virtual Pure Land in computational darkness,<br>
                     inscribing a one-time "Karma Portrait" within it.
                 </p>
             </div>
 
-            <button class="btn-entry" onclick="goToForm()">ENTRY</button>
-            <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: #666;">
+            <button class="btn-marble" onclick="goToForm()">ENTRY</button>
+            <div style="text-align: center; margin-top: 30px; font-size: 0.7rem; color: #444;">
                 © 2025 KARMIC IDENTITY
             </div>
         </div>
@@ -304,7 +353,7 @@
         <div id="form-page" class="hidden">
             
             <div class="section-header">
-                <h2 class="marble-text">黄土</h2>
+                <h2>黄土</h2>
                 <span class="sub lang-en">Yellow Earth</span>
             </div>
 
@@ -320,25 +369,25 @@
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">特別だと感じる存在</label><label class="lang-en">Special Existence</label>
+                <label class="lang-jp">特別だと感じる存在は？</label><label class="lang-en">Who is your special?</label>
                 <input type="text" id="input-special" class="clean-input">
             </div>
             <div class="input-group">
-                <label class="lang-jp">好きな匂い</label><label class="lang-en">Favorite Smell</label>
+                <label class="lang-jp">好きな匂いは</label><label class="lang-en">What smell do you love in?</label>
                 <input type="text" id="input-smell" class="clean-input">
             </div>
 
             <div class="section-header">
-                <h2 class="marble-text">青春</h2>
+                <h2>青春</h2>
                 <span class="sub lang-en">Youth</span>
             </div>
             
-            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-jp">余暇を過ごすなら</p>
-            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-en">If you spend leisure time...</p>
+            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-jp">生きていたいのは</p>
+            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-en">What do you live in?</p>
 
             <div class="input-group">
                 <div class="slider-labels"><span class="lang-jp">喧騒</span><span class="lang-en">Noise</span> <span class="lang-jp">静寂</span><span class="lang-en">Silence</span></div>
-                <div class="slider-container">
+                <div class="slider-wrapper">
                     <div class="visual-track">
                         <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
                     </div>
@@ -348,7 +397,7 @@
 
             <div class="input-group">
                 <div class="slider-labels"><span class="lang-jp">都市</span><span class="lang-en">City</span> <span class="lang-jp">田舎</span><span class="lang-en">Country</span></div>
-                <div class="slider-container">
+                <div class="slider-wrapper">
                     <div class="visual-track">
                         <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
                     </div>
@@ -358,7 +407,7 @@
 
             <div class="input-group">
                 <div class="slider-labels"><span class="lang-jp">現実</span><span class="lang-en">Reality</span> <span class="lang-jp">夢想</span><span class="lang-en">Fantasy</span></div>
-                <div class="slider-container">
+                <div class="slider-wrapper">
                     <div class="visual-track">
                         <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
                     </div>
@@ -367,18 +416,18 @@
             </div>
 
             <div class="section-header">
-                <h2 class="marble-text">朱夏</h2>
+                <h2>朱夏</h2>
                 <span class="sub lang-en">Vermilion Summer</span>
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">修羅の時</label><label class="lang-en">Time of Hell</label>
+                <label class="lang-jp">あなたにとっての修羅は</label><label class="lang-en">When is your path to hell?</label>
                 <div class="slider-labels">
                     <span><span class="lang-jp">過去</span><span class="lang-en">Past</span></span>
                     <span><span class="lang-jp">現在</span><span class="lang-en">Now</span></span>
                     <span><span class="lang-jp">未来</span><span class="lang-en">Fut</span></span>
                 </div>
-                <div class="slider-container">
+                <div class="slider-wrapper">
                     <div class="visual-track">
                         <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
                     </div>
@@ -387,37 +436,37 @@
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">抱いた夢</label><label class="lang-en">Dream</label>
+                <label class="lang-jp">今または過去に抱いた夢は</label><label class="lang-en">What have you dreamed?</label>
                 <textarea id="area-dream" class="clean-area" rows="3"></textarea>
             </div>
 
             <div class="section-header">
-                <h2 class="marble-text">白冬</h2>
+                <h2>白冬</h2>
                 <span class="sub lang-en">White Winter</span>
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">挫折したこと</label><label class="lang-en">Setback</label>
+                <label class="lang-jp">挫折したこと</label><label class="lang-en">When did your wings once burnt?</label>
                 <textarea id="area-setback" class="clean-area" rows="3"></textarea>
             </div>
             <div class="input-group">
-                <label class="lang-jp">失いたくないもの / 手放したいもの</label><label class="lang-en">Lost / Release</label>
+                <label class="lang-jp">失いたくないもの / 手放したいもの</label><label class="lang-en">What you don't want to lose / What you want to let go</label>
                 <textarea id="area-lost" class="clean-area" rows="3"></textarea>
             </div>
 
             <div class="section-header">
-                <h2 class="marble-text">玄冬</h2>
+                <h2>玄冬</h2>
                 <span class="sub lang-en">Black Winter</span>
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">還るなら</label><label class="lang-en">Return to</label>
+                <label class="lang-jp">還るなら</label><label class="lang-en">Which do you want to be?</label>
                 <div class="slider-labels">
                     <span><span class="lang-jp">海</span><span class="lang-en">Sea</span></span>
                     <span><span class="lang-jp">土</span><span class="lang-en">Soil</span></span>
                     <span><span class="lang-jp">空</span><span class="lang-en">Sky</span></span>
                 </div>
-                <div class="slider-container">
+                <div class="slider-wrapper">
                     <div class="visual-track">
                         <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
                     </div>
@@ -426,9 +475,9 @@
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">向かうなら</label><label class="lang-en">Go to</label>
-                <div class="slider-labels"><span class="lang-jp">北国</span><span class="lang-en">North</span> <span class="lang-jp">南国</span><span class="lang-en">South</span></div>
-                <div class="slider-container">
+                <label class="lang-jp">向かうなら</label><label class="lang-en">Where do you go afterlife?</label>
+                <div class="slider-labels"><span class="lang-jp">北国へ</span><span class="lang-en">North</span> <span class="lang-jp">南国へ</span><span class="lang-en">South</span></div>
+                <div class="slider-wrapper">
                     <div class="visual-track">
                         <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
                     </div>
@@ -448,13 +497,13 @@
                 <button id="reset-img-btn-en" class="lang-en" onclick="resetImage()" style="display:none; margin:20px auto; background:none; border:none; border-bottom:1px solid #fff; color:#fff; cursor:pointer;">Reset Image</button>
             </div>
 
-            <button class="btn-entry" onclick="submitForm()">INITIATE</button>
+            <button class="btn-marble" onclick="submitForm()">INITIATE</button>
         </div>
 
     </div>
 
     <div id="loading-overlay">
-        <div class="loading-text marble-text">紐解いています...</div>
+        <div class="loading-text">紐解いています...</div>
     </div>
 
     <script>
@@ -489,12 +538,95 @@
                     
                     const status = document.getElementById('qr-status');
                     status.innerText = "画像が奉納されました";
-                    status.style.color = "#fff"; // White on success
+                    status.style.color = "#fff";
                     
                     updateResetBtn();
                 }
             };
         }
+
+        // Menu Logic
+        function toggleMenu() {
+            const menu = document.getElementById('menu-overlay');
+            const hamburger = document.querySelector('.hamburger');
+            const isOpen = menu.classList.contains('show');
+            
+            if(isOpen) {
+                menu.classList.remove('show');
+                hamburger.classList.remove('open');
+            } else {
+                menu.classList.add('show');
+                hamburger.classList.add('open');
+            }
+        }
+
+        function menuAction(action) {
+            toggleMenu(); // close menu
+            setTimeout(() => {
+                if(action === 'top') {
+                    resetView();
+                } else {
+                    showContent(action);
+                }
+            }, 300);
+        }
+
+        function showContent(type) {
+            const overlay = document.getElementById('content-overlay');
+            const bodies = document.querySelectorAll('.content-body');
+            bodies.forEach(b => b.classList.add('hidden'));
+            
+            document.getElementById('content-body-' + type).classList.remove('hidden');
+            overlay.classList.add('show');
+        }
+
+        function closeContent() {
+            document.getElementById('content-overlay').classList.remove('show');
+        }
+
+        function resetView() {
+             const landing = document.getElementById('landing-page');
+             const form = document.getElementById('form-page');
+             
+             // じわっと遷移
+             form.classList.add('dissolve-out');
+             setTimeout(() => {
+                 form.classList.add('hidden');
+                 form.classList.remove('dissolve-out');
+                 
+                 landing.classList.remove('hidden');
+                 landing.classList.add('dissolve-in');
+                 document.getElementById('btn-back').classList.add('hidden');
+                 window.scrollTo(0,0);
+                 
+                 setTimeout(() => landing.classList.remove('dissolve-in'), 800);
+             }, 800);
+        }
+
+        // Navigation (Jiwatto Transition)
+        window.goToForm = function() {
+            const landing = document.getElementById('landing-page');
+            const form = document.getElementById('form-page');
+            
+            landing.classList.add('dissolve-out');
+            setTimeout(() => {
+                landing.classList.add('hidden');
+                landing.classList.remove('dissolve-out');
+                
+                form.classList.remove('hidden');
+                form.classList.add('dissolve-in');
+                document.getElementById('btn-back').classList.remove('hidden');
+                window.scrollTo(0,0);
+                
+                setTimeout(() => form.classList.remove('dissolve-in'), 800);
+            }, 800);
+        };
+
+        window.backToTitle = function() {
+            if(confirm('入力内容を破棄して戻りますか？')) {
+                resetView();
+            }
+        };
 
         // Language
         window.setLanguage = function(lang) {
@@ -526,20 +658,6 @@
             new QRCode(qrContainer, { text: uploadUrl, width: 128, height: 128, colorDark : "#000000", colorLight : "#ffffff" });
         }
 
-        // Navigation
-        window.goToForm = function() {
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('form-page').classList.remove('hidden');
-            document.getElementById('btn-back').classList.remove('hidden');
-            window.scrollTo(0,0);
-        };
-
-        window.backToTitle = function() {
-            if(confirm('入力内容を破棄して戻りますか？')) {
-                location.reload();
-            }
-        };
-
         window.resetImage = function() {
             if(confirm('画像をリセットしますか？')) {
                 receivedImageBase64 = "";
@@ -553,7 +671,6 @@
 
         // Submit
         window.submitForm = async function() {
-            // Show Loading
             document.getElementById('loading-overlay').style.opacity = '1';
             
             const formData = new FormData();
