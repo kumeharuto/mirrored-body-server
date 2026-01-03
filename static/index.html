@@ -151,23 +151,20 @@
         }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 50px; margin-bottom: 20px; letter-spacing: 0.1em; }
 
-        /* === ★修正箇所: Flexboxによる強力な中央揃え === */
+        /* === ABOUT SMARTPHONE LINK === */
         .mobile-link-section {
             margin-top: 60px; padding-top: 40px; border-top: 1px solid #333; text-align: center;
-            /* Flexbox追加 */
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .mobile-link-title { font-size: 0.9rem; color: #fff; margin-bottom: 20px; letter-spacing: 0.1em; }
         
         .qr-section { 
             border: 1px solid #fff; padding: 30px; margin-top: 60px; 
-            /* Flexbox追加 */
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center;
         }
         
         #qrcode, #qrcode-about { background: #fff; padding: 10px; margin: 20px auto; display: block; }
-        
         .received-thumb { max-width: 100%; height: auto; border: 1px solid #fff; margin-top: 20px; display: none; }
 
         /* === BUTTONS & SLIDERS === */
@@ -402,16 +399,19 @@
             initSliders();
             setLanguage('jp');
             connectWebSocket();
-            // Generate QR for mobile access (Point to info.html)
+            // 初期QR生成
             generateAboutQR();
         });
 
+        // ★修正箇所: 言語に合わせてURLを切り替える
         function generateAboutQR() {
-            // 現在のホスト + /static/info.html へのリンクを生成
-            const infoUrl = `${window.location.origin}/static/info.html`;
             const qrContainer = document.getElementById("qrcode-about");
-            // 枠が消えないよう、container自体は残し、中身を生成
             qrContainer.innerHTML = "";
+            
+            // 言語によって info.html か info_en.html かを分岐
+            const page = (currentLang === 'jp') ? 'info.html' : 'info_en.html';
+            const infoUrl = `${window.location.origin}/static/${page}`;
+            
             new QRCode(qrContainer, { text: infoUrl, width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff" });
         }
 
@@ -534,6 +534,8 @@
             document.getElementById('lang-part-en').classList.remove('active');
             document.getElementById('lang-part-' + lang).classList.add('active');
             updateQRCode();
+            // 言語変更時にQRコードも再生成
+            generateAboutQR();
             updateResetBtn();
         };
 
