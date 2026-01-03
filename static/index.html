@@ -6,9 +6,7 @@
     <title>Karma Portrait</title>
     
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3Cpath d='M2.93 8.8h18.14'/%3E%3Cpath d='M2.93 15.2h18.14'/%3E%3C/svg%3E">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
@@ -31,67 +29,77 @@
             font-family: var(--font-main);
             margin: 0; padding: 0;
             min-height: 100vh;
-            display: flex; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; /* ボディ全体で中央揃え */
             overflow-x: hidden;
         }
+        
+        /* スクロール制御用 */
+        body.no-scroll { overflow: hidden; height: 100vh; }
 
-        /* === ANIMATIONS (じわっと遷移) === */
+        /* === ANIMATIONS === */
         .dissolve-out { animation: fadeOut 0.8s ease-in-out forwards; pointer-events: none; }
         .dissolve-in { display: block !important; animation: fadeIn 0.8s ease-in-out forwards; }
-        
         @keyframes fadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(5px); } }
         @keyframes fadeIn { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
 
         .container {
             width: 100%; max-width: 600px;
             padding: 20px; padding-top: 100px; padding-bottom: 80px;
+            margin: 0 auto; /* コンテナ自体を中央配置 */
             position: relative;
         }
 
-        /* === HEADER === */
+        /* === HEADER (GRID LAYOUT for PERFECT CENTERING) === */
         .header-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
             background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
             z-index: 100;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 25px;
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr; /* 左・中央・右 */
+            align-items: center;
+            padding: 0 20px;
         }
 
-        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-left { justify-self: start; display: flex; align-items: center; }
+        .header-center { justify-self: center; text-align: center; }
+        .header-right { justify-self: end; display: flex; align-items: center; gap: 20px; }
         
-        /* Language Switch */
-        .lang-switch {
-            display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.75rem;
+        /* Language Switch (Toggle Type) */
+        .lang-switch-wrapper {
+            display: flex;
+            border: 1px solid #fff; border-radius: 20px; overflow: hidden;
+            font-size: 0.75rem; cursor: pointer;
         }
-        .lang-option { padding: 4px 12px; cursor: pointer; transition: 0.3s; background: #000; color: #fff; }
-        .lang-option.active {
-            background-image: url('/static/texture.jpg'); background-size: cover; color: #fff; font-weight: bold;
+        .lang-part {
+            padding: 4px 12px; background: transparent; color: #fff;
+            transition: 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .lang-part.active {
+            background-image: url('/static/texture.jpg');
+            background-size: cover; background-position: center;
+            color: #000; font-weight: bold;
         }
 
-        /* Title with Marble Gradient */
         .header-title {
-            position: absolute; left: 50%; transform: translateX(-50%);
-            font-size: 1.4rem; letter-spacing: 0.1em; font-weight: 500;
+            font-size: 1.4rem; letter-spacing: 0.1em; font-weight: 500; white-space: nowrap; margin: 0;
         }
         .title-gradient {
             background-image: url('/static/texture.jpg');
             background-size: cover; background-position: center;
-            -webkit-background-clip: text; background-clip: text;
-            color: transparent;
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
         /* === HAMBURGER MENU === */
         .hamburger {
-            width: 35px; height: 24px; cursor: pointer; position: relative; z-index: 200;
+            width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 200;
             display: flex; flex-direction: column; justify-content: space-between;
         }
         .hamburger span {
             display: block; width: 100%; height: 2px; background: #fff; transition: 0.4s;
         }
-        /* Open State */
-        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
         .hamburger.open span:nth-child(2) { opacity: 0; }
-        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
         /* === MENU OVERLAY === */
         #menu-overlay {
@@ -102,53 +110,43 @@
         }
         #menu-overlay.show { opacity: 1; pointer-events: auto; }
         
-        .menu-list { list-style: none; padding: 0; text-align: center; }
+        .menu-list { list-style: none; padding: 0; text-align: center; margin: 0; }
         .menu-list li { margin: 40px 0; }
-        
-        /* Menu Item: Hover/Activeでマーブル化 */
         .menu-item {
             font-size: 1.8rem; color: #fff; text-decoration: none; letter-spacing: 0.2em;
-            font-family: var(--font-main); cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: 0.3s;
         }
         .menu-item:hover, .menu-item:active {
             background-image: url('/static/texture.jpg');
             background-size: cover; background-position: center;
             -webkit-background-clip: text; background-clip: text;
-            color: transparent;
-            font-weight: 700; transform: scale(1.05);
+            color: transparent; font-weight: 700; transform: scale(1.05);
         }
         .menu-sub { font-size: 0.8rem; color: #888; display: block; margin-top: 5px; letter-spacing: 0.1em; }
-
-        /* === BUTTONS (枠線マーブル -> 全体マーブル) === */
-        .btn-marble {
-            display: block; width: 100%; max-width: 320px; margin: 60px auto;
-            padding: 20px;
-            font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
-            cursor: pointer; background: transparent; color: #fff;
-            
-            /* 枠線をマーブルに */
-            border: 2px solid transparent;
-            border-image: url('/static/texture.jpg') 1;
-            transition: all 0.5s ease; /* じわっと変化 */
-        }
-        
-        .btn-marble:active, .btn-marble:hover {
-            /* 押下・ホバーで全体をマーブルに */
-            background-image: url('/static/texture.jpg');
-            background-size: cover; background-position: center;
-            color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
 
         /* === CONTENT OVERLAY === */
         #content-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 140;
-            display: none; flex-direction: column; padding: 100px 20px 40px;
-            overflow-y: auto; box-sizing: border-box;
+            background: rgba(0,0,0,0.95); z-index: 300; 
+            display: none; flex-direction: column;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
         #content-overlay.show { display: flex; animation: fadeIn 0.5s; }
 
-        .content-body { max-width: 600px; margin: 0 auto; color: #ccc; line-height: 2.2; font-size: 0.95rem; text-align: left; }
+        .close-btn-area {
+            position: sticky; top: 0; right: 0; width: 100%; 
+            display: flex; justify-content: flex-end;
+            padding: 20px; background: rgba(0,0,0,0.8); z-index: 301;
+        }
+        .close-btn {
+            background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; line-height: 1;
+        }
+
+        .content-body { 
+            padding: 20px 20px 100px; max-width: 600px; margin: 0 auto; 
+            color: #ccc; line-height: 2.2; font-size: 0.95rem; text-align: left; 
+            width: 100%;
+        }
         .content-body h3 { 
             color: transparent; 
             background-image: url('/static/texture.jpg'); -webkit-background-clip: text; background-clip: text; background-size: cover;
@@ -156,30 +154,28 @@
         }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 50px; margin-bottom: 20px; letter-spacing: 0.1em; }
 
-        /* === FORM STYLES === */
-        .section-header { text-align: center; margin-top: 80px; margin-bottom: 40px; }
-        /* 指定通りh2は白文字 */
-        .section-header h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: 0.2em; margin: 0; color: #fff; }
-        .section-header .sub { font-size: 0.85rem; color: #888; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
-
-        .input-group { margin-bottom: 50px; }
-        .row-group { display: flex; gap: 30px; align-items: flex-end; margin-bottom: 40px; }
-        
-        label { display: block; font-size: 0.9rem; color: #fff; margin-bottom: 15px; letter-spacing: 0.05em; }
-        
-        .clean-input {
-            width: 100%; background: transparent; border: none; border-bottom: 1px solid #fff;
-            color: #fff; padding: 10px 0; font-size: 1.2rem; font-family: var(--font-main);
-            border-radius: 0; transition: 0.3s;
+        /* === ABOUT SMARTPHONE LINK === */
+        .mobile-link-section {
+            margin-top: 60px; padding-top: 40px; border-top: 1px solid #333; text-align: center;
         }
-        .clean-input:focus { border-bottom: 2px solid #fff; }
+        .mobile-link-title { font-size: 0.9rem; color: #fff; margin-bottom: 20px; letter-spacing: 0.1em; }
+        #qrcode-about { background: #fff; padding: 5px; display: inline-block; }
         
-        .clean-area {
-            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #fff;
-            color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-main);
-            resize: none; border-radius: 0; line-height: 1.8; transition: 0.3s;
+        /* === BUTTONS === */
+        .btn-entry {
+            display: block; width: 100%; max-width: 320px; margin: 60px auto;
+            padding: 20px;
+            font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
+            cursor: pointer; background: transparent; color: #fff; border: 2px solid #fff;
+            position: relative; transition: color 0.5s ease, border-color 0.5s ease;
         }
-        .clean-area:focus { background: rgba(255,255,255,0.1); }
+        .btn-entry span { position: relative; z-index: 2; }
+        .btn-entry:hover, .btn-entry:active {
+            color: transparent; border-color: transparent;
+            background-image: url('/static/texture.jpg'); background-size: cover; background-position: center;
+            -webkit-background-clip: text; background-clip: text;
+            border-image: url('/static/texture.jpg') 1;
+        }
 
         /* === SLIDER === */
         .slider-wrapper { position: relative; width: 100%; height: 60px; display: flex; align-items: center; }
@@ -196,16 +192,17 @@
             -webkit-appearance: none; width: 100%; height: 100%; background: transparent;
             position: absolute; top: 0; left: 0; z-index: 2; margin: 0; cursor: pointer;
         }
+        
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: var(--thumb-size); width: var(--thumb-size);
             border-radius: 50%;
-            background-image: url('/static/texture.jpg'); background-size: 150%; background-position: center;
+            background-image: url('/static/texture.jpg'); background-size: 200%; background-position: center; background-repeat: no-repeat;
             border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3);
-            transition: transform 0.1s;
+            transition: transform 0.1s; transform: rotate(var(--thumb-rotate, 0deg));
         }
-        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
+        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2) rotate(var(--thumb-rotate, 0deg)); }
 
-        /* === UTILS === */
+        /* === FORM STYLES & UTILS === */
         .hidden { display: none !important; }
         .lang-jp .lang-en { display: none; }
         .lang-en .lang-jp { display: none; }
@@ -214,7 +211,6 @@
         #qrcode { background: #fff; padding: 10px; display: inline-block; margin: 20px 0; }
         .received-thumb { max-width: 100%; height: auto; border: 1px solid #fff; margin-top: 20px; display: none; }
 
-        /* Loading */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 999;
@@ -228,10 +224,18 @@
         }
         @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* Credits */
         .credits-section { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; line-height: 1.6; }
         .credit-role { color: #888; font-size: 0.7rem; display: block; margin-bottom: 2px; }
         .credit-name { display: block; margin-bottom: 15px; font-family: var(--font-main); }
+
+        .section-header { text-align: center; margin-top: 80px; margin-bottom: 40px; width: 100%; }
+        .section-header h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: 0.2em; margin: 0; color: #fff; text-align: center; }
+        .section-header .sub { font-size: 0.85rem; color: #888; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; text-align: center; }
+        
+        .clean-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #fff; color: #fff; padding: 10px 0; font-size: 1.2rem; font-family: var(--font-main); border-radius: 0; transition: 0.3s; }
+        .clean-input:focus { border-bottom: 2px solid #fff; }
+        .clean-area { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #fff; color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8; transition: 0.3s; }
+        .clean-area:focus { background: rgba(255,255,255,0.1); }
 
     </style>
 </head>
@@ -240,45 +244,38 @@
     <div class="header-fixed">
         <div class="header-left">
             <button onclick="backToTitle()" id="btn-back" class="hidden" style="background:none; border:none; color:#fff; font-family:var(--font-main); cursor:pointer;">← BACK</button>
-            <div class="lang-switch">
-                <div id="lang-btn-jp" class="lang-option active" onclick="setLanguage('jp')">JP</div>
-                <div id="lang-btn-en" class="lang-option" onclick="setLanguage('en')">EN</div>
-            </div>
         </div>
         
-        <div class="header-title">
-            <span class="title-gradient">Karma Portrait</span>
+        <div class="header-center">
+            <h1 class="header-title">
+                <span class="title-gradient">Karma Portrait</span>
+            </h1>
         </div>
 
-        <div class="hamburger" onclick="toggleMenu()">
-            <span></span><span></span><span></span>
+        <div class="header-right">
+            <div class="lang-switch-wrapper" onclick="toggleLanguage()">
+                <div id="lang-part-jp" class="lang-part active">JP</div>
+                <div id="lang-part-en" class="lang-part">EN</div>
+            </div>
+            
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
         </div>
     </div>
 
     <div id="menu-overlay">
         <ul class="menu-list">
-            <li>
-                <div class="menu-item" onclick="menuAction('top')">TOP</div>
-                <span class="menu-sub">トップページ</span>
-            </li>
-            <li>
-                <div class="menu-item" onclick="menuAction('concept')">CONCEPT</div>
-                <span class="menu-sub">コンセプト</span>
-            </li>
-            <li>
-                <div class="menu-item" onclick="menuAction('explanation')">EXPLANATION</div>
-                <span class="menu-sub">作品＆用語解説</span>
-            </li>
-            <li>
-                <div class="menu-item" onclick="menuAction('about')">ABOUT US</div>
-                <span class="menu-sub">プロジェクト紹介</span>
-            </li>
+            <li><div class="menu-item" onclick="menuAction('top')">TOP</div><span class="menu-sub">トップページ</span></li>
+            <li><div class="menu-item" onclick="menuAction('concept')">CONCEPT</div><span class="menu-sub">コンセプト</span></li>
+            <li><div class="menu-item" onclick="menuAction('explanation')">EXPLANATION</div><span class="menu-sub">作品＆用語解説</span></li>
+            <li><div class="menu-item" onclick="menuAction('about')">ABOUT US</div><span class="menu-sub">プロジェクト紹介</span></li>
         </ul>
     </div>
 
     <div id="content-overlay">
-        <div style="text-align:right; margin-bottom:20px;">
-            <button onclick="closeContent()" style="background:none; border:none; color:#fff; font-size:2rem; cursor:pointer;">×</button>
+        <div class="close-btn-area">
+            <button class="close-btn" onclick="closeContent()">×</button>
         </div>
         
         <div id="content-body-concept" class="content-body hidden">
@@ -313,6 +310,16 @@
                 <span class="credit-name">Haruto Kume</span>
                 <p style="margin-top:30px;">© 2025 KARMIC IDENTITY</p>
             </div>
+            
+            <div class="mobile-link-section">
+                <div class="mobile-link-title">
+                    <span class="lang-jp">Links & Info (Mobile)</span><span class="lang-en">Links & Info (Mobile)</span>
+                </div>
+                <div id="qrcode-about"></div>
+                <div style="font-size:0.7rem; color:#888; margin-top:10px;">
+                    <span class="lang-jp">スマホで情報を持ち帰る</span><span class="lang-en">Scan to view on mobile</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -326,180 +333,63 @@
             
             <div style="text-align: center; line-height: 2.5; font-size: 0.9rem; margin-bottom: 60px; color:#ddd;">
                 <p class="lang-jp">
-                    二畳の茶室「量子庵」の掛軸型モニターは、<br>
-                    此岸と彼岸のあわいにひらく小さな境界です。<br><br>
-                    ここで入力される言葉と選択は、<br>
-                    あなたの内側に沈んでいる記憶や癖を拾い上げるための、<br>
-                    最小限の手がかりになります。<br><br>
-                    AIは計算の暗がりで仮想浄土を組み上げ、<br>
-                    その内部に一度きりの〈Karma Portrait〉を刻みます。
+                    二畳の茶室「量子庵」の掛軸型モニターは、<br>此岸と彼岸のあわいにひらく小さな境界です。<br><br>
+                    ここで入力される言葉と選択は、<br>あなたの内側に沈んでいる記憶や癖を拾い上げるための、<br>最小限の手がかりになります。<br><br>
+                    AIは計算の暗がりで仮想浄土を組み上げ、<br>その内部に一度きりの〈Karma Portrait〉を刻みます。
                 </p>
                 <p class="lang-en">
-                    The hanging scroll monitor in the tea room "Ryoshi-an"<br>
-                    is a small boundary opening between this world and the other.<br>
-                    Your words and choices become minimal cues<br>
-                    to pick up memories and habits sunk deep within you.<br>
-                    AI constructs a virtual Pure Land in computational darkness,<br>
-                    inscribing a one-time "Karma Portrait" within it.
+                    The hanging scroll monitor in the tea room "Ryoshi-an"<br>is a small boundary opening between this world and the other.<br>
+                    Your words and choices become minimal cues<br>to pick up memories and habits sunk deep within you.<br>
+                    AI constructs a virtual Pure Land in computational darkness,<br>inscribing a one-time "Karma Portrait" within it.
                 </p>
             </div>
 
-            <button class="btn-marble" onclick="goToForm()">ENTRY</button>
+            <button class="btn-entry" onclick="goToForm()"><span>ENTRY</span></button>
             <div style="text-align: center; margin-top: 30px; font-size: 0.7rem; color: #444;">
                 © 2025 KARMIC IDENTITY
             </div>
         </div>
 
         <div id="form-page" class="hidden">
-            
-            <div class="section-header">
-                <h2>黄土</h2>
-                <span class="sub lang-en">Yellow Earth</span>
-            </div>
-
+            <div class="section-header"><h2>黄土</h2><span class="sub lang-en">Yellow Earth</span></div>
             <div class="row-group">
-                <div style="flex: 2;">
-                    <label class="lang-jp">ニックネーム</label><label class="lang-en">Nickname</label>
-                    <input type="text" id="input-nickname" class="clean-input">
-                </div>
-                <div style="flex: 1;">
-                    <label class="lang-jp">年齢</label><label class="lang-en">Age</label>
-                    <input type="text" class="clean-input" style="text-align: center;"> 
-                </div>
+                <div style="flex: 2;"><label class="lang-jp">ニックネーム</label><label class="lang-en">Nickname</label><input type="text" id="input-nickname" class="clean-input"></div>
+                <div style="flex: 1;"><label class="lang-jp">年齢</label><label class="lang-en">Age</label><input type="text" class="clean-input" style="text-align: center;"></div>
             </div>
+            <div class="input-group"><label class="lang-jp">特別だと感じる存在は？</label><label class="lang-en">Who is your special?</label><input type="text" id="input-special" class="clean-input"></div>
+            <div class="input-group"><label class="lang-jp">好きな匂いは</label><label class="lang-en">What smell do you love in?</label><input type="text" id="input-smell" class="clean-input"></div>
 
-            <div class="input-group">
-                <label class="lang-jp">特別だと感じる存在は？</label><label class="lang-en">Who is your special?</label>
-                <input type="text" id="input-special" class="clean-input">
-            </div>
-            <div class="input-group">
-                <label class="lang-jp">好きな匂いは</label><label class="lang-en">What smell do you love in?</label>
-                <input type="text" id="input-smell" class="clean-input">
-            </div>
-
-            <div class="section-header">
-                <h2>青春</h2>
-                <span class="sub lang-en">Youth</span>
-            </div>
+            <div class="section-header"><h2>青春</h2><span class="sub lang-en">Youth</span></div>
+            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-jp">生きていたいのは</p><p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-en">What do you live in?</p>
             
-            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-jp">生きていたいのは</p>
-            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-en">What do you live in?</p>
+            <div class="input-group"><div class="slider-labels"><span class="lang-jp">喧騒</span><span class="lang-en">Noise</span><span class="lang-jp">静寂</span><span class="lang-en">Silence</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-noise" min="0" max="4" step="1" value="2"></div></div>
+            <div class="input-group"><div class="slider-labels"><span class="lang-jp">都市</span><span class="lang-en">City</span><span class="lang-jp">田舎</span><span class="lang-en">Country</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-city" min="0" max="4" step="1" value="2"></div></div>
+            <div class="input-group"><div class="slider-labels"><span class="lang-jp">現実</span><span class="lang-en">Reality</span><span class="lang-jp">夢想</span><span class="lang-en">Fantasy</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-reality" min="0" max="4" step="1" value="2"></div></div>
 
-            <div class="input-group">
-                <div class="slider-labels"><span class="lang-jp">喧騒</span><span class="lang-en">Noise</span> <span class="lang-jp">静寂</span><span class="lang-en">Silence</span></div>
-                <div class="slider-wrapper">
-                    <div class="visual-track">
-                        <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
-                    </div>
-                    <input type="range" id="slider-noise" min="0" max="4" step="1" value="2">
-                </div>
-            </div>
+            <div class="section-header"><h2>朱夏</h2><span class="sub lang-en">Vermilion Summer</span></div>
+            <div class="input-group"><label class="lang-jp">あなたにとっての修羅は</label><label class="lang-en">When is your path to hell?</label><div class="slider-labels"><span><span class="lang-jp">過去</span><span class="lang-en">Past</span></span><span><span class="lang-jp">現在</span><span class="lang-en">Now</span></span><span><span class="lang-jp">未来</span><span class="lang-en">Fut</span></span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-hell" min="0" max="2" step="1" value="1"></div></div>
+            <div class="input-group"><label class="lang-jp">今または過去に抱いた夢は</label><label class="lang-en">What have you dreamed?</label><textarea id="area-dream" class="clean-area" rows="3"></textarea></div>
 
-            <div class="input-group">
-                <div class="slider-labels"><span class="lang-jp">都市</span><span class="lang-en">City</span> <span class="lang-jp">田舎</span><span class="lang-en">Country</span></div>
-                <div class="slider-wrapper">
-                    <div class="visual-track">
-                        <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
-                    </div>
-                    <input type="range" id="slider-city" min="0" max="4" step="1" value="2">
-                </div>
-            </div>
+            <div class="section-header"><h2>白冬</h2><span class="sub lang-en">White Winter</span></div>
+            <div class="input-group"><label class="lang-jp">挫折したこと</label><label class="lang-en">When did your wings once burnt?</label><textarea id="area-setback" class="clean-area" rows="3"></textarea></div>
+            <div class="input-group"><label class="lang-jp">失いたくないもの / 手放したいもの</label><label class="lang-en">What you don't want to lose / What you want to let go</label><textarea id="area-lost" class="clean-area" rows="3"></textarea></div>
 
-            <div class="input-group">
-                <div class="slider-labels"><span class="lang-jp">現実</span><span class="lang-en">Reality</span> <span class="lang-jp">夢想</span><span class="lang-en">Fantasy</span></div>
-                <div class="slider-wrapper">
-                    <div class="visual-track">
-                        <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
-                    </div>
-                    <input type="range" id="slider-reality" min="0" max="4" step="1" value="2">
-                </div>
-            </div>
-
-            <div class="section-header">
-                <h2>朱夏</h2>
-                <span class="sub lang-en">Vermilion Summer</span>
-            </div>
-
-            <div class="input-group">
-                <label class="lang-jp">あなたにとっての修羅は</label><label class="lang-en">When is your path to hell?</label>
-                <div class="slider-labels">
-                    <span><span class="lang-jp">過去</span><span class="lang-en">Past</span></span>
-                    <span><span class="lang-jp">現在</span><span class="lang-en">Now</span></span>
-                    <span><span class="lang-jp">未来</span><span class="lang-en">Fut</span></span>
-                </div>
-                <div class="slider-wrapper">
-                    <div class="visual-track">
-                        <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
-                    </div>
-                    <input type="range" id="slider-hell" min="0" max="2" step="1" value="1">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label class="lang-jp">今または過去に抱いた夢は</label><label class="lang-en">What have you dreamed?</label>
-                <textarea id="area-dream" class="clean-area" rows="3"></textarea>
-            </div>
-
-            <div class="section-header">
-                <h2>白冬</h2>
-                <span class="sub lang-en">White Winter</span>
-            </div>
-
-            <div class="input-group">
-                <label class="lang-jp">挫折したこと</label><label class="lang-en">When did your wings once burnt?</label>
-                <textarea id="area-setback" class="clean-area" rows="3"></textarea>
-            </div>
-            <div class="input-group">
-                <label class="lang-jp">失いたくないもの / 手放したいもの</label><label class="lang-en">What you don't want to lose / What you want to let go</label>
-                <textarea id="area-lost" class="clean-area" rows="3"></textarea>
-            </div>
-
-            <div class="section-header">
-                <h2>玄冬</h2>
-                <span class="sub lang-en">Black Winter</span>
-            </div>
-
-            <div class="input-group">
-                <label class="lang-jp">還るなら</label><label class="lang-en">Which do you want to be?</label>
-                <div class="slider-labels">
-                    <span><span class="lang-jp">海</span><span class="lang-en">Sea</span></span>
-                    <span><span class="lang-jp">土</span><span class="lang-en">Soil</span></span>
-                    <span><span class="lang-jp">空</span><span class="lang-en">Sky</span></span>
-                </div>
-                <div class="slider-wrapper">
-                    <div class="visual-track">
-                        <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
-                    </div>
-                    <input type="range" id="slider-return" min="0" max="2" step="1" value="1">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label class="lang-jp">向かうなら</label><label class="lang-en">Where do you go afterlife?</label>
-                <div class="slider-labels"><span class="lang-jp">北国へ</span><span class="lang-en">North</span> <span class="lang-jp">南国へ</span><span class="lang-en">South</span></div>
-                <div class="slider-wrapper">
-                    <div class="visual-track">
-                        <div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div>
-                    </div>
-                    <input type="range" id="slider-go" min="0" max="4" step="1" value="2">
-                </div>
-            </div>
+            <div class="section-header"><h2>玄冬</h2><span class="sub lang-en">Black Winter</span></div>
+            <div class="input-group"><label class="lang-jp">還るなら</label><label class="lang-en">Which do you want to be?</label><div class="slider-labels"><span><span class="lang-jp">海</span><span class="lang-en">Sea</span></span><span><span class="lang-jp">土</span><span class="lang-en">Soil</span></span><span><span class="lang-jp">空</span><span class="lang-en">Sky</span></span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-return" min="0" max="2" step="1" value="1"></div></div>
+            <div class="input-group"><label class="lang-jp">向かうなら</label><label class="lang-en">Where do you go afterlife?</label><div class="slider-labels"><span class="lang-jp">北国へ</span><span class="lang-en">North</span><span class="lang-jp">南国へ</span><span class="lang-en">South</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-go" min="0" max="4" step="1" value="2"></div></div>
 
             <div class="qr-section">
                 <label class="lang-jp">画像の奉納 (スマホ連携)</label><label class="lang-en">Image Upload</label>
                 <div id="qrcode"></div>
                 <div id="qr-status" class="lang-jp" style="margin-top:10px; font-size:0.8rem; color:#888;">スマホで読み取ってください</div>
                 <div id="qr-status-en" class="lang-en" style="margin-top:10px; font-size:0.8rem; color:#888; display:none;">Scan with smartphone</div>
-                
                 <img id="received-image" class="received-thumb">
-                
                 <button id="reset-img-btn" class="lang-jp" onclick="resetImage()" style="display:none; margin:20px auto; background:none; border:none; border-bottom:1px solid #fff; color:#fff; cursor:pointer;">奉納し直す</button>
                 <button id="reset-img-btn-en" class="lang-en" onclick="resetImage()" style="display:none; margin:20px auto; background:none; border:none; border-bottom:1px solid #fff; color:#fff; cursor:pointer;">Reset Image</button>
             </div>
 
-            <button class="btn-marble" onclick="submitForm()">INITIATE</button>
+            <button class="btn-entry" onclick="submitForm()"><span>INITIATE</span></button>
         </div>
-
     </div>
 
     <div id="loading-overlay">
@@ -507,23 +397,40 @@
     </div>
 
     <script>
-        // === LOGIC ===
         let mySessionId = ""; 
         let receivedImageBase64 = ""; 
         let currentLang = 'jp'; 
 
-        // Init
         document.addEventListener('DOMContentLoaded', function() {
             if(window.crypto && window.crypto.randomUUID) {
                 mySessionId = crypto.randomUUID();
             } else {
                 mySessionId = "session_" + Date.now();
             }
+            initSliders();
             setLanguage('jp');
             connectWebSocket();
+            // Generate QR for mobile access (Using current URL)
+            generateAboutQR();
         });
 
-        // WebSocket
+        function generateAboutQR() {
+            const qrContainer = document.getElementById("qrcode-about");
+            new QRCode(qrContainer, { text: window.location.href, width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff" });
+        }
+
+        function initSliders() {
+            const sliders = document.querySelectorAll('input[type=range]');
+            sliders.forEach(slider => {
+                const randomDeg = Math.floor(Math.random() * 360) + 'deg';
+                slider.style.setProperty('--thumb-rotate', randomDeg);
+                slider.addEventListener('input', () => {
+                     const newDeg = Math.floor(Math.random() * 360) + 'deg';
+                     slider.style.setProperty('--thumb-rotate', newDeg);
+                });
+            });
+        }
+
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
@@ -535,33 +442,31 @@
                     img.style.display = "block";
                     document.getElementById('qrcode').style.display = 'none';
                     receivedImageBase64 = data.image_data;
-                    
                     const status = document.getElementById('qr-status');
                     status.innerText = "画像が奉納されました";
                     status.style.color = "#fff";
-                    
                     updateResetBtn();
                 }
             };
         }
 
-        // Menu Logic
         function toggleMenu() {
             const menu = document.getElementById('menu-overlay');
             const hamburger = document.querySelector('.hamburger');
             const isOpen = menu.classList.contains('show');
-            
             if(isOpen) {
                 menu.classList.remove('show');
                 hamburger.classList.remove('open');
+                document.body.classList.remove('no-scroll');
             } else {
                 menu.classList.add('show');
                 hamburger.classList.add('open');
+                document.body.classList.add('no-scroll');
             }
         }
 
         function menuAction(action) {
-            toggleMenu(); // close menu
+            toggleMenu();
             setTimeout(() => {
                 if(action === 'top') {
                     resetView();
@@ -575,49 +480,42 @@
             const overlay = document.getElementById('content-overlay');
             const bodies = document.querySelectorAll('.content-body');
             bodies.forEach(b => b.classList.add('hidden'));
-            
             document.getElementById('content-body-' + type).classList.remove('hidden');
             overlay.classList.add('show');
+            document.body.classList.add('no-scroll');
         }
 
         function closeContent() {
             document.getElementById('content-overlay').classList.remove('show');
+            document.body.classList.remove('no-scroll');
         }
 
         function resetView() {
              const landing = document.getElementById('landing-page');
              const form = document.getElementById('form-page');
-             
-             // じわっと遷移
              form.classList.add('dissolve-out');
              setTimeout(() => {
                  form.classList.add('hidden');
                  form.classList.remove('dissolve-out');
-                 
                  landing.classList.remove('hidden');
                  landing.classList.add('dissolve-in');
                  document.getElementById('btn-back').classList.add('hidden');
                  window.scrollTo(0,0);
-                 
                  setTimeout(() => landing.classList.remove('dissolve-in'), 800);
              }, 800);
         }
 
-        // Navigation (Jiwatto Transition)
         window.goToForm = function() {
             const landing = document.getElementById('landing-page');
             const form = document.getElementById('form-page');
-            
             landing.classList.add('dissolve-out');
             setTimeout(() => {
                 landing.classList.add('hidden');
                 landing.classList.remove('dissolve-out');
-                
                 form.classList.remove('hidden');
                 form.classList.add('dissolve-in');
                 document.getElementById('btn-back').classList.remove('hidden');
                 window.scrollTo(0,0);
-                
                 setTimeout(() => form.classList.remove('dissolve-in'), 800);
             }, 800);
         };
@@ -628,12 +526,19 @@
             }
         };
 
-        // Language
+        window.toggleLanguage = function() {
+            const newLang = (currentLang === 'jp') ? 'en' : 'jp';
+            setLanguage(newLang);
+        };
+
         window.setLanguage = function(lang) {
             currentLang = lang;
             document.body.className = 'lang-' + lang;
-            document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
-            document.getElementById('lang-btn-' + lang).classList.add('active');
+            
+            document.getElementById('lang-part-jp').classList.remove('active');
+            document.getElementById('lang-part-en').classList.remove('active');
+            document.getElementById('lang-part-' + lang).classList.add('active');
+
             updateQRCode();
             updateResetBtn();
         };
@@ -643,14 +548,12 @@
             const btnEn = document.getElementById('reset-img-btn-en');
             btnJp.style.display = 'none';
             btnEn.style.display = 'none';
-            
             if(receivedImageBase64) {
                 if(currentLang === 'jp') btnJp.style.display = 'block';
                 else btnEn.style.display = 'block';
             }
         }
 
-        // QR Code
         function updateQRCode() {
             const qrContainer = document.getElementById("qrcode");
             qrContainer.innerHTML = "";
@@ -669,7 +572,6 @@
             }
         };
 
-        // Submit
         window.submitForm = async function() {
             document.getElementById('loading-overlay').style.opacity = '1';
             
@@ -677,20 +579,15 @@
             formData.append('nickname', document.getElementById('input-nickname').value || "Unknown");
             formData.append('special_existence', document.getElementById('input-special').value || "");
             formData.append('favorite_smell', document.getElementById('input-smell').value || "");
-            
             formData.append('slider_noise_silence', document.getElementById('slider-noise').value);
             formData.append('slider_city_country', document.getElementById('slider-city').value);
             formData.append('slider_reality_fantasy', document.getElementById('slider-reality').value);
-            
             formData.append('slider_hell_time', document.getElementById('slider-hell').value);
             formData.append('text_dream', document.getElementById('area-dream').value || "");
-            
             formData.append('text_setback', document.getElementById('area-setback').value || "");
             formData.append('text_lost_release', document.getElementById('area-lost').value || "");
-            
             formData.append('slider_return_element', document.getElementById('slider-return').value);
             formData.append('slider_go_north_south', document.getElementById('slider-go').value);
-            
             formData.append('image_b64', receivedImageBase64);
 
             try {
