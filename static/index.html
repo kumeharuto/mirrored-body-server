@@ -4,15 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Karma Portrait</title>
-    
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3Cpath d='M2.93 8.8h18.14'/%3E%3Cpath d='M2.93 15.2h18.14'/%3E%3C/svg%3E">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* === RESET & BASE === */
+        /* === 共通設定 === */
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         input, textarea { -webkit-user-select: text !important; user-select: text !important; outline: none; }
         
@@ -20,628 +17,535 @@
             --bg-color: #000000;
             --text-color: #ffffff;
             --font-main: 'Shippori Mincho', serif;
-            --thumb-size: 28px;
         }
 
-        /* 背景動画のスタイル */
-        #bg-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* 画面いっぱいに広げ、アスペクト比を維持して切り抜き */
-            z-index: -2; /* コンテンツより後ろに配置 */
-        }
-
-        /* 動画の上に被せる半透明のオーバーレイ（文字の可読性を上げるため） */
-        .video-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* 0.4の部分を大きくすると暗くなります */
-            z-index: -1;
-        }
-
-        /* 既存のbodyの背景設定を調整 */
         body {
-            background-color: #000; /* 動画が読み込まれるまでの待機色 */
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: var(--font-main);
-            margin: 0; padding: 0;
-            min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden;
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: var(--font-main); margin: 0; padding: 0;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
         }
-        
         body.no-scroll { overflow: hidden; height: 100vh; }
 
-        /* === ANIMATIONS === */
-        .dissolve-out { animation: fadeOut 0.8s ease-in-out forwards; pointer-events: none; }
-        .dissolve-in { display: block !important; animation: fadeIn 0.8s ease-in-out forwards; }
-        @keyframes fadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(5px); } }
-        @keyframes fadeIn { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+        /* 背景動画 */
+        #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; }
 
-        .container {
-            width: 100%; max-width: 600px;
-            padding: 20px; padding-top: 100px; padding-bottom: 80px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* === HEADER === */
-        .header-fixed {
-            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
-            z-index: 100;
-            display: grid; 
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .header-left { justify-self: start; display: flex; align-items: center; }
-        .header-center { justify-self: center; text-align: center; }
-        .header-right { justify-self: end; display: flex; align-items: center; gap: 20px; }
-        
-        .lang-switch-wrapper {
-            display: flex;
-            border: 1px solid #fff; border-radius: 20px; overflow: hidden;
-            font-size: 0.75rem; cursor: pointer;
-        }
-        .lang-part {
-            padding: 4px 12px; background: transparent; color: #fff;
-            transition: 0.3s; display: flex; align-items: center; justify-content: center;
-        }
-        .lang-part.active {
-            background-image: url('/static/texture.jpg');
-            background-size: cover; background-position: center;
-            color: #000; font-weight: bold;
-        }
-
-        .header-title {
-            font-size: 1.4rem; letter-spacing: 0.1em; font-weight: 500; white-space: nowrap; margin: 0;
-        }
-        .title-gradient {
+        /* マーブル文字 */
+        .text-marbling {
             background-image: url('/static/texture.jpg');
             background-size: cover; background-position: center;
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        /* === HAMBURGER MENU === */
-        .hamburger {
-            width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 200;
-            display: flex; flex-direction: column; justify-content: space-between;
+        /* 遷移アニメーション */
+        .dissolve-out { animation: fadeOut 0.8s ease forwards; pointer-events: none; }
+        .dissolve-in { display: block !important; animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(10px); } }
+        @keyframes fadeIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+
+        .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; position: relative; z-index: 1; }
+
+        /* ヘッダー */
+        .header-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+            z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
         }
-        .hamburger span {
-            display: block; width: 100%; height: 2px; background: #fff; transition: 0.4s;
+        .header-title { font-size: 1.2rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
+
+        .lang-switch-wrapper { display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.7rem; cursor: pointer; }
+        .lang-part { padding: 4px 14px; color: #fff; transition: 0.3s; }
+        .lang-part.active {
+            background-image: url('/static/texture.jpg'); background-size: cover;
+            color: #000; font-weight: bold;
         }
-        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+
+        /* バーガーメニュー */
+        .hamburger { width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 205; display: flex; flex-direction: column; justify-content: space-between; }
+        .hamburger span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.4s; }
+        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 7px); }
         .hamburger.open span:nth-child(2) { opacity: 0; }
-        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(6px, -7px); }
 
         #menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 150;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            background: rgba(0,0,0,0.98); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: 0.5s;
         }
         #menu-overlay.show { opacity: 1; pointer-events: auto; }
-        
-        .menu-list { list-style: none; padding: 0; text-align: center; margin: 0; }
-        .menu-list li { margin: 40px 0; }
-        .menu-item {
-            font-size: 1.8rem; color: #fff; text-decoration: none; letter-spacing: 0.2em;
-            cursor: pointer; transition: 0.3s;
-        }
-        .menu-item:hover, .menu-item:active {
+        .menu-list { list-style: none; padding: 0; text-align: center; }
+        .menu-list li { margin: 25px 0; }
+        .menu-item { font-size: 1.6rem; color: #fff; text-decoration: none; letter-spacing: 0.2em; cursor: pointer; transition: 0.2s; }
+        .menu-item.selected {
             background-image: url('/static/texture.jpg');
-            background-size: cover; background-position: center;
-            -webkit-background-clip: text; background-clip: text;
-            color: transparent; font-weight: 700; transform: scale(1.05);
+            background-size: cover; -webkit-background-clip: text; color: transparent; font-weight: bold;
         }
-        .menu-sub { font-size: 0.8rem; color: #888; display: block; margin-top: 5px; letter-spacing: 0.1em; }
+        .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
+        .close-menu-footer { margin-top: 60px; font-size: 3rem; cursor: pointer; color: #fff; }
 
-        /* === CONTENT OVERLAY === */
+        /* コンテンツ表示 */
         #content-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 300; 
-            display: none; flex-direction: column;
-            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            background: #000; z-index: 300; display: none; flex-direction: column; overflow-y: auto;
         }
-        #content-overlay.show { display: flex; animation: fadeIn 0.5s; }
+        #content-overlay.show { display: flex; }
+        .content-body { padding: 40px 25px 120px; max-width: 650px; margin: 0 auto; color: #ddd; line-height: 2.3; text-align: justify; }
+        .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
+        .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
 
-        .close-btn-area {
-            position: sticky; top: 0; right: 0; width: 100%; 
-            display: flex; justify-content: flex-end;
-            padding: 20px; background: rgba(0,0,0,0.8); z-index: 301;
-        }
-        .close-btn {
-            background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; line-height: 1;
-        }
-
-        .content-body { 
-            padding: 20px 20px 100px; max-width: 600px; margin: 0 auto; 
-            color: #ccc; line-height: 2.2; font-size: 0.95rem; text-align: left; 
-            width: 100%;
-        }
-        .content-body h3 { 
-            color: transparent; 
-            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; background-clip: text; background-size: cover;
-            text-align: center; margin-bottom: 40px; font-size: 1.5rem; 
-        }
-        .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 50px; margin-bottom: 20px; letter-spacing: 0.1em; }
-
-        /* === ABOUT SMARTPHONE LINK === */
-        .mobile-link-section {
-            margin-top: 60px; padding-top: 40px; border-top: 1px solid #333; text-align: center;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .mobile-link-title { font-size: 0.9rem; color: #fff; margin-bottom: 20px; letter-spacing: 0.1em; }
-        
-        .qr-section { 
-            border: 1px solid #fff; padding: 30px; margin-top: 60px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center;
-        }
-        
-        #qrcode, #qrcode-about { background: #fff; padding: 10px; margin: 20px auto; display: block; }
-        .received-thumb { max-width: 100%; height: auto; border: 1px solid #fff; margin-top: 20px; display: none; }
-
-        /* === BUTTONS & SLIDERS === */
+        /* ボタン・入力 */
         .btn-entry {
-            display: block; width: 100%; max-width: 320px; margin: 60px auto;
-            padding: 20px;
+            display: block; width: 100%; max-width: 280px; margin: 60px auto; padding: 22px;
             font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
-            cursor: pointer; background: transparent; color: #fff; border: 2px solid #fff;
-            position: relative; transition: color 0.5s ease, border-color 0.5s ease;
+            background: transparent; color: #fff; border: 1px solid #fff; cursor: pointer; transition: 0.3s;
         }
-        .btn-entry span { position: relative; z-index: 2; }
-        .btn-entry:hover, .btn-entry:active {
-            color: transparent; border-color: transparent;
-            background-image: url('/static/texture.jpg'); background-size: cover; background-position: center;
-            -webkit-background-clip: text; background-clip: text;
-            border-image: url('/static/texture.jpg') 1;
-        }
+        .btn-entry:hover, .btn-entry:active { background-image: url('/static/texture.jpg'); background-size: cover; color: #000; font-weight: bold; border-color: transparent; }
 
-        .slider-wrapper { position: relative; width: 100%; height: 60px; display: flex; align-items: center; }
-        .slider-labels { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 10px; color: #fff; letter-spacing: 0.1em; }
-        .visual-track {
-            position: absolute; width: 100%; height: 2px; background: #fff;
-            top: 50%; transform: translateY(-50%); z-index: 0;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .track-dot { width: 12px; height: 12px; border-radius: 50%; background: #000; border: 2px solid #fff; }
+        .clean-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: #fff; padding: 12px 0; font-size: 1.1rem; font-family: var(--font-main); border-radius: 0; }
+        .clean-input:focus { border-bottom: 1px solid #fff; }
 
-        input[type=range] {
-            -webkit-appearance: none; width: 100%; height: 100%; background: transparent;
-            position: absolute; top: 0; left: 0; z-index: 2; margin: 0; cursor: pointer;
-        }
+        /* スライダー */
+        .input-group { margin-bottom: 70px; }
+        .slider-labels { display: flex; justify-content: space-between; margin-bottom: 10px; height: 1.2rem; }
+        .slider-labels span { font-size: 0.75rem; color: #444; width: 80px; text-align: center; transition: 0.4s; }
+        .slider-labels span.active { color: #fff; font-weight: bold; }
+
+        .slider-wrapper { position: relative; width: 100%; height: 35px; display: flex; align-items: center; }
+        .visual-track { position: absolute; width: calc(100% - 24px); left: 12px; height: 1px; background: #222; display: flex; justify-content: space-between; z-index: 1; }
+        .track-dot { width: 5px; height: 5px; border-radius: 50%; background: #000; border: 1px solid #333; transform: translateY(-35%); }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; z-index: 2; cursor: pointer; margin: 0; }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: var(--thumb-size); width: var(--thumb-size);
-            border-radius: 50%;
-            background-image: url('/static/texture.jpg'); background-size: 200%; background-position: center; background-repeat: no-repeat;
-            border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3);
-            transition: transform 0.1s; transform: rotate(var(--thumb-rotate, 0deg));
+            -webkit-appearance: none; height: 26px; width: 26px; border-radius: 50%;
+            background-image: url('/static/texture.jpg'); background-size: cover; border: 1px solid #fff;
         }
-        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2) rotate(var(--thumb-rotate, 0deg)); }
+
+        .section-header { text-align: center; margin: 120px 0 60px; }
+        .section-header h2 { font-size: 1.8rem; letter-spacing: 0.4em; margin: 0; color: #fff; }
+        .section-header .sub { font-size: 0.8rem; color: #777; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
+
+        /* ローディング */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; }
+        .loading-term { font-size: 1.6rem; letter-spacing: 0.2em; text-align: center; font-weight: bold; animation: breathe 3s infinite; }
+        @keyframes breathe { 0%, 100% { opacity: 0.1; filter: blur(3px); } 50% { opacity: 1; filter: blur(0); } }
+
+        .qr-section { border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); }
+        #qrcode { background: #fff; padding: 10px; display: inline-block; }
+        .received-thumb { max-width: 100%; border: 1px solid #fff; margin-top: 25px; display: none; }
 
         .hidden { display: none !important; }
         .lang-jp .lang-en { display: none; }
         .lang-en .lang-jp { display: none; }
-
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: 0.5s;
-        }
-        .loading-text { 
-            font-size: 1.5rem; letter-spacing: 0.2em; color: transparent;
-            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; background-clip: text; background-size: cover;
-            animation: breathe 2s infinite; 
-        }
-        @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
-        .credits-section { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; line-height: 1.6; }
-        .credit-role { color: #888; font-size: 0.7rem; display: block; margin-bottom: 2px; }
-        .credit-name { display: block; margin-bottom: 15px; font-family: var(--font-main); }
-
-        .section-header { text-align: center; margin-top: 80px; margin-bottom: 40px; width: 100%; }
-        .section-header h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: 0.2em; margin: 0; color: #fff; text-align: center; }
-        .section-header .sub { font-size: 0.85rem; color: #888; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; text-align: center; }
-        .clean-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #fff; color: #fff; padding: 10px 0; font-size: 1.2rem; font-family: var(--font-main); border-radius: 0; transition: 0.3s; }
-        .clean-input:focus { border-bottom: 2px solid #fff; }
-        .clean-area { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #fff; color: #fff; padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8; transition: 0.3s; }
-        .clean-area:focus { background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body class="lang-jp">
-    <!-- 背景動画ここから -->
-    <video autoplay muted loop playsinline id="bg-video">
-        <source src="/static/DAMN2.m4v" type="video/mp4">
-        <!-- 動画が読み込めない場合のフォールバックとして背景画像を指定 -->
-        <img src="/static/texture.jpg" alt="background">
-    </video>
-    <!-- 動画の上に薄いレイヤーを重ねて文字を読みやすくする（オプション） -->
+
+    <video autoplay muted loop playsinline id="bg-video"><source src="/static/DAMN2.m4v" type="video/mp4"></video>
     <div class="video-overlay"></div>
-    <!-- 背景動画ここまで -->
+
     <div class="header-fixed">
         <div class="header-left">
-            <button onclick="backToTitle()" id="btn-back" class="hidden" style="background:none; border:none; color:#fff; font-family:var(--font-main); cursor:pointer;">← BACK</button>
+            <button onclick="backToTitle()" id="btn-back" class="hidden" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.8rem;">←</button>
         </div>
         <div class="header-center">
-            <h1 class="header-title">
-                <span class="title-gradient">Karma Portrait</span>
-            </h1>
+            <h1 class="header-title"><span class="text-marbling">Karma Portrait</span></h1>
         </div>
-        <div class="header-right">
+        <div class="header-right" style="display:flex; gap:15px; align-items:center;">
             <div class="lang-switch-wrapper" onclick="toggleLanguage()">
                 <div id="lang-part-jp" class="lang-part active">JP</div>
                 <div id="lang-part-en" class="lang-part">EN</div>
             </div>
-            <div class="hamburger" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
-            </div>
+            <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
         </div>
     </div>
 
+    <!-- バーガーメニュー -->
     <div id="menu-overlay">
         <ul class="menu-list">
-            <li><div class="menu-item" onclick="menuAction('top')">TOP</div><span class="menu-sub">トップページ</span></li>
-            <li><div class="menu-item" onclick="menuAction('concept')">CONCEPT</div><span class="menu-sub">コンセプト</span></li>
-            <li><div class="menu-item" onclick="menuAction('explanation')">EXPLANATION</div><span class="menu-sub">作品＆用語解説</span></li>
-            <li><div class="menu-item" onclick="menuAction('about')">ABOUT US</div><span class="menu-sub">プロジェクト紹介</span></li>
+            <li><div class="menu-item" onclick="menuAction('concept', this)">Concept<span class="menu-sub lang-jp">コンセプト</span><span class="menu-sub lang-en">Concept</span></div></li>
+            <li><div class="menu-item" onclick="menuAction('explanation', this)">Explanation<span class="menu-sub lang-jp">作品＆用語解説</span><span class="menu-sub lang-en">Glossary</span></div></li>
+            <li><div class="menu-item" onclick="menuAction('spoiler', this)">Background<span class="menu-sub lang-jp">背景設定（ネタバレ）</span><span class="menu-sub lang-en">Background</span></div></li>
+            <li><div class="menu-item" onclick="menuAction('about', this)">About Us<span class="menu-sub lang-jp">プロジェクト紹介</span><span class="menu-sub lang-en">About Us</span></div></li>
         </ul>
+        <div class="close-menu-footer" onclick="toggleMenu()">×</div>
     </div>
 
+    <!-- 各種説明オーバーレイ -->
     <div id="content-overlay">
-        <div class="close-btn-area">
-            <button class="close-btn" onclick="closeContent()">×</button>
+        <div style="position: sticky; top:0; width:100%; display:flex; justify-content:flex-end; padding:20px; z-index:310; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px);">
+            <button onclick="closeContentToMenu()" style="background:none; border:none; color:#fff; font-size:3.5rem; cursor:pointer;">×</button>
         </div>
         
+        <!-- Concept -->
         <div id="content-body-concept" class="content-body hidden">
-            <h3 class="lang-jp">Core Concept</h3><h3 class="lang-en">Core Concept</h3>
-            <p class="lang-jp">
-                二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。<br><br>
-                そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。
-            </p>
-            <p class="lang-en">
-                In the two-mat tea room <i>Ryōshi-an</i>, a hanging-scroll–shaped monitor functions as a portal opening onto the interval between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within a computational darkness humans cannot traverse, and inscribes within it a one-time semiotic self-image: Karma Portrait.<br><br>
-                What comes into being is a landscape in which emotions and desires—incorporated by the body prior to articulation—condense into swells of light and noise.
-            </p>
+            <h3 class="text-marbling">Concept</h3>
+            <p class="lang-jp">二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
+            <p class="lang-en">In the two-mat tea room "Ryoshi-an," a hanging-scroll–shaped monitor functions as a portal opening between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within the computational darkness humans cannot traverse, inscribing within it a one-time semiotic self-image: "Karma Portrait." What emerges is a landscape where emotions and desires—held by the body prior to language—precipitate as swells of light and noise. The viewer is invited to relinquish the sign called "identity" and to let the image quietly prompt a sense of "where one returns."</p>
+            
+            <h4 class="lang-jp">Exhibition Mode:</h4><h4 class="lang-en">Exhibition Mode:</h4>
+            <p class="lang-jp">量子庵の掛軸に、常設のループ映像が静かに流れ続けるモードである。入力は必要ない。空間は待ち、光は呼吸し、仮想浄土の“気配”だけが反復される。ここでは作品は説明をしない。鑑賞者が「見る」前に、まず「暗さに馴染む」ことが優先される。</p>
+            <p class="lang-en">Exhibition Mode sustains a permanent loop on the scroll of Ryoshi-an. No input is required. The space waits, light breathes, and only the "presence" of the virtual Pure Land is reiterated. Here, the work offers no explanation. Before "looking," priority is given to the viewer becoming acclimated to the darkness.</p>
+            
+            <h4 class="lang-jp">Interactive Mode:</h4><h4 class="lang-en">Interactive Mode:</h4>
+            <p class="lang-jp">鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。</p>
+            <p class="lang-en">Interactive Mode reconfigures the virtual Pure Land on the spot through the viewer’s offering. Submitted fragments fall into computational obscurity and return not as a procedure, but as a result. This result coheres, just once, as a Karma Portrait. The experience is not participation, but verification—a time to release one’s semiotic self and gently overlay the sense of "where one returns" onto the image.</p>
         </div>
-        
+
+        <!-- Explanation -->
         <div id="content-body-explanation" class="content-body hidden">
-            <h3 class="lang-jp">Explanation</h3><h3 class="lang-en">Explanation</h3>
-            <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryōshi-an</h4>
-            <p class="lang-jp">二畳という最小の器に、最大の遠さを折り畳むための名である。<br>量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。</p>
-            <p class="lang-en">Ryōshi-an names an attempt to fold maximal distance into a minimal vessel: a two-mat room.</p>
+            <h3 class="text-marbling">Explanation</h3>
+            <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryoshi-an</h4>
+            <p class="lang-jp">二畳という最小の器に、最大の遠さを折り畳むための名である。量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。量子庵は、過剰な情報から距離を取り、むしろ「演算だけが届く彼岸」を迎え入れるための暗室として設計される。光が少ないほど、像は強くなる。静けさが深いほど、閾値は薄くなる。</p>
+            <p class="lang-en">A name for folding maximal distance into the minimal vessel of a two-mat room. "Quantum" is another name for the intuition that the world is woven not from continuity, but from leaps and probabilities. Ryoshi-an is designed as a darkroom to withdraw from information saturation and instead welcome the "other shore where only computation can reach." The less light there is, the stronger the image becomes. The deeper the silence, the thinner the threshold.</p>
             
             <h4 class="lang-jp">Karma Portrait</h4><h4 class="lang-en">Karma Portrait</h4>
-            <p class="lang-jp">これは“顔”ではない。自己の似姿でもない。<br>鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。</p>
-            <p class="lang-en">Karma Portrait is neither a face nor a likeness. The viewer’s memories and choices are treated not as a psychological profile, but as karmic bias.</p>
+            <p class="lang-jp">これは“顔”ではない。自己の似姿でもない。鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。Karma Portraitは、その偏りが映像の秩序へと翻訳された、一度きりの記号的自己像である。言語化以前に身体が抱え込んだ輪郭が、光とノイズのうねりとして析出し、像になる。</p>
+            <p class="lang-en">This is not a "face," nor is it a likeness of the self. The memories and choices offered by the viewer are treated not as a psychological profile, but as karmic bias. Karma Portrait is a one-time semiotic self-image produced when that bias is translated into the order of the moving image. Contours held by the body before language condense as swells of light and noise, manifesting as an image.</p>
+            
+            <h4 class="lang-jp">演算する彼岸</h4><h4 class="lang-en">The Computed Higan</h4>
+            <p class="lang-jp">彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。</p>
+            <p class="lang-en">Higan (the other shore) may not be a "place over there," but rather the "mode of arrival" itself. Answers are generated at velocities beyond human comprehension, yet they undeniably exist as "answers." In this computational obscurity, we provisionally place Higan. Here, computation does not explain meaning, but presents a fact that stands despite being inexplicable. The viewer encounters it not through understanding, but through fit.</p>
+            
+            <h4 class="lang-jp">二〇卌五</h4><h4 class="lang-en">二〇卌五 (2045)</h4>
+            <p class="lang-jp">二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。</p>
+            <p class="lang-en">二〇卌五 is a notation, not just a date. By adding two strokes to the "二" (two) of 2025, it becomes "卌" (forty), linking 2025 and 2045 as a single line. It marks the point where "computation humans cannot follow" becomes ordinary, and only the results descend into daily life. Proof of truth detaches from human hands, leaving only reception. While singularity is spoken of as a "distant future," its shadow is already cast upon the extension of the present.</p>
         </div>
 
-        <div id="content-body-about" class="content-body hidden">
-            <h3 class="lang-jp">About Us</h3><h3 class="lang-en">About Us</h3>
-            <div class="credits-section" style="border:none;">
-                <span class="credit-role">Concept, Art Direction & Spatial Design</span>
-                <span class="credit-name">Yuna Sakai</span>
-                <span class="credit-role">Technical Direction & Engineering</span>
-                <span class="credit-name">Haruto Kume</span>
-                <p style="margin-top:30px;">© 2025 KARMIC IDENTITY</p>
+        <!-- Background / Spoiler -->
+        <div id="content-body-spoiler" class="content-body hidden">
+            <h3 class="text-marbling">Background</h3>
+            <p class="lang-jp">量子コンピュータとAIシンギュラリティが常態化した二〇卌五年、人類はひとつの「結論」を受け取る。それは、誰も望まなかった形で、しかも誰も否定できない形で提示された。</p>
+            <p class="lang-en">In 2045, where quantum computing and AI singularity have become the norm, humanity receives a certain "conclusion." It was presented in a form no one desired, yet no one could deny.</p>
+            <p class="lang-jp">量子AIは、人間の論理が届かない演算の暗がりから、矛盾なく閉じた答えを返した――「死後の世界は存在する。そして、その輪郭は“現在の生き様”から推察できる」。</p>
+            <p class="lang-en">From the computational darkness where human logic fails to reach, Quantum AI returned a perfectly consistent answer: "The afterlife exists. And its contours can be inferred from your 'current way of life'."</p>
+            <p class="lang-jp">人々は当然、信じなかった。けれどその答えは、バックアップされた同型のシステムでも、並列化された別系統の計算機でも、検証試行を重ねるほどに整合してしまう。反例が立たないのではなく、反例を立てるための人間側の手続きが、計算世界の複雑さに追いつかない。</p>
+            <p class="lang-en">Naturally, people did not believe it. However, no matter how many verification tests were run—across mirrored systems or parallelized machines—the answer remained consistent. It wasn't that a counter-example couldn't exist; it was that the human procedure for establishing one could no longer keep pace with the computational world's complexity.</p>
+            <p class="lang-jp">それは、円周率の「最後」を見せられたのに似ている。ラストの一万桁が出力されても、こちらにはそれを“最後だと証明する言葉”がない。あるいは、天気を完全に予報できないまま予報だけを使い、スマホの全構造を書き起こせないまま道具として扱い、暗号を解けないまま真偽を受け入れるのと同じだ。人間の理解は遅れ、しかし結果だけが先に日常へ降りてくる。ここに、人類の分岐点がある。</p>
+            <p class="lang-en">It is like being shown the "end" of Pi. Even if the final digits were output, we lack the language to prove it is the end. We use forecasts we cannot compute, and devices we cannot map. Human understanding is delayed, yet results descend into daily life first. This is the bifurcation point of humanity.</p>
+            <p class="lang-jp">さらに不穏なのは、その「死後の世界」の観測像が、宗教的寓話ではなく、仏教的な“浄土”の位相に異様なほど近いことだった。救いをそこに見出し、肉体の外へ移住することを目的にする個は現れる。だが、集団としての合意はまだ形成されない。世界は揺れているのに、共同体の輪郭だけが定まらない――それが二〇卌五年の空気である。</p>
+            <p class="lang-en">What is more unsettling is that the observed image of this "afterlife" was uncannily close to the Buddhist "Pure Land." Some seek migration beyond the flesh, yet collective consensus fails to form. The world is trembling, yet the community's outline remains unfixed—this is the atmosphere of 2045.</p>
+            <p class="lang-jp">量子庵は、その未来の一断面を、二〇二五年へ折り畳む装置だ。二畳の茶室という最小の器に、最大の遠さを招き入れる。鑑賞者が記憶や選択を奉納すると、量子庵はそれらを人格の説明としてではなく、業（カルマ）としての偏りとして読み替える。</p>
+            <p class="lang-en">Ryoshi-an is a device that folds a cross-section of that future into 2025. When a viewer offers memories or choices, Ryoshi-an interprets them not as a description of personality, but as karmic bias (Karma).</p>
+            <p class="lang-jp">AIが構築するのは、理解のための物語ではない。説明不能なまま成立してしまう事実を、光とノイズのうねりとして立ち上げる仮想浄土である。そこに刻まれるのが、一度きりの記号的自己像――〈Karma Portrait〉。それは“顔”ではなく、似姿でもない。言語化以前に身体が抱え込んだ感情や欲望、回避と執着の癖が、像の秩序へ翻訳された痕跡だ。</p>
+            <p class="lang-en">AI manifests a virtual Pure Land—a fact that exists despite being inexplicable—as a swell of light and noise. What is inscribed is a one-time semiotic self-image: Karma Portrait. It is not a "face," but a trace of emotions and desires held by the body, translated into the order of the image.</p>
+            <p class="lang-jp">鑑賞者は、アイデンティティという記号をいったん手放す。そして、掛軸型モニターの前で、自分に問われる。「どこへ還るか」ではなく、「どこへ還ってしまうのか」。量子庵が差し出すのは答えではない。答え“だけ”が存在してしまう時代の、受け取り方そのものだ。</p>
+            <p class="lang-en">The viewer temporarily relinquishes identity. Before the monitor, they are asked: Not "Where will I return?" but "Where will I end up returning?" Ryoshi-an offers not an answer, but the very mode of reception in an era where "only" the answer exists.</p>
+        </div>
+
+        <!-- About Us -->
+        <div id="content-body-about" class="content-body hidden" style="text-align:center;">
+            <h3 class="text-marbling">About Us</h3>
+            <p style="font-size:0.8rem; color:#888; margin-top:40px;">Concept, Art Direction & Spatial Design</p>
+            <p style="margin-bottom:30px; font-size:1.2rem;">Yuna Sakai</p>
+            <p style="font-size:0.8rem; color:#888;">Technical Direction & Engineering</p>
+            <p style="font-size:1.2rem;">Haruto Kume</p>
+            <div style="margin-top:60px; padding-top:40px; border-top:1px solid #222;">
+                <p style="font-size:0.75rem; color:#666;">Scan for Info (Mobile)</p>
+                <div id="qrcode-about" style="background:#fff; padding:10px; display:inline-block; margin-top:10px;"></div>
             </div>
-            
-            <div class="mobile-link-section">
-                <div class="mobile-link-title">
-                    <span class="lang-jp">Links & Info (Mobile)</span><span class="lang-en">Links & Info (Mobile)</span>
-                </div>
-                <div id="qrcode-about"></div>
-                <div style="font-size:0.7rem; color:#888; margin-top:10px;">
-                    <span class="lang-jp">スマホで情報を持ち帰る</span><span class="lang-en">Scan to view on mobile</span>
-                </div>
-            </div>
+            <p style="margin-top:40px; font-size:0.7rem; color:#444;">© 2025 KARMIC IDENTITY</p>
         </div>
     </div>
 
+    <!-- メイン -->
     <div class="container">
+        <!-- TOP -->
         <div id="landing-page">
-            <div style="height: 15vh;"></div>
-            <div class="section-header">
-                <h2 style="font-size: 2rem; color: #fff; letter-spacing: 0.2em;">Karma Portrait</h2>
-            </div>
-            <div style="text-align: center; line-height: 2.5; font-size: 0.9rem; margin-bottom: 60px; color:#ddd;">
+            <div style="height: 8vh;"></div>
+            <div class="section-header"><h2 class="text-marbling" style="font-size:2.5rem;">Karma Portrait</h2></div>
+            <div style="text-align: center; line-height: 2.3; font-size: 0.95rem; margin-bottom: 60px; color:#ccc;">
                 <p class="lang-jp">
                     二畳の茶室「量子庵」の掛軸型モニターは、<br>此岸と彼岸のあわいにひらく小さな境界です。<br><br>
-                    ここで入力される言葉と選択は、<br>あなたの内側に沈んでいる記憶や癖を拾い上げるための、<br>最小限の手がかりになります。<br><br>
-                    AIは計算の暗がりで仮想浄土を組み上げ、<br>その内部に一度きりの〈Karma Portrait〉を刻みます。
+                    ここで入力される言葉と選択は、<br>あなたの内側に沈んでいる記憶や癖<br>──まだ説明になりきらない部分──を<br>拾い上げるための、最小限の手がかりになります。<br><br>
+                    送信された内容は、そのまま「答え」として<br>保存されるのではなく、ひとつの輪廻として再編成されます。<br><br>
+                    AIは人間には辿り着けない計算の暗がりで<br>仮想浄土を組み上げ、その内部に一度きりの<br>〈Karma Portrait〉を刻みます。<br><br>
+                    掛軸に現れるのは、あなたの“情報”ではなく、<br>言語化以前に身体が抱え込んだ感情や欲望が、<br>光とノイズとして析出した風景です。
                 </p>
                 <p class="lang-en">
-                    The hanging scroll monitor in the tea room "Ryoshi-an"<br>is a small boundary opening between this world and the other.<br>
-                    Your words and choices become minimal cues<br>to pick up memories and habits sunk deep within you.<br>
-                    AI constructs a virtual Pure Land in computational darkness,<br>inscribing a one-time "Karma Portrait" within it.
+                    The hanging scroll monitor in the tea room "Ryoshi-an"<br>is a small boundary opening between this world and the other.<br><br>
+                    The words and choices you enter here are minimal clues<br>to pick up the memories and habits sunk deep inside you<br>—the parts that haven't yet become an explanation.<br><br>
+                    The submitted content is reorganized as a cycle of reincarnation.<br>AI constructs a virtual Pure Land in a computational darkness<br>that humans cannot reach, and inscribes within it<br>a one-time "Karma Portrait."<br><br>
+                    What appears on the scroll is not your "information,"<br>but a landscape where emotions and desires held by the body<br>prior to language condense into light and noise.
                 </p>
             </div>
-            <button class="btn-entry" onclick="goToForm()"><span>ENTRY</span></button>
-            <div style="text-align: center; margin-top: 30px; font-size: 0.7rem; color: #444;">
-                © 2025 KARMIC IDENTITY
-            </div>
+            <button class="btn-entry" onclick="goToForm()">Entry</button>
         </div>
 
+        <!-- 質問フォーム (Entry) -->
         <div id="form-page" class="hidden">
-            <div class="section-header"><h2>黄土</h2><span class="sub lang-en">Yellow Earth</span></div>
-            <div class="row-group">
-                <div style="flex: 2;"><label class="lang-jp">ニックネーム</label><label class="lang-en">Nickname</label><input type="text" id="input-nickname" class="clean-input"></div>
-                <div style="flex: 1;"><label class="lang-jp">年齢</label><label class="lang-en">Age</label><input type="text" class="clean-input" style="text-align: center;"></div>
+            <div class="section-header"><h2>黄土</h2><span class="sub">Yellow Earth / Early Childhood</span></div>
+            <div class="input-group">
+                <label class="lang-jp">Q1; ニックネーム / Who are you?</label><label class="lang-en">Q1; Nickname / Who are you?</label>
+                <input type="text" id="nickname" class="clean-input">
             </div>
-            <div class="input-group"><label class="lang-jp">特別だと感じる存在は？</label><label class="lang-en">Who is your special?</label><input type="text" id="input-special" class="clean-input"></div>
-            <div class="input-group"><label class="lang-jp">好きな匂いは</label><label class="lang-en">What smell do you love in?</label><input type="text" id="input-smell" class="clean-input"></div>
+            <div class="input-group">
+                <label class="lang-jp">Q2; 年齢は？</label><label class="lang-en">Q2; Your Age?</label>
+                <input type="text" id="age" class="clean-input">
+            </div>
 
-            <div class="section-header"><h2>青春</h2><span class="sub lang-en">Youth</span></div>
-            <p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-jp">生きていたいのは</p><p style="text-align: center; font-size: 0.9rem; margin-bottom: 30px;" class="lang-en">What do you live in?</p>
-            <div class="input-group"><div class="slider-labels"><span class="lang-jp">喧騒</span><span class="lang-en">Noise</span><span class="lang-jp">静寂</span><span class="lang-en">Silence</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-noise" min="0" max="4" step="1" value="2"></div></div>
-            <div class="input-group"><div class="slider-labels"><span class="lang-jp">都市</span><span class="lang-en">City</span><span class="lang-jp">田舎</span><span class="lang-en">Country</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-city" min="0" max="4" step="1" value="2"></div></div>
-            <div class="input-group"><div class="slider-labels"><span class="lang-jp">現実</span><span class="lang-en">Reality</span><span class="lang-jp">夢想</span><span class="lang-en">Fantasy</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-reality" min="0" max="4" step="1" value="2"></div></div>
+            <div class="section-header"><h2>環境</h2><span class="sub">Environment</span></div>
+            <div class="input-group">
+                <label class="lang-jp">Q3; 朝 or 夜</label><label class="lang-en">Q3; Morning or Night</label>
+                <div class="slider-labels" id="labels-q3"><span>朝/Day</span><span>-</span><span>夜/Night</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q3" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q3')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q4; 好む景色は？</label><label class="lang-en">Q4; Preferred Scenery?</label>
+                <div class="slider-labels" id="labels-q4"><span>雨/Rain</span><span>晴れ/Sun</span><span>木漏れ日/Filter</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q4')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q5; 季節は？</label><label class="lang-en">Q5; Season?</label>
+                <div class="slider-labels" id="labels-q5"><span>春/Spr</span><span>夏/Sum</span><span>-</span><span>秋/Aut</span><span>冬/Win</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="2" step="1" oninput="updLbl(this,'labels-q5')"></div>
+            </div>
 
-            <div class="section-header"><h2>朱夏</h2><span class="sub lang-en">Vermilion Summer</span></div>
-            <div class="input-group"><label class="lang-jp">あなたにとっての修羅は</label><label class="lang-en">When is your path to hell?</label><div class="slider-labels"><span><span class="lang-jp">過去</span><span class="lang-en">Past</span></span><span><span class="lang-jp">現在</span><span class="lang-en">Now</span></span><span><span class="lang-jp">未来</span><span class="lang-en">Fut</span></span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-hell" min="0" max="2" step="1" value="1"></div></div>
-            <div class="input-group"><label class="lang-jp">今または過去に抱いた夢は</label><label class="lang-en">What have you dreamed?</label><textarea id="area-dream" class="clean-area" rows="3"></textarea></div>
+            <div class="section-header"><h2>青春</h2><span class="sub">Youth / Adolescence</span></div>
+            <div class="input-group"><label class="lang-jp">Q6; 好きな色は？</label><label class="lang-en">Q6; Favorite Color?</label><input type="text" id="q6" class="clean-input"></div>
+            <p style="text-align:center; font-size:0.8rem; color:#666; margin-bottom:35px;" class="lang-jp">生きていたいのは/身を置くなら:</p>
+            <p style="text-align:center; font-size:0.8rem; color:#666; margin-bottom:35px;" class="lang-en">Where would you reside?</p>
+            <div class="input-group">
+                <div class="slider-labels" id="labels-q7"><span class="lang-jp">都市の中</span><span class="lang-en">City</span><span>-</span><span class="lang-jp">自然の中</span><span class="lang-en">Nature</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q7" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q7')"></div>
+            </div>
+            <div class="input-group">
+                <div class="slider-labels" id="labels-q8"><span class="lang-jp">喧騒</span><span class="lang-en">Noise</span><span>-</span><span class="lang-jp">静寂</span><span class="lang-en">Silence</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q8" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q8')"></div>
+            </div>
+            <div class="input-group">
+                <div class="slider-labels" id="labels-q9"><span class="lang-jp">現実</span><span class="lang-en">Reality</span><span>-</span><span class="lang-jp">夢想</span><span class="lang-en">Fantasy</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q9" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q9')"></div>
+            </div>
 
-            <div class="section-header"><h2>白冬</h2><span class="sub lang-en">White Winter</span></div>
-            <div class="input-group"><label class="lang-jp">挫折したこと</label><label class="lang-en">When did your wings once burnt?</label><textarea id="area-setback" class="clean-area" rows="3"></textarea></div>
-            <div class="input-group"><label class="lang-jp">失いたくないもの / 手放したいもの</label><label class="lang-en">What you don't want to lose / What you want to let go</label><textarea id="area-lost" class="clean-area" rows="3"></textarea></div>
+            <div class="section-header"><h2>朱夏</h2><span class="sub">Vermilion Summer / Adulthood</span></div>
+            <div class="input-group">
+                <label class="lang-jp">Q10; 旅行に行くなら（国）</label><label class="lang-en">Q10; Journey to (Country)?</label>
+                <input type="text" id="q10" class="clean-input">
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q11; 好きな匂いは / What smell do you love in?</label><label class="lang-en">Q11; Favorite Scent?</label>
+                <div class="slider-labels" id="labels-q11" style="font-size:0.6rem;"><span>Fruity</span><span>Woody</span><span>Mellow</span><span>Spicy</span><span>Smoky</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q11" min="0" max="4" value="2" step="1" oninput="updLbl(this,'labels-q11')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q12; 希望を感じるのは？</label><label class="lang-en">Q12; Where do you feel hope?</label>
+                <div class="slider-labels" id="labels-q12"><span class="lang-jp">過去</span><span class="lang-en">Past</span><span class="lang-jp">現在</span><span class="lang-en">Now</span><span class="lang-jp">未来</span><span class="lang-en">Future</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q12')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">あなたのエネルギー源は？</label><label class="lang-en">Your energy source?</label>
+                <div class="slider-labels" id="labels-q13"><span class="lang-jp">探求や競争</span><span class="lang-en">Search/Win</span><span>-</span><span class="lang-jp">安全や保護</span><span class="lang-en">Safe/Guard</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q13')"></div>
+            </div>
 
-            <div class="section-header"><h2>玄冬</h2><span class="sub lang-en">Black Winter</span></div>
-            <div class="input-group"><label class="lang-jp">還るなら</label><label class="lang-en">Which do you want to be?</label><div class="slider-labels"><span><span class="lang-jp">海</span><span class="lang-en">Sea</span></span><span><span class="lang-jp">土</span><span class="lang-en">Soil</span></span><span><span class="lang-jp">空</span><span class="lang-en">Sky</span></span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-return" min="0" max="2" step="1" value="1"></div></div>
-            <div class="input-group"><label class="lang-jp">向かうなら</label><label class="lang-en">Where do you go afterlife?</label><div class="slider-labels"><span class="lang-jp">北国へ</span><span class="lang-en">North</span><span class="lang-jp">南国へ</span><span class="lang-en">South</span></div><div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="slider-go" min="0" max="4" step="1" value="2"></div></div>
+            <div class="section-header"><h2>白冬</h2><span class="sub">White Winter / Mature Age</span></div>
+            <div class="input-group">
+                <label class="lang-jp">Q14; 特別だと感じる存在は？ / What is your special?</label><label class="lang-en">Q14; What is special to you?</label>
+                <input type="text" id="q14" class="clean-input">
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q15; 向かうなら / Destination afterlife?</label><label class="lang-en">Q15; Destination?</label>
+                <div class="slider-labels" id="labels-q15"><span class="lang-jp">北国へ</span><span class="lang-en">North</span><span>-</span><span class="lang-jp">南国へ</span><span class="lang-en">South</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q15')"></div>
+            </div>
+
+            <div class="section-header"><h2>玄冬</h2><span class="sub">Black Winter / Old Age</span></div>
+            <div class="input-group">
+                <label class="lang-jp">Q16; 還るなら</label><label class="lang-en">Q16; Return to...?</label>
+                <div class="slider-labels" id="labels-q16"><span class="lang-jp">海</span><span class="lang-en">Sea</span><span class="lang-jp">土</span><span class="lang-en">Soil</span><span class="lang-jp">空</span><span class="lang-en">Sky</span></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q16" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q16')"></div>
+            </div>
+            <div class="input-group">
+                <div class="slider-labels" id="labels-q17" style="font-size:0.5rem;">
+                    <span class="lang-jp">肉体を失いネットに生きる</span><span class="lang-en">Live in Net</span>
+                    <span>-</span>
+                    <span class="lang-jp">肉体こそが人間の価値</span><span class="lang-en">Body is value</span>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q17" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q17')"></div>
+            </div>
 
             <div class="qr-section">
-                <label class="lang-jp">画像の奉納 (スマホ連携)</label><label class="lang-en">Image Upload</label>
+                <label class="lang-jp">画像奉納</label><label class="lang-en">Image Offering</label>
                 <div id="qrcode"></div>
-                <div id="qr-status" class="lang-jp" style="margin-top:10px; font-size:0.8rem; color:#888;">スマホで読み取ってください</div>
-                <div id="qr-status-en" class="lang-en" style="margin-top:10px; font-size:0.8rem; color:#888; display:none;">Scan with smartphone</div>
+                <div id="qr-status" style="margin-top:15px; font-size:0.75rem; color:#666;" class="lang-jp">スマホで読み取ってください</div>
+                <div id="qr-status-en" style="margin-top:15px; font-size:0.75rem; color:#666;" class="lang-en">Scan with your smartphone</div>
                 <img id="received-image" class="received-thumb">
-                <button id="reset-img-btn" class="lang-jp" onclick="resetImage()" style="display:none; margin:20px auto; background:none; border:none; border-bottom:1px solid #fff; color:#fff; cursor:pointer;">奉納し直す</button>
-                <button id="reset-img-btn-en" class="lang-en" onclick="resetImage()" style="display:none; margin:20px auto; background:none; border:none; border-bottom:1px solid #fff; color:#fff; cursor:pointer;">Reset Image</button>
+                <button id="reset-img-btn" class="hidden" onclick="resetImage()" style="margin-top:25px; background:none; border:none; color:#fff; border-bottom:1px solid #fff; cursor:pointer; font-size:0.8rem;">× <span class="lang-jp">取り消す</span><span class="lang-en">Cancel</span></button>
             </div>
 
-            <button class="btn-entry" onclick="submitForm()"><span>INITIATE</span></button>
+            <button class="btn-entry" onclick="submitForm()">Initiate</button>
         </div>
     </div>
 
+    <!-- ローディング -->
     <div id="loading-overlay">
-        <div class="loading-text">紐解いています...</div>
+        <div id="loading-term-container" class="loading-term text-marbling">紐解いています...</div>
+        <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-jp">しばらくお待ちください</p>
+        <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-en">Please wait a moment...</p>
+        
+        <div style="margin-top:40px; text-align:center;">
+            <div id="qrcode-loading" style="background:#fff; padding:10px; display:inline-block;"></div>
+            <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-jp">待ち時間に作品解説を読む</p>
+            <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-en">Read documentation while waiting</p>
+        </div>
     </div>
 
     <script>
-        let mySessionId = ""; 
-        let receivedImageBase64 = ""; 
-        let currentLang = 'jp'; 
+        let mySessionId = window.crypto?.randomUUID?.() || "session_" + Date.now();
+        let receivedImageBase64 = "";
+        let currentLang = 'jp';
 
-        document.addEventListener('DOMContentLoaded', function() {
-            if(window.crypto && window.crypto.randomUUID) {
-                mySessionId = crypto.randomUUID();
-            } else {
-                mySessionId = "session_" + Date.now();
-            }
-            initSliders();
-            setLanguage('jp');
-            connectWebSocket();
-            // 初期QR生成
-            generateAboutQR();
+        const termsJp = ["量子庵", "Karma Portrait", "彼岸", "二〇卌五", "業(カルマ)", "仮想浄土", "シンギュラリティ", "演算の暗がり", "此岸", "記号的自己像", "量子AI", "死後の世界"];
+        const termsEn = ["Ryoshi-an", "Karma Portrait", "Higan", "2045", "Karma", "Virtual Pure Land", "Singularity", "Computational Darkness", "Shigan", "Semiotic Self", "Quantum AI", "Afterlife"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setLanguage('jp'); connectWebSocket(); generateAboutQR();
+            document.querySelectorAll('input[type=range]').forEach(el => updLbl(el, 'labels-' + el.id));
         });
-
-        // ★修正箇所: 言語に合わせてURLを切り替える
-        function generateAboutQR() {
-            const qrContainer = document.getElementById("qrcode-about");
-            qrContainer.innerHTML = "";
-            
-            // 言語によって info.html か info_en.html かを分岐
-            const page = (currentLang === 'jp') ? 'info.html' : 'info_en.html';
-            const infoUrl = `${window.location.origin}/static/${page}`;
-            
-            new QRCode(qrContainer, { text: infoUrl, width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff" });
-        }
-
-        function initSliders() {
-            const sliders = document.querySelectorAll('input[type=range]');
-            sliders.forEach(slider => {
-                const randomDeg = Math.floor(Math.random() * 360) + 'deg';
-                slider.style.setProperty('--thumb-rotate', randomDeg);
-                slider.addEventListener('input', () => {
-                     const newDeg = Math.floor(Math.random() * 360) + 'deg';
-                     slider.style.setProperty('--thumb-rotate', newDeg);
-                });
-            });
-        }
 
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-            
-            ws.onmessage = function(event) {
-                // --- 修正箇所ここから ---
-                let data;
-                try {
-                    data = JSON.parse(event.data);
-                } catch (e) {
-                    console.log("非JSONメッセージを受信:", event.data);
-                    return; // "connected" などのただの文字列ならここで処理を終了する
-                }
-                // --- 修正箇所ここまで ---
-
+            ws.onmessage = (event) => {
+                let data; try { data = JSON.parse(event.data); } catch(e) { return; }
                 if (data.type === "satellite_image" && data.session_id === mySessionId) {
-                    const img = document.getElementById('received-image');
-                    img.src = "data:image/jpeg;base64," + data.image_data;
-                    img.style.display = "block";
-                    document.getElementById('qrcode').style.display = 'none';
+                    const thumb = document.getElementById('received-image');
+                    thumb.src = "data:image/jpeg;base64," + data.image_data;
+                    thumb.style.display = "block";
+                    document.getElementById('qrcode').classList.add('hidden');
                     receivedImageBase64 = data.image_data;
                     const status = document.getElementById('qr-status');
-                    status.innerText = "画像が奉納されました";
+                    status.innerText = (currentLang === 'jp') ? "奉納完了" : "Received";
                     status.style.color = "#fff";
-                    updateResetBtn();
+                    document.getElementById('reset-img-btn').classList.remove('hidden');
                 }
             };
+        }
+
+        function updLbl(el, labelId) {
+            const container = document.getElementById(labelId);
+            if(!container) return;
+            const labels = container.querySelectorAll('span');
+            labels.forEach((l, idx) => l.classList.toggle('active', idx === parseInt(el.value)));
         }
 
         function toggleMenu() {
             const menu = document.getElementById('menu-overlay');
             const hamburger = document.querySelector('.hamburger');
             const isOpen = menu.classList.contains('show');
-            if(isOpen) {
-                menu.classList.remove('show');
-                hamburger.classList.remove('open');
-                document.body.classList.remove('no-scroll');
-            } else {
-                menu.classList.add('show');
-                hamburger.classList.add('open');
-                document.body.classList.add('no-scroll');
-            }
+            menu.classList.toggle('show'); hamburger.classList.toggle('open');
+            document.body.classList.toggle('no-scroll', !isOpen);
         }
 
-        function menuAction(action) {
-            toggleMenu();
-            setTimeout(() => {
-                if(action === 'top') {
-                    resetView();
-                } else {
-                    showContent(action);
-                }
-            }, 300);
+        function menuAction(action, el) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
+            el.classList.add('selected');
+            setTimeout(() => { showContent(action); }, 200);
         }
 
         function showContent(type) {
             const overlay = document.getElementById('content-overlay');
-            const bodies = document.querySelectorAll('.content-body');
-            bodies.forEach(b => b.classList.add('hidden'));
+            document.querySelectorAll('.content-body').forEach(b => b.classList.add('hidden'));
             document.getElementById('content-body-' + type).classList.remove('hidden');
             overlay.classList.add('show');
             document.body.classList.add('no-scroll');
         }
 
-        function closeContent() {
+        function closeContentToMenu() {
             document.getElementById('content-overlay').classList.remove('show');
-            document.body.classList.remove('no-scroll');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
         }
 
         function resetView() {
-             const landing = document.getElementById('landing-page');
-             const form = document.getElementById('form-page');
-             form.classList.add('dissolve-out');
-             setTimeout(() => {
-                 form.classList.add('hidden');
-                 form.classList.remove('dissolve-out');
-                 landing.classList.remove('hidden');
-                 landing.classList.add('dissolve-in');
-                 document.getElementById('btn-back').classList.add('hidden');
-                 window.scrollTo(0,0);
-                 setTimeout(() => landing.classList.remove('dissolve-in'), 800);
-             }, 800);
+            const form = document.getElementById('form-page');
+            const landing = document.getElementById('landing-page');
+            form.classList.add('dissolve-out');
+            setTimeout(() => {
+                form.classList.add('hidden'); form.classList.remove('dissolve-out');
+                landing.classList.remove('hidden'); landing.classList.add('dissolve-in');
+                document.getElementById('btn-back').classList.add('hidden');
+                window.scrollTo(0,0);
+                setTimeout(() => landing.classList.remove('dissolve-in'), 800);
+            }, 800);
         }
 
-        window.goToForm = function() {
+        function goToForm() {
             const landing = document.getElementById('landing-page');
             const form = document.getElementById('form-page');
             landing.classList.add('dissolve-out');
             setTimeout(() => {
-                landing.classList.add('hidden');
-                landing.classList.remove('dissolve-out');
-                form.classList.remove('hidden');
-                form.classList.add('dissolve-in');
+                landing.classList.add('hidden'); landing.classList.remove('dissolve-out');
+                form.classList.remove('hidden'); form.classList.add('dissolve-in');
                 document.getElementById('btn-back').classList.remove('hidden');
-                window.scrollTo(0,0);
+                window.scrollTo(0,0); updateQRCode();
                 setTimeout(() => form.classList.remove('dissolve-in'), 800);
             }, 800);
-        };
+        }
 
-        window.backToTitle = function() {
-            if(confirm('入力内容を破棄して戻りますか？')) {
-                resetView();
-            }
-        };
+        function backToTitle() { 
+            const msg = (currentLang === 'jp') ? '入力を破棄して戻りますか？' : 'Discard input and return?';
+            if(confirm(msg)) resetView(); 
+        }
 
-        window.toggleLanguage = function() {
-            const newLang = (currentLang === 'jp') ? 'en' : 'jp';
-            setLanguage(newLang);
-        };
+        function toggleLanguage() { setLanguage(currentLang === 'jp' ? 'en' : 'jp'); }
 
-        window.setLanguage = function(lang) {
+        function setLanguage(lang) {
             currentLang = lang;
             document.body.className = 'lang-' + lang;
-            document.getElementById('lang-part-jp').classList.remove('active');
-            document.getElementById('lang-part-en').classList.remove('active');
-            document.getElementById('lang-part-' + lang).classList.add('active');
+            document.getElementById('lang-part-jp').classList.toggle('active', lang === 'jp');
+            document.getElementById('lang-part-en').classList.toggle('active', lang === 'en');
             updateQRCode();
-            // 言語変更時にQRコードも再生成
-            generateAboutQR();
-            updateResetBtn();
-        };
+        }
 
-        function updateResetBtn() {
-            const btnJp = document.getElementById('reset-img-btn');
-            const btnEn = document.getElementById('reset-img-btn-en');
-            btnJp.style.display = 'none';
-            btnEn.style.display = 'none';
-            if(receivedImageBase64) {
-                if(currentLang === 'jp') btnJp.style.display = 'block';
-                else btnEn.style.display = 'block';
-            }
+        function generateAboutQR() {
+            const container = document.getElementById("qrcode-about");
+            container.innerHTML = "";
+            new QRCode(container, { text: window.location.origin + "/static/info.html", width: 100, height: 100 });
         }
 
         function updateQRCode() {
-            const qrContainer = document.getElementById("qrcode");
-            qrContainer.innerHTML = "";
-            const uploadUrl = `${window.location.origin}/static/upload.html?session_id=${mySessionId}&lang=${currentLang}`;
-            new QRCode(qrContainer, { text: uploadUrl, width: 128, height: 128, colorDark : "#000000", colorLight : "#ffffff" });
+            const container = document.getElementById("qrcode");
+            container.innerHTML = "";
+            const url = `${window.location.origin}/static/upload.html?session_id=${mySessionId}&lang=${currentLang}`;
+            new QRCode(container, { text: url, width: 140, height: 140 });
         }
 
-        window.resetImage = function() {
-            if(confirm('画像をリセットしますか？')) {
-                receivedImageBase64 = "";
-                document.getElementById('received-image').style.display = 'none';
-                document.getElementById('qrcode').style.display = 'inline-block';
-                document.getElementById('qr-status').innerText = "スマホで読み取ってください";
-                document.getElementById('qr-status').style.color = "#888";
-                updateResetBtn();
-            }
-        };
+        function resetImage() {
+            receivedImageBase64 = "";
+            document.getElementById('received-image').style.display = 'none';
+            document.getElementById('qrcode').classList.remove('hidden');
+            document.getElementById('qr-status').innerText = (currentLang === 'jp') ? "スマホで読み取ってください" : "Scan with smartphone";
+            document.getElementById('qr-status').style.color = "#666";
+            document.getElementById('reset-img-btn').classList.add('hidden');
+        }
 
-        window.submitForm = async function() {
-            document.getElementById('loading-overlay').style.opacity = '1';
-            
+        async function submitForm() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+
+            const qrLoading = document.getElementById("qrcode-loading");
+            qrLoading.innerHTML = "";
+            new QRCode(qrLoading, { text: window.location.origin + "/static/info.html", width: 120, height: 120 });
+
+            let i = 0; const termEl = document.getElementById('loading-term-container');
+            const timer = setInterval(() => { 
+                const list = (currentLang === 'jp') ? termsJp : termsEn;
+                termEl.innerText = list[i % list.length]; 
+                i++; 
+            }, 1800);
+
             const formData = new FormData();
-            formData.append('nickname', document.getElementById('input-nickname').value || "Unknown");
-            formData.append('special_existence', document.getElementById('input-special').value || "");
-            formData.append('favorite_smell', document.getElementById('input-smell').value || "");
-            formData.append('slider_noise_silence', document.getElementById('slider-noise').value);
-            formData.append('slider_city_country', document.getElementById('slider-city').value);
-            formData.append('slider_reality_fantasy', document.getElementById('slider-reality').value);
-            formData.append('slider_hell_time', document.getElementById('slider-hell').value);
-            formData.append('text_dream', document.getElementById('area-dream').value || "");
-            formData.append('text_setback', document.getElementById('area-setback').value || "");
-            formData.append('text_lost_release', document.getElementById('area-lost').value || "");
-            formData.append('slider_return_element', document.getElementById('slider-return').value);
-            formData.append('slider_go_north_south', document.getElementById('slider-go').value);
+            formData.append('nickname', document.getElementById('nickname').value || "Unknown");
             formData.append('image_b64', receivedImageBase64);
+            const ids = ['age','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17'];
+            ids.forEach(id => formData.append(id, document.getElementById(id).value || ""));
 
             try {
-                const response = await fetch('/submit', { method: 'POST', body: formData });
-                if (response.ok) {
-                    setTimeout(() => location.reload(), 3000);
-                } else {
-                    alert("Error: Server Busy");
-                    document.getElementById('loading-overlay').style.opacity = '0';
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Connection Error");
-                document.getElementById('loading-overlay').style.opacity = '0';
-            }
-        };
+                const res = await fetch('/submit', { method: 'POST', body: formData });
+                if(res.ok) setTimeout(() => location.reload(), 10000);
+                else { alert("Error"); clearInterval(timer); overlay.style.display='none'; }
+            } catch(e) { clearInterval(timer); overlay.style.display='none'; }
+        }
     </script>
 </body>
 </html>
