@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Image Offering</title>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -10,11 +10,12 @@
         #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; opacity: 0.5; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: -1; }
         .box { width: 85%; max-width: 400px; text-align: center; }
-        .text-marbling { background-image: url('/static/texture.jpg'); background-size: cover; -webkit-background-clip: text; color: transparent; letter-spacing: 0.1em; }
+        .text-marbling { background-image: url('/static/texture.jpg'); background-size: cover; background-position: center; -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 0.1em; }
         .file-label { display: block; width: 100%; height: 280px; border: 1px solid #333; margin: 30px 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); cursor: pointer; position: relative; }
         #preview { max-width: 100%; max-height: 100%; display: none; }
         .btn { width: 100%; padding: 20px; background: transparent; border: 1px solid #fff; color: #fff; letter-spacing: 0.3em; cursor: pointer; font-size: 1rem; }
-        .btn:active { background: #fff; color: #000; }
+        .btn:disabled { opacity: 0.3; cursor: default; }
+        .btn:active:not(:disabled) { background: #fff; color: #000; }
         #cancel-btn { background: none; border: none; color: #888; margin-top: 25px; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
     </style>
 </head>
@@ -22,18 +23,30 @@
     <video autoplay muted loop playsinline id="bg-video"><source src="/static/DAMN2.m4v" type="video/mp4"></video>
     <div class="overlay"></div>
     <div class="box">
-        <h2 class="text-marbling">画像の奉納</h2>
-        <p style="font-size:0.85rem; color:#999; line-height:1.8;">記憶や癖を拾い上げるための手がかり</p>
+        <h2 class="text-marbling" id="title-text">画像の奉納</h2>
+        <p id="sub-text" style="font-size:0.85rem; color:#999; line-height:1.8;">記憶や癖を拾い上げるための手がかり</p>
         <label class="file-label">
             <span id="placeholder" style="color:#555;">+ SELECT IMAGE</span>
             <img id="preview">
             <input type="file" id="file" accept="image/*" style="display:none">
         </label>
-        <button class="btn" onclick="upload()">奉納する</button>
+        <button class="btn" id="upload-btn" onclick="upload()">奉納する</button>
         <button id="cancel-btn" style="display:none;" onclick="location.reload()">× 取り消す</button>
     </div>
 
     <script>
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session_id');
+        const lang = params.get('lang') || 'jp';
+
+        // 言語対応
+        if(lang === 'en') {
+            document.getElementById('title-text').innerText = "Image Offering";
+            document.getElementById('sub-text').innerText = "A clue to pick up memories and habits.";
+            document.getElementById('upload-btn').innerText = "SEND";
+            document.getElementById('cancel-btn').innerText = "× Cancel";
+        }
+
         const fileInput = document.getElementById('file');
         fileInput.onchange = (e) => {
             const file = e.target.files[0]; if(!file) return;
@@ -45,7 +58,69 @@
             };
             reader.readAsDataURL(file);
         };
-        async function upload() { alert("奉納中..."); }
+
+        // 画像を軽量化して送信する関数
+        async function upload() {
+            const file = fileInput.files[0];
+            if(!file || !sessionId) {
+                alert(lang === 'en' ? "Please select an image." : "画像を選択してください。");
+                return;
+            }
+
+            const btn = document.getElementById('upload-btn');
+            btn.disabled = true;
+            btn.innerText = (lang === 'en') ? "Sending..." : "送信中...";
+
+            try {
+                // 画像の圧縮処理
+                const compressedFile = await compressImage(file);
+                const formData = new FormData();
+                formData.append('session_id', sessionId);
+                formData.append('image', compressedFile);
+
+                const res = await fetch('/upload-satellite', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if(res.ok) {
+                    btn.innerText = (lang === 'en') ? "SENT" : "完了しました";
+                    alert(lang === 'en' ? "Offering complete. Check the tablet screen." : "奉納が完了しました。タブレット画面をご確認ください。");
+                } else {
+                    throw new Error("Server error");
+                }
+            } catch (e) {
+                console.error(e);
+                alert(lang === 'en' ? "Failed to send. Please try again." : "送信に失敗しました。もう一度お試しください。");
+                btn.disabled = false;
+                btn.innerText = (lang === 'en') ? "SEND" : "奉納する";
+            }
+        }
+
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxSide = 1000; // 最大1000pxにリサイズ
+                        if (width > height && width > maxSide) { height *= maxSide / width; width = maxSide; }
+                        else if (height > maxSide) { width *= maxSide / height; height = maxSide; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', 0.7); // 画質70%
+                    };
+                };
+            });
+        }
     </script>
 </body>
 </html>
