@@ -37,7 +37,7 @@
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        /* 遷移アニメーション */
+        /* 画面遷移アニメーション */
         .dissolve-out { animation: fadeOut 0.8s ease forwards; pointer-events: none; }
         .dissolve-in { display: block !important; animation: fadeIn 0.8s ease forwards; }
         @keyframes fadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(10px); } }
@@ -83,7 +83,7 @@
         .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
         .close-menu-footer { margin-top: 60px; font-size: 3rem; cursor: pointer; color: #fff; }
 
-        /* コンテンツ表示 */
+        /* 各種説明表示 */
         #content-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 300; display: none; flex-direction: column; overflow-y: auto;
@@ -93,7 +93,7 @@
         .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
 
-        /* ボタン・入力 */
+        /* 入力系UI */
         .btn-entry {
             display: block; width: 100%; max-width: 280px; margin: 60px auto; padding: 22px;
             font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
@@ -124,9 +124,18 @@
         .section-header h2 { font-size: 1.8rem; letter-spacing: 0.4em; margin: 0; color: #fff; }
         .section-header .sub { font-size: 0.8rem; color: #777; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
 
-        /* ローディング */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; }
-        .loading-term { font-size: 1.6rem; letter-spacing: 0.2em; text-align: center; font-weight: bold; animation: breathe 3s infinite; }
+        /* ローディング（Minecraft風ワードループ） */
+        #loading-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; 
+            display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; 
+        }
+        .loading-term-box {
+            width: 100%; max-width: 500px; min-height: 120px; display: flex; align-items: center; justify-content: center;
+        }
+        .loading-term { 
+            font-size: 1rem; line-height: 1.8; letter-spacing: 0.1em; text-align: center; font-weight: bold; 
+            animation: breathe 3.5s infinite; 
+        }
         @keyframes breathe { 0%, 100% { opacity: 0.1; filter: blur(3px); } 50% { opacity: 1; filter: blur(0); } }
 
         .qr-section { border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); }
@@ -159,7 +168,6 @@
         </div>
     </div>
 
-    <!-- バーガーメニュー -->
     <div id="menu-overlay">
         <ul class="menu-list">
             <li><div class="menu-item" onclick="menuAction('concept', this)">Concept<span class="menu-sub lang-jp">コンセプト</span><span class="menu-sub lang-en">Concept</span></div></li>
@@ -170,13 +178,11 @@
         <div class="close-menu-footer" onclick="toggleMenu()">×</div>
     </div>
 
-    <!-- 各種説明オーバーレイ -->
     <div id="content-overlay">
         <div style="position: sticky; top:0; width:100%; display:flex; justify-content:flex-end; padding:20px; z-index:310; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px);">
             <button onclick="closeContentToMenu()" style="background:none; border:none; color:#fff; font-size:3.5rem; cursor:pointer;">×</button>
         </div>
         
-        <!-- Concept -->
         <div id="content-body-concept" class="content-body hidden">
             <h3 class="text-marbling">Concept</h3>
             <p class="lang-jp">二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
@@ -191,7 +197,6 @@
             <p class="lang-en">Interactive Mode reconfigures the virtual Pure Land on the spot through the viewer’s offering. Submitted fragments fall into computational obscurity and return not as a procedure, but as a result. This result coheres, just once, as a Karma Portrait. The experience is not participation, but verification—a time to release one’s semiotic self and gently overlay the sense of "where one returns" onto the image.</p>
         </div>
 
-        <!-- Explanation -->
         <div id="content-body-explanation" class="content-body hidden">
             <h3 class="text-marbling">Explanation</h3>
             <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryoshi-an</h4>
@@ -211,7 +216,6 @@
             <p class="lang-en">二〇卌五 is a notation, not just a date. By adding two strokes to the "二" (two) of 2025, it becomes "卌" (forty), linking 2025 and 2045 as a single line. It marks the point where "computation humans cannot follow" becomes ordinary, and only the results descend into daily life. Proof of truth detaches from human hands, leaving only reception. While singularity is spoken of as a "distant future," its shadow is already cast upon the extension of the present.</p>
         </div>
 
-        <!-- Background / Spoiler -->
         <div id="content-body-spoiler" class="content-body hidden">
             <h3 class="text-marbling">Background</h3>
             <p class="lang-jp">量子コンピュータとAIシンギュラリティが常態化した二〇卌五年、人類はひとつの「結論」を受け取る。それは、誰も望まなかった形で、しかも誰も否定できない形で提示された。</p>
@@ -219,7 +223,7 @@
             <p class="lang-jp">量子AIは、人間の論理が届かない演算の暗がりから、矛盾なく閉じた答えを返した――「死後の世界は存在する。そして、その輪郭は“現在の生き様”から推察できる」。</p>
             <p class="lang-en">From the computational darkness where human logic fails to reach, Quantum AI returned a perfectly consistent answer: "The afterlife exists. And its contours can be inferred from your 'current way of life'."</p>
             <p class="lang-jp">人々は当然、信じなかった。けれどその答えは、バックアップされた同型のシステムでも、並列化された別系統の計算機でも、検証試行を重ねるほどに整合してしまう。反例が立たないのではなく、反例を立てるための人間側の手続きが、計算世界の複雑さに追いつかない。</p>
-            <p class="lang-en">Naturally, people did not believe it. However, no matter how many verification tests were run—across mirrored systems or parallelized machines—the answer remained consistent. It wasn't that a counter-example couldn't exist; it was that the human procedure for establishing one could no longer keep pace with the computational world's complexity.</p>
+            <p class="lang-en">Naturally, people did not believe it. However, the more they tested it across mirrored systems or parallelized machines, the answer remained consistent. It wasn't that a counter-example couldn't exist; it was that the human procedure for establishing one could no longer keep pace with the computational world's complexity.</p>
             <p class="lang-jp">それは、円周率の「最後」を見せられたのに似ている。ラストの一万桁が出力されても、こちらにはそれを“最後だと証明する言葉”がない。あるいは、天気を完全に予報できないまま予報だけを使い、スマホの全構造を書き起こせないまま道具として扱い、暗号を解けないまま真偽を受け入れるのと同じだ。人間の理解は遅れ、しかし結果だけが先に日常へ降りてくる。ここに、人類の分岐点がある。</p>
             <p class="lang-en">It is like being shown the "end" of Pi. Even if the final digits were output, we lack the language to prove it is the end. We use forecasts we cannot compute, and devices we cannot map. Human understanding is delayed, yet results descend into daily life first. This is the bifurcation point of humanity.</p>
             <p class="lang-jp">さらに不穏なのは、その「死後の世界」の観測像が、宗教的寓話ではなく、仏教的な“浄土”の位相に異様なほど近いことだった。救いをそこに見出し、肉体の外へ移住することを目的にする個は現れる。だが、集団としての合意はまだ形成されない。世界は揺れているのに、共同体の輪郭だけが定まらない――それが二〇卌五年の空気である。</p>
@@ -229,10 +233,9 @@
             <p class="lang-jp">AIが構築するのは、理解のための物語ではない。説明不能なまま成立してしまう事実を、光とノイズのうねりとして立ち上げる仮想浄土である。そこに刻まれるのが、一度きりの記号的自己像――〈Karma Portrait〉。それは“顔”ではなく、似姿でもない。言語化以前に身体が抱え込んだ感情や欲望、回避と執着の癖が、像の秩序へ翻訳された痕跡だ。</p>
             <p class="lang-en">AI manifests a virtual Pure Land—a fact that exists despite being inexplicable—as a swell of light and noise. What is inscribed is a one-time semiotic self-image: Karma Portrait. It is not a "face," but a trace of emotions and desires held by the body, translated into the order of the image.</p>
             <p class="lang-jp">鑑賞者は、アイデンティティという記号をいったん手放す。そして、掛軸型モニターの前で、自分に問われる。「どこへ還るか」ではなく、「どこへ還ってしまうのか」。量子庵が差し出すのは答えではない。答え“だけ”が存在してしまう時代の、受け取り方そのものだ。</p>
-            <p class="lang-en">The viewer temporarily relinquishes identity. Before the monitor, they are asked: Not "Where will I return?" but "Where will I end up returning?" Ryoshi-an offers not an answer, but the very mode of reception in an era where "only" the answer exists.</p>
+            <p class="lang-en">The viewer temporarily relinquishes identity. Before the monitor, they are asked: Not "Where will I return?" but "Where will I end up returning?" Ryoshi-an offers not an answer, but the very method of reception in an era where "only" the answer exists.</p>
         </div>
 
-        <!-- About Us -->
         <div id="content-body-about" class="content-body hidden" style="text-align:center;">
             <h3 class="text-marbling">About Us</h3>
             <p style="font-size:0.8rem; color:#888; margin-top:40px;">Concept, Art Direction & Spatial Design</p>
@@ -264,14 +267,13 @@
                 <p class="lang-en">
                     The hanging scroll monitor in the tea room "Ryoshi-an"<br>is a small boundary opening between this world and the other.<br><br>
                     The words and choices you enter here are minimal clues<br>to pick up the memories and habits sunk deep inside you<br>—the parts that haven't yet become an explanation.<br><br>
-                    The submitted content is reorganized as a cycle of reincarnation.<br>AI constructs a virtual Pure Land in a computational darkness<br>that humans cannot reach, and inscribes within it<br>a one-time "Karma Portrait."<br><br>
-                    What appears on the scroll is not your "information,"<br>but a landscape where emotions and desires held by the body<br>prior to language condense into light and noise.
+                    The submitted content is reorganized as a cycle of reincarnation.<br>AI constructs a virtual Pure Land in a computational darkness<br>that humans cannot reach, and inscribes within it<br>a one-time "Karma Portrait."
                 </p>
             </div>
             <button class="btn-entry" onclick="goToForm()">Entry</button>
         </div>
 
-        <!-- 質問フォーム (Entry) -->
+        <!-- フォーム -->
         <div id="form-page" class="hidden">
             <div class="section-header"><h2>黄土</h2><span class="sub">Yellow Earth / Early Childhood</span></div>
             <div class="input-group">
@@ -318,10 +320,7 @@
             </div>
 
             <div class="section-header"><h2>朱夏</h2><span class="sub">Vermilion Summer / Adulthood</span></div>
-            <div class="input-group">
-                <label class="lang-jp">Q10; 旅行に行くなら（国）</label><label class="lang-en">Q10; Journey to (Country)?</label>
-                <input type="text" id="q10" class="clean-input">
-            </div>
+            <div class="input-group"><label class="lang-jp">Q10; 旅行に行くなら（国）</label><label class="lang-en">Q10; Journey to (Country)?</label><input type="text" id="q10" class="clean-input"></div>
             <div class="input-group">
                 <label class="lang-jp">Q11; 好きな匂いは / What smell do you love in?</label><label class="lang-en">Q11; Favorite Scent?</label>
                 <div class="slider-labels" id="labels-q11" style="font-size:0.6rem;"><span>Fruity</span><span>Woody</span><span>Mellow</span><span>Spicy</span><span>Smoky</span></div>
@@ -332,17 +331,9 @@
                 <div class="slider-labels" id="labels-q12"><span class="lang-jp">過去</span><span class="lang-en">Past</span><span class="lang-jp">現在</span><span class="lang-en">Now</span><span class="lang-jp">未来</span><span class="lang-en">Future</span></div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q12')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">あなたのエネルギー源は？</label><label class="lang-en">Your energy source?</label>
-                <div class="slider-labels" id="labels-q13"><span class="lang-jp">探求や競争</span><span class="lang-en">Search/Win</span><span>-</span><span class="lang-jp">安全や保護</span><span class="lang-en">Safe/Guard</span></div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="2" value="1" step="1" oninput="updLbl(this,'labels-q13')"></div>
-            </div>
 
             <div class="section-header"><h2>白冬</h2><span class="sub">White Winter / Mature Age</span></div>
-            <div class="input-group">
-                <label class="lang-jp">Q14; 特別だと感じる存在は？ / What is your special?</label><label class="lang-en">Q14; What is special to you?</label>
-                <input type="text" id="q14" class="clean-input">
-            </div>
+            <div class="input-group"><label class="lang-jp">Q14; 特別だと感じる存在は？</label><label class="lang-en">Q14; What is special to you?</label><input type="text" id="q14" class="clean-input"></div>
             <div class="input-group">
                 <label class="lang-jp">Q15; 向かうなら / Destination afterlife?</label><label class="lang-en">Q15; Destination?</label>
                 <div class="slider-labels" id="labels-q15"><span class="lang-jp">北国へ</span><span class="lang-en">North</span><span>-</span><span class="lang-jp">南国へ</span><span class="lang-en">South</span></div>
@@ -377,9 +368,11 @@
         </div>
     </div>
 
-    <!-- ローディング -->
+    <!-- ローディング（フレーズループ演出） -->
     <div id="loading-overlay">
-        <div id="loading-term-container" class="loading-term text-marbling">紐解いています...</div>
+        <div class="loading-term-box">
+            <div id="loading-term-container" class="loading-term text-marbling">紐解いています...</div>
+        </div>
         <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-jp">しばらくお待ちください</p>
         <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-en">Please wait a moment...</p>
         
@@ -395,8 +388,30 @@
         let receivedImageBase64 = "";
         let currentLang = 'jp';
 
-        const termsJp = ["量子庵", "Karma Portrait", "彼岸", "二〇卌五", "業(カルマ)", "仮想浄土", "シンギュラリティ", "演算の暗がり", "此岸", "記号的自己像", "量子AI", "死後の世界"];
-        const termsEn = ["Ryoshi-an", "Karma Portrait", "Higan", "2045", "Karma", "Virtual Pure Land", "Singularity", "Computational Darkness", "Shigan", "Semiotic Self", "Quantum AI", "Afterlife"];
+        // === コンセプト・用語解説から抽出したメッセージ集 ===
+        const phrasesJp = [
+            "二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。",
+            "AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、一度きりの記号的自己像を刻む。",
+            "そこには言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出する。",
+            "アイデンティティという記号をいったん手放し、自らの「どこへ還るか」という感覚に身をゆだねる。",
+            "量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名である。",
+            "Karma Portraitは、業（カルマ）としての偏りが映像の秩序へと翻訳された、一度きりの自己像。",
+            "彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。",
+            "演算は意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。",
+            "二〇卌五。人間が追えない計算が常態化し、結果だけが先に日常へ降りてくる地点。"
+        ];
+
+        const phrasesEn = [
+            "The scroll monitor in Ryoshi-an serves as a portal opening between this shore and the next.",
+            "AI constructs a virtual Pure Land in computational darkness, inscribing a unique semiotic self-image.",
+            "Emotions and desires held by the body prior to language precipitate as swells of light and noise.",
+            "Relinquish the sign called 'identity' and align with the embodied sense of 'where one returns.'",
+            "'Quantum' is another name for the intuition that the world is woven from jumps and probabilities.",
+            "Karma Portrait is a unique self-image produced when karmic bias is translated into the order of imagery.",
+            "Higan (the other shore) may not be a place over there, but rather the mode of arrival itself.",
+            "Computation presents a fact that stands undeniably, even when it remains inexplicable.",
+            "2045. A point where results descend into daily life first, through computation humans cannot follow."
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
             setLanguage('jp'); connectWebSocket(); generateAboutQR();
@@ -514,8 +529,9 @@
             receivedImageBase64 = "";
             document.getElementById('received-image').style.display = 'none';
             document.getElementById('qrcode').classList.remove('hidden');
-            document.getElementById('qr-status').innerText = (currentLang === 'jp') ? "スマホで読み取ってください" : "Scan with smartphone";
-            document.getElementById('qr-status').style.color = "#666";
+            const status = document.getElementById('qr-status');
+            status.innerText = (currentLang === 'jp') ? "スマホで読み取ってください" : "Scan with smartphone";
+            status.style.color = "#666";
             document.getElementById('reset-img-btn').classList.add('hidden');
         }
 
@@ -527,22 +543,26 @@
             qrLoading.innerHTML = "";
             new QRCode(qrLoading, { text: window.location.origin + "/static/info.html", width: 120, height: 120 });
 
-            let i = 0; const termEl = document.getElementById('loading-term-container');
-            const timer = setInterval(() => { 
-                const list = (currentLang === 'jp') ? termsJp : termsEn;
-                termEl.innerText = list[i % list.length]; 
-                i++; 
-            }, 1800);
+            // フレーズループ演出
+            let i = 0; 
+            const termEl = document.getElementById('loading-term-container');
+            const updatePhrase = () => {
+                const list = (currentLang === 'jp') ? phrasesJp : phrasesEn;
+                termEl.innerText = list[i % list.length];
+                i++;
+            };
+            updatePhrase(); // 初回実行
+            const timer = setInterval(updatePhrase, 10000); // Minecraft風に少し長めの間隔でループ
 
             const formData = new FormData();
             formData.append('nickname', document.getElementById('nickname').value || "Unknown");
             formData.append('image_b64', receivedImageBase64);
-            const ids = ['age','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17'];
+            const ids = ['age','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q14','q15','q16','q17'];
             ids.forEach(id => formData.append(id, document.getElementById(id).value || ""));
 
             try {
                 const res = await fetch('/submit', { method: 'POST', body: formData });
-                if(res.ok) setTimeout(() => location.reload(), 10000);
+                if(res.ok) setTimeout(() => location.reload(), 30000); // 演出を長く見せるため少しリロードを遅らせる
                 else { alert("Error"); clearInterval(timer); overlay.style.display='none'; }
             } catch(e) { clearInterval(timer); overlay.style.display='none'; }
         }
