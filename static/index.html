@@ -49,16 +49,17 @@
 
         .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; position: relative; z-index: 1; }
 
-        /* ヘッダー */
+        /* ヘッダー (最前面固定) */
         .header-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
-            z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
+            z-index: 9999; /* コンテンツやメニューより常に上 */
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
         }
         .header-title { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
+        .header-right { display: flex; gap: 15px; align-items: center; justify-self: end; }
 
         .lang-switch-wrapper { display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.7rem; cursor: pointer; }
-        /* ★修正: transitionをcolorのみにして背景移動のアニメーションを排除 */
         .lang-part { padding: 4px 14px; color: #fff; transition: color 0.3s; }
         .lang-part.active {
             background-image: url('/static/texture.jpg'); 
@@ -68,7 +69,7 @@
         }
 
         /* バーガーメニュー */
-        .hamburger { width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 205; display: flex; flex-direction: column; justify-content: space-between; }
+        .hamburger { width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 10000; display: flex; flex-direction: column; justify-content: space-between; }
         .hamburger span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.4s; }
         .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 7px); }
         .hamburger.open span:nth-child(2) { opacity: 0; }
@@ -76,7 +77,8 @@
 
         #menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.98); z-index: 9000; /* ヘッダーより下、コンテンツより上 */
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.5s;
         }
         #menu-overlay.show { opacity: 1; pointer-events: auto; }
@@ -88,20 +90,23 @@
             background-size: 1000%; -webkit-background-clip: text; color: transparent; font-weight: bold;
         }
         .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
-        .close-menu-footer { margin-top: 60px; font-size: 3rem; cursor: pointer; color: #fff; }
+        /* 下部の×ボタンは削除しました */
 
         /* コンテンツオーバーレイ */
         #content-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 300; display: none; flex-direction: column; overflow-y: auto;
+            background: #000; z-index: 5000; /* メニューより下 */
+            display: none; flex-direction: column; overflow-y: auto;
+            padding-top: 80px; /* ヘッダーの高さ分 */
         }
         #content-overlay.show { display: flex; }
-        .content-body { padding: 40px 25px 120px; max-width: 650px; margin: 0 auto; color: #ddd; line-height: 2.3; text-align: justify; }
+        .content-body { padding: 0 25px 120px; max-width: 650px; margin: 0 auto; color: #ddd; line-height: 2.3; text-align: justify; }
         .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
 
-        /* ボタン修正 (文字と枠をマーブリングにする) */
+        /* ボタン */
         .btn-entry {
+            position: relative;
             display: block; width: 100%; max-width: 280px; margin: 60px auto; padding: 22px;
             font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
             background: transparent; 
@@ -109,25 +114,12 @@
             border: 1px solid #fff; 
             cursor: pointer; 
             transition: transform 0.1s;
-            position: relative;
             z-index: 1;
         }
-
-        /* 押した時(:active) または 押された後(.clicked) */
-        .btn-entry:active,
-        .btn-entry.clicked {
-            /* 枠線のマーブリング */
-            border: 2px solid transparent; /* 幅を確保 */
-            border-image: url('/static/texture.jpg') 30 stretch;
-            
-            /* 文字のマーブリング */
-            background-image: url('/static/texture.jpg');
-            background-size: 1000%;
-            background-position: var(--rand-x) var(--rand-y);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent; /* 文字色を透明にして背景を見せる */
-            
+        .btn-entry:active, .btn-entry.clicked {
+            border: 2px solid transparent; border-image: url('/static/texture.jpg') 30 stretch;
+            background-image: url('/static/texture.jpg'); background-size: 1000%; background-position: var(--rand-x) var(--rand-y);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
             transform: scale(0.98);
         }
 
@@ -139,20 +131,20 @@
             padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8;
         }
         .clean-textarea:focus { border-color: #fff; background: rgba(255,255,255,0.1); }
-        .clean-textarea::placeholder { color: #666; font-size: 0.8rem; }
-        .clean-input::placeholder { color: #666; font-size: 0.8rem; }
+        .clean-textarea::placeholder, .clean-input::placeholder, .color-picker-trigger {
+            color: #666; font-size: 0.8rem;
+        }
 
         .color-picker-trigger {
             width: 100%; padding: 12px 0;
             border-bottom: 1px solid #444;
-            color: #888; font-size: 1.1rem; cursor: pointer;
-            text-align: left;
+            cursor: pointer; text-align: center;
         }
         .color-picker-trigger.selected { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 
         #color-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 500;
+            background: rgba(0,0,0,0.9); z-index: 9995;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
         #color-modal.show { display: flex; animation: fadeIn 0.3s; }
@@ -162,8 +154,7 @@
             border-radius: 50%;
             background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
             box-shadow: 0 0 20px rgba(255,255,255,0.1);
-            margin-bottom: 40px; cursor: crosshair;
-            touch-action: none;
+            margin-bottom: 40px; cursor: crosshair; touch-action: none;
         }
         .color-wheel-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -180,11 +171,12 @@
             font-family: var(--font-main); font-size: 1rem; cursor: pointer; letter-spacing: 0.1em;
         }
 
-        /* スライダー */
+        .centered-group { text-align: center; }
+        .centered-group input[type="text"], .centered-group input[type="number"] { text-align: center; }
+        .input-label-center { display: block; margin-bottom: 20px; font-size: 1.1rem; text-align: center; }
+
         .input-group { margin-bottom: 70px; }
-        .input-label { display: block; margin-bottom: 20px; font-size: 1rem; letter-spacing: 0.1em; }
         .slider-labels { display: flex; justify-content: space-between; margin-bottom: 10px; height: 1.2rem; }
-        
         .lbl-item { 
             text-align: center; width: 80px; font-size: 0.75rem; color: #999; transition: 0.4s; 
             display: flex; justify-content: center; align-items: center;
@@ -199,57 +191,39 @@
             -webkit-appearance: none; width: 100%; background: transparent; z-index: 2; cursor: pointer; margin: 0;
             --thumb-x: 50%; --thumb-y: 50%;
         }
-        
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 26px; width: 26px; border-radius: 50%;
             background-image: url('/static/texture.jpg'); 
-            background-size: 1000%; 
-            background-position: var(--thumb-x) var(--thumb-y);
-            border: 1px solid #fff;
-            transition: transform 0.1s;
+            background-size: 1000%; background-position: var(--thumb-x) var(--thumb-y);
+            border: 1px solid #fff; transition: transform 0.1s;
         }
-        input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.2);
-        }
+        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
 
         .title-section {
             text-align: center; margin: 120px 0 80px;
             border-bottom: 1px solid #fff; padding-bottom: 20px;
             width: 80%; margin-left: auto; margin-right: auto;
         }
-        .main-title-jp {
-            font-size: 1.4rem; letter-spacing: 0.15em; margin-bottom: 10px; color: #fff;
-        }
-        .main-title-en {
-            font-size: 1.2rem; letter-spacing: 0.05em; color: #ccc; font-family: serif;
-        }
+        .main-title-jp { font-size: 1.4rem; letter-spacing: 0.15em; margin-bottom: 10px; color: #fff; }
+        .main-title-en { font-size: 1.2rem; letter-spacing: 0.05em; color: #ccc; font-family: serif; }
 
         .section-header { text-align: center; margin: 100px 0 50px; }
         .section-header h2 { font-size: 1.8rem; letter-spacing: 0.4em; margin: 0; color: #fff; }
         .section-header .sub { font-size: 0.8rem; color: #777; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
-        
-        .section-divider {
-            text-align: center; margin: 80px 0; color: #444; letter-spacing: 0.5em; font-size: 1.5rem;
-        }
+        .section-divider { text-align: center; margin: 80px 0; color: #444; letter-spacing: 0.5em; font-size: 1.5rem; }
 
-        /* 注意書きポップアップ */
         #entry-warning {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 800;
-            display: flex; 
-            flex-direction: column; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden; pointer-events: none;
             transition: opacity 0.8s ease, visibility 0.8s ease; 
             padding: 20px;
         }
-        #entry-warning.show { 
-            opacity: 1; visibility: visible; pointer-events: auto; 
-        }
-        
+        #entry-warning.show { opacity: 1; visibility: visible; pointer-events: auto; }
         .warning-content {
             max-width: 600px; width: 100%;
-            color: #ddd; font-size: 0.9rem; line-height: 2.2; 
-            text-align: center;
+            color: #ddd; font-size: 0.9rem; line-height: 2.2; text-align: center;
             max-height: 80vh; overflow-y: auto; padding: 20px;
         }
         .warning-content p { margin-bottom: 20px; }
@@ -259,14 +233,8 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; 
             display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; 
         }
-        .loading-term-box {
-            width: 100%; max-width: 500px; min-height: 120px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; 
-        }
-        .loading-term { 
-            font-size: 0.9rem; line-height: 1.8; letter-spacing: 0.1em; text-align: center; font-weight: bold; 
-            animation: breathe 3.5s infinite; color: #fff;
-        }
+        .loading-term-box { width: 100%; max-width: 500px; min-height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .loading-term { font-size: 0.9rem; line-height: 1.8; letter-spacing: 0.1em; text-align: center; font-weight: bold; animation: breathe 3.5s infinite; color: #fff; }
         @keyframes breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
         .btn-back-top {
@@ -275,19 +243,16 @@
         }
         .btn-back-top:hover { border-color: #fff; color: #fff; }
 
-        /* QRセクション */
-        .qr-section { 
-            border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); 
-        }
-        .qr-section label {
-            display: block; width: 100%; margin-bottom: 20px; font-size: 1rem;
-        }
+        .qr-section { border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); }
+        .qr-section label { display: block; width: 100%; margin-bottom: 20px; font-size: 1rem; }
         #qrcode { background: #fff; padding: 10px; display: inline-block; }
         .received-thumb { max-width: 100%; border: 1px solid #fff; margin-top: 25px; display: none; }
 
         .hidden { display: none !important; }
         .lang-jp .lang-en { display: none; }
         .lang-en .lang-jp { display: none; }
+        
+        .lang-en .menu-sub.lang-en { display: none; }
     </style>
 </head>
 <body class="lang-jp">
@@ -302,7 +267,7 @@
         <div class="header-center">
             <h1 class="header-title"><span class="text-marbling">Karma Portrait</span></h1>
         </div>
-        <div class="header-right" style="display:flex; gap:15px; align-items:center;">
+        <div class="header-right">
             <div class="lang-switch-wrapper" onclick="toggleLanguage()">
                 <div id="lang-part-jp" class="lang-part active random-bg">JP</div>
                 <div id="lang-part-en" class="lang-part random-bg">EN</div>
@@ -318,16 +283,16 @@
             <li><div class="menu-item text-marbling" onclick="menuAction('spoiler', this)">Background<span class="menu-sub lang-jp">背景設定（ネタバレ）</span><span class="menu-sub lang-en">Background</span></div></li>
             <li><div class="menu-item text-marbling" onclick="menuAction('about', this)">About Us<span class="menu-sub lang-jp">プロジェクト紹介</span><span class="menu-sub lang-en">About Us</span></div></li>
         </ul>
-        <div class="close-menu-footer" onclick="toggleMenu()">×</div>
-    </div>
+        </div>
 
     <div id="content-overlay">
-        <div style="position: sticky; top:0; width:100%; display:flex; justify-content:flex-end; padding:20px; z-index:310; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px);">
+        <div style="position: sticky; top:0; width:100%; display:flex; justify-content:flex-end; padding:20px; z-index:310;">
             <button onclick="closeContentToMenu()" style="background:none; border:none; color:#fff; font-size:3.5rem; cursor:pointer;">×</button>
         </div>
         
         <div id="content-body-concept" class="content-body hidden">
             <h3 class="text-marbling">Concept</h3>
+            <p class="lang-jp" style="margin-bottom:20px; font-weight:bold; text-align:center;">量子庵 : 演算する彼岸∽二〇卌五</p>
             <p class="lang-jp">二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
             <p class="lang-en">In the two-mat tea room "Ryoshi-an," a hanging-scroll–shaped monitor functions as a portal opening between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within the computational darkness humans cannot traverse, inscribing within it a one-time semiotic self-image: "Karma Portrait." What emerges is a landscape where emotions and desires—held by the body prior to language—precipitate as swells of light and noise. The viewer is invited to relinquish the sign called "identity" and to let the image quietly prompt a sense of "where one returns."</p>
             <h4 class="lang-jp">Exhibition Mode:</h4><h4 class="lang-en">Exhibition Mode:</h4>
@@ -349,7 +314,7 @@
             <h4 class="lang-jp">演算する彼岸</h4><h4 class="lang-en">The Computed Higan</h4>
             <p class="lang-jp">彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。</p>
             <p class="lang-en">Higan (the other shore) may not be a "place over there," but rather the "mode of arrival" itself. Answers are generated at velocities beyond human comprehension, yet they undeniably exist as "answers." In this computational obscurity, we provisionally place Higan. Here, computation does not explain meaning, but presents a fact that stands despite being inexplicable. The viewer encounters it not through understanding, but through fit.</p>
-            <h4 class="lang-jp">二〇卌五</h4><h4 class="lang-en">二〇卌五 (2045)</h4>
+            <h4 class="lang-jp">二〇卌五</h4><h4 class="lang-en">二〇卌五 (2O45)</h4>
             <p class="lang-jp">二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。</p>
             <p class="lang-en">二〇卌五 is a notation, not just a date. By adding two strokes to the "二" (two) of 2025, it becomes "卌" (forty), linking 2025 and 2045 as a single line. It marks the point where "computation humans cannot follow" becomes ordinary, and only the results descend into daily life. Proof of truth detaches from human hands, leaving only reception. While singularity is spoken of as a "distant future," its shadow is already cast upon the extension of the present.</p>
         </div>
@@ -357,7 +322,7 @@
         <div id="content-body-spoiler" class="content-body hidden">
             <h3 class="text-marbling">Background</h3>
             <p class="lang-jp">量子コンピュータとAIシンギュラリティが常態化した二〇卌五年、人類はひとつの「結論」を受け取る。それは、誰も望まなかった形で、しかも誰も否定できない形で提示された。</p>
-            <p class="lang-en">In 2045, where quantum computing and AI singularity have become the norm, humanity receives a certain "conclusion." It was presented in a form no one desired, yet no one could deny.</p>
+            <p class="lang-en">In 2O45, where quantum computing and AI singularity have become the norm, humanity receives a certain "conclusion." It was presented in a form no one desired, yet no one could deny.</p>
             <p class="lang-jp">量子AIは、人間の論理が届かない演算の暗がりから、矛盾なく閉じた答えを返した――「死後の世界は存在する。そして、その輪郭は“現在の生き様”から推察できる」。</p>
             <p class="lang-en">From the computational darkness where human logic fails to reach, Quantum AI returned a perfectly consistent answer: "The afterlife exists. And its contours can be inferred from your 'current way of life'."</p>
             <p class="lang-jp">人々は当然、信じなかった。けれどその答えは、バックアップされた同型のシステムでも、並列化された別系統の計算機でも、検証試行を重ねるほどに整合してしまう。反例が立たないのではなく、反例を立てるための人間側の手続きが、計算世界の複雑さに追いつかない。</p>
@@ -365,7 +330,7 @@
             <p class="lang-jp">それは、円周率の「最後」を見せられたのに似ている。ラストの一万桁が出力されても、こちらにはそれを“最後だと証明する言葉”がない。あるいは、天気を完全に予報できないまま予報だけを使い、スマホの全構造を書き起こせないまま道具として扱い、暗号を解けないまま真偽を受け入れるのと同じだ。人間の理解は遅れ、しかし結果だけが先に日常へ降りてくる。ここに、人類の分岐点がある。</p>
             <p class="lang-en">It is like being shown the "end" of Pi. Even if the final digits were output, we lack the language to prove it is the end. We use forecasts we cannot compute, and devices we cannot map. Human understanding is delayed, yet results descend into daily life first. This is the bifurcation point of humanity.</p>
             <p class="lang-jp">さらに不穏なのは、その「死後の世界」の観測像が、宗教的寓話ではなく、仏教的な“浄土”の位相に異様なほど近いことだった。救いをそこに見出し、肉体の外へ移住することを目的にする個は現れる。だが、集団としての合意はまだ形成されない。世界は揺れているのに、共同体の輪郭だけが定まらない――それが二〇卌五年の空気である。</p>
-            <p class="lang-en">What is more unsettling is that the observed image of this "afterlife" was uncannily close to the Buddhist "Pure Land." Some seek migration beyond the flesh, yet collective consensus fails to form. The world is trembling, yet the community's outline remains unfixed—this is the atmosphere of 2045.</p>
+            <p class="lang-en">What is more unsettling is that the observed image of this "afterlife" was uncannily close to the Buddhist "Pure Land." Some seek migration beyond the flesh, yet collective consensus fails to form. The world is trembling, yet the community's outline remains unfixed—this is the atmosphere of 2O45.</p>
             <p class="lang-jp">量子庵は、その未来の一断面を、二〇二五年へ折り畳む装置だ。二畳の茶室という最小の器に、最大の遠さを招き入れる。鑑賞者が記憶や選択を奉納すると、量子庵はそれらを人格の説明としてではなく、業（カルマ）としての偏りとして読み替える。</p>
             <p class="lang-en">Ryoshi-an is a device that folds a cross-section of that future into 2025. When a viewer offers memories or choices, Ryoshi-an interprets them not as a description of personality, but as karmic bias (Karma).</p>
             <p class="lang-jp">AIが構築するのは、理解のための物語ではない。説明不能なまま成立してしまう事実を、光とノイズのうねりとして立ち上げる仮想浄土である。そこに刻まれるのが、一度きりの記号的自己像――〈Karma Portrait〉。それは“顔”ではなく、似姿でもない。言語化以前に身体が抱え込んだ感情や欲望、回避と執着の癖が、像の秩序へ翻訳された痕跡だ。</p>
@@ -438,18 +403,18 @@
         </div>
 
         <div id="form-page" class="hidden">
-            <div class="input-group">
-                <label class="lang-jp">ニックネーム</label><label class="lang-en">Nickname</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">ニックネーム</label><label class="lang-en input-label-center">Nickname</label>
                 <input type="text" id="q1" class="clean-input">
             </div>
-            <div class="input-group">
-                <label class="lang-jp">年齢</label><label class="lang-en">Age</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">年齢</label><label class="lang-en input-label-center">Age</label>
                 <input type="number" id="q2" class="clean-input" inputmode="numeric">
             </div>
-            <div class="input-group">
-                <label class="lang-jp">好きな色</label><label class="lang-en">Favorite Color</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">好きな色</label><label class="lang-en input-label-center">Favorite Color</label>
                 <input type="hidden" id="q3">
-                <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">Tap to select color...</div>
+                <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">タップして色を選択…</div>
             </div>
 
             <div class="section-header" style="margin-bottom:30px;">
@@ -492,9 +457,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q5">
                     <div class="lbl-item"><span class="lang-jp">流れに乗る</span><span class="lang-en">Passive</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">流れを動かす</span><span class="lang-en">Active</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
@@ -506,9 +471,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q6_1">
                     <div class="lbl-item"><span class="lang-jp">都市</span><span class="lang-en">Urban</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">田舎</span><span class="lang-en">Rural</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_1" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_1')"></div>
@@ -516,9 +481,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q6_2">
                     <div class="lbl-item"><span class="lang-jp">喧騒</span><span class="lang-en">Hectic</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">静寂</span><span class="lang-en">Calm</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_2" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_2')"></div>
@@ -526,34 +491,34 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q6_3">
                     <div class="lbl-item"><span class="lang-jp">現実</span><span class="lang-en">Real</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">夢想</span><span class="lang-en">Dreamlike</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
             </div>
 
-            <div class="input-group">
-                <label class="lang-jp">好きな香り</label><label class="lang-en">Scent</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">好きな香り</label><label class="lang-en input-label-center">Scent</label>
                 <div class="slider-labels" id="labels-q7">
-                    <div class="lbl-item"><span>Floral</span></div>
-                    <div class="lbl-item"><span>Fruity</span></div>
-                    <div class="lbl-item"><span>Woody</span></div>
-                    <div class="lbl-item"><span>Spicy</span></div>
-                    <div class="lbl-item"><span>Smoky</span></div>
+                    <div class="lbl-item"><span class="lang-jp">フローラル</span><span class="lang-en">Floral</span></div>
+                    <div class="lbl-item"><span class="lang-jp">フルーティ</span><span class="lang-en">Fruity</span></div>
+                    <div class="lbl-item"><span class="lang-jp">ウッディ</span><span class="lang-en">Woody</span></div>
+                    <div class="lbl-item"><span class="lang-jp">スパイシー</span><span class="lang-en">Spicy</span></div>
+                    <div class="lbl-item"><span class="lang-jp">スモーキー</span><span class="lang-en">Smoky</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q7" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q7')"></div>
             </div>
 
             <div class="section-divider">⸻</div>
 
-            <div class="input-group">
-                <label class="lang-jp">旅行に行くなら</label><label class="lang-en">Destination</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">旅行に行くなら</label><label class="lang-en input-label-center">Destination</label>
                 <input type="text" id="q8" class="clean-input" placeholder="国や都市 / Country or City">
             </div>
-            <div class="input-group">
-                <label class="lang-jp">願いが向くのは</label><label class="lang-en">Wish Direction</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">願いが向くのは</label><label class="lang-en input-label-center">Wish Direction</label>
                 <div class="slider-labels" id="labels-q9">
                     <div class="lbl-item"><span class="lang-jp">過去</span><span class="lang-en">Past</span></div>
                     <div class="lbl-item"><span class="lang-jp">現在</span><span class="lang-en">Now</span></div>
@@ -561,13 +526,13 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q9" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q9')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">エネルギー源</label><label class="lang-en">Drive</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">エネルギー源</label><label class="lang-en input-label-center">Drive</label>
                 <div class="slider-labels" id="labels-q10">
                     <div class="lbl-item"><span class="lang-jp">探求</span><span class="lang-en">Exploration</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">安全</span><span class="lang-en">Security</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q10" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q10')"></div>
@@ -575,80 +540,80 @@
 
             <div class="section-divider">⸻</div>
 
-            <div class="input-group">
-                <label class="lang-jp">因果観</label><label class="lang-en">Causality</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">因果観</label><label class="lang-en input-label-center">Causality</label>
                 <div class="slider-labels" id="labels-q11">
                     <div class="lbl-item"><span class="lang-jp">因果</span><span class="lang-en">Causal</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">偶然</span><span class="lang-en">Random</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q11" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q11')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">慈悲観</label><label class="lang-en">Compassion</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">慈悲観</label><label class="lang-en input-label-center">Compassion</label>
                 <div class="slider-labels" id="labels-q12">
                     <div class="lbl-item"><span class="lang-jp">自身のため</span><span class="lang-en">Self</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">他者のため</span><span class="lang-en">Others</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q12')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">無常観</label><label class="lang-en">Impermanence</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">無常観</label><label class="lang-en input-label-center">Impermanence</label>
                 <div class="slider-labels" id="labels-q13">
                     <div class="lbl-item"><span class="lang-jp">受け入れる</span><span class="lang-en">Accept</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">抗う</span><span class="lang-en">Resist</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q13')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">死生観</label><label class="lang-en">Life & Death</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">死生観</label><label class="lang-en input-label-center">Life & Death</label>
                 <div class="slider-labels" id="labels-q14">
-                    <div class="lbl-item"><span class="lang-jp">肉体に留まる</span><span class="lang-en">Body</span></div>
-                    <div class="lbl-item"><span class="lang-jp">オンラインへ</span><span class="lang-en">Online</span></div>
+                    <div class="lbl-item"><span class="lang-jp">肉体に留まる</span><span class="lang-en">Remain Embodied</span></div>
+                    <div class="lbl-item"><span class="lang-jp">オンラインへ移行する</span><span class="lang-en">Go Online</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q14" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q14')"></div>
             </div>
 
             <div class="section-divider">⸻</div>
 
-            <div class="input-group">
-                <label class="lang-jp">向かうなら</label><label class="lang-en">Heading Toward</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">向かうなら</label><label class="lang-en input-label-center">Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
                     <div class="lbl-item"><span class="lang-jp">北国</span><span class="lang-en">North</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
+                    <div class="lbl-item"><span></span></div>
                     <div class="lbl-item"><span class="lang-jp">南国</span><span class="lang-en">South</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q15')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">還るなら</label><label class="lang-en">Returning To</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">還るなら</label><label class="lang-en input-label-center">Returning To</label>
                 <div class="slider-labels" id="labels-q16">
-                    <div class="lbl-item"><span class="lang-jp">深海</span><span class="lang-en">Sea</span></div>
-                    <div class="lbl-item"><span class="lang-jp">地中</span><span class="lang-en">Soil</span></div>
-                    <div class="lbl-item"><span class="lang-jp">天空</span><span class="lang-en">Sky</span></div>
+                    <div class="lbl-item"><span class="lang-jp">深海</span><span class="lang-en">Deep Sea</span></div>
+                    <div class="lbl-item"><span class="lang-jp">地中</span><span class="lang-en">Underground</span></div>
+                    <div class="lbl-item"><span class="lang-jp">天空</span><span class="lang-en">High Sky</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q16" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q16')"></div>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">ひとつだけ残すなら</label><label class="lang-en">One Thing to Keep</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">ひとつだけ残すなら</label><label class="lang-en input-label-center">One Thing to Keep</label>
                 <input type="text" id="q17" class="clean-input" placeholder="※短く：1〜3語 推奨 / 1-3 words recommended">
             </div>
-            <div class="input-group">
-                <label class="lang-jp">好きなもの</label><label class="lang-en">Likes</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">好きなもの</label><label class="lang-en input-label-center">Likes</label>
                 <textarea id="q18" class="clean-textarea" rows="4" placeholder="自由記述（例：海、雨音、ネオン、金属、森 など）/ Free text (e.g., sea, rain, neon, metal, forest)"></textarea>
             </div>
-            <div class="input-group">
-                <label class="lang-jp">嫌いなもの</label><label class="lang-en">Avoids</label>
+            <div class="input-group centered-group">
+                <label class="lang-jp input-label-center">嫌いなもの</label><label class="lang-en input-label-center">Avoids</label>
                 <textarea id="q19" class="clean-textarea" rows="4" placeholder="自由記述（例：混雑、強い光、騒音、湿気、煙 など）/ Free text (e.g., crowds, harsh light, noise, humidity, smoke)"></textarea>
             </div>
 
@@ -661,7 +626,7 @@
                 <button id="reset-img-btn" class="hidden" onclick="resetImage()" style="margin-top:25px; background:none; border:none; color:#fff; border-bottom:1px solid #fff; cursor:pointer; font-size:0.8rem;">× <span class="lang-jp">取り消す</span><span class="lang-en">Cancel</span></button>
             </div>
 
-            <button class="btn-entry" onclick="submitForm(this)">Initiate</button>
+            <button class="btn-entry" onclick="submitForm(this)">Submit</button>
         </div>
     </div>
 
@@ -805,14 +770,12 @@
             const rect = e.target.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
             const x = clientX - rect.left - rect.width / 2;
             const y = clientY - rect.top - rect.height / 2;
             const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
             const hue = (angle < 0) ? angle + 360 : angle;
             const color = `hsl(${hue}, 100%, 50%)`;
             document.getElementById('color-preview').style.backgroundColor = color;
-            
             const temp = document.createElement("div");
             temp.style.color = color;
             document.body.appendChild(temp);
@@ -843,14 +806,31 @@
             const menu = document.getElementById('menu-overlay');
             const hamburger = document.querySelector('.hamburger');
             const isOpen = menu.classList.contains('show');
-            menu.classList.toggle('show'); hamburger.classList.toggle('open');
-            document.body.classList.toggle('no-scroll', !isOpen);
+            
+            if(isOpen) {
+                // 閉じる
+                menu.classList.remove('show');
+                hamburger.classList.remove('open');
+                document.body.classList.remove('no-scroll');
+            } else {
+                // 開く
+                menu.classList.add('show');
+                hamburger.classList.add('open');
+                document.body.classList.add('no-scroll');
+            }
         }
 
         function menuAction(action, el) {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
             el.classList.add('selected');
-            setTimeout(() => { showContent(action); }, 200);
+            
+            // ★修正: メニューを閉じてからコンテンツを開く
+            setTimeout(() => { 
+                document.getElementById('menu-overlay').classList.remove('show');
+                document.querySelector('.hamburger').classList.remove('open');
+                
+                showContent(action); 
+            }, 200);
         }
 
         function showContent(type) {
@@ -864,6 +844,7 @@
         function closeContentToMenu() {
             document.getElementById('content-overlay').classList.remove('show');
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
+            document.body.classList.remove('no-scroll');
         }
 
         function resetView() {
@@ -919,7 +900,6 @@
             document.getElementById('lang-part-jp').classList.toggle('active', lang === 'jp');
             document.getElementById('lang-part-en').classList.toggle('active', lang === 'en');
             
-            // プレースホルダーの言語切り替え
             const p_q17_jp = "※短く：1〜3語 推奨";
             const p_q17_en = "1-3 words recommended";
             const p_q18_jp = "自由記述（例：海、雨音、ネオン、金属、森 など）";
@@ -930,6 +910,11 @@
             document.getElementById('q17').placeholder = (lang === 'jp') ? p_q17_jp : p_q17_en;
             document.getElementById('q18').placeholder = (lang === 'jp') ? p_q18_jp : p_q18_en;
             document.getElementById('q19').placeholder = (lang === 'jp') ? p_q19_jp : p_q19_en;
+            
+            const colorTrigger = document.getElementById('color-trigger');
+            if (!selectedColorHex) {
+                colorTrigger.innerText = (lang === 'jp') ? "タップして色を選択…" : "Tap to select color...";
+            }
 
             initMarbling();
             updateQRCode();
