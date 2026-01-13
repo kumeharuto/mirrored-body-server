@@ -58,11 +58,12 @@
         .header-title { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
 
         .lang-switch-wrapper { display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.7rem; cursor: pointer; }
-        .lang-part { padding: 4px 14px; color: #fff; transition: 0.3s; }
+        /* ★修正: transitionをcolorのみにして背景移動のアニメーションを排除 */
+        .lang-part { padding: 4px 14px; color: #fff; transition: color 0.3s; }
         .lang-part.active {
             background-image: url('/static/texture.jpg'); 
             background-size: 1000%;
-            background-position: var(--rand-x) var(--rand-y); /* 位置もランダム反映 */
+            background-position: var(--rand-x) var(--rand-y);
             color: #000; font-weight: bold;
         }
 
@@ -99,40 +100,35 @@
         .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
 
-        /* ボタン修正 */
+        /* ボタン修正 (文字と枠をマーブリングにする) */
         .btn-entry {
-            position: relative;
             display: block; width: 100%; max-width: 280px; margin: 60px auto; padding: 22px;
             font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
             background: transparent; 
             color: #fff; 
             border: 1px solid #fff; 
             cursor: pointer; 
-            transition: border-color 0.1s ease, transform 0.1s;
+            transition: transform 0.1s;
+            position: relative;
             z-index: 1;
         }
 
-        .btn-entry::before {
-            content: "";
-            position: absolute;
-            inset: -2px;
-            border: 2px solid transparent; 
-            border-image: url('/static/texture.jpg') 30 stretch;
-            opacity: 0;
-            transition: opacity 0.1s ease; 
-            z-index: -1; 
-            pointer-events: none;
-        }
-
+        /* 押した時(:active) または 押された後(.clicked) */
         .btn-entry:active,
         .btn-entry.clicked {
-            border-color: rgba(255, 255, 255, 0); 
+            /* 枠線のマーブリング */
+            border: 2px solid transparent; /* 幅を確保 */
+            border-image: url('/static/texture.jpg') 30 stretch;
+            
+            /* 文字のマーブリング */
+            background-image: url('/static/texture.jpg');
+            background-size: 1000%;
+            background-position: var(--rand-x) var(--rand-y);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent; /* 文字色を透明にして背景を見せる */
+            
             transform: scale(0.98);
-        }
-        
-        .btn-entry:active::before,
-        .btn-entry.clicked::before {
-            opacity: 1; 
         }
 
         .clean-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: #fff; padding: 12px 0; font-size: 1.1rem; font-family: var(--font-main); border-radius: 0; }
@@ -240,7 +236,8 @@
         #entry-warning {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 800;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            display: flex; 
+            flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden; pointer-events: none;
             transition: opacity 0.8s ease, visibility 0.8s ease; 
             padding: 20px;
@@ -419,8 +416,8 @@
             <div style="height: 5vh;"></div>
             
             <div class="title-section">
-                <div class="main-title-jp text-marbling">量子庵 : 演算する彼岸∽二〇卌五</div>
-                <div class="main-title-en">2O45: A Quantum Hermitage</div>
+                <div class="main-title-jp text-marbling lang-jp">量子庵 : 演算する彼岸∽二〇卌五</div>
+                <div class="main-title-jp text-marbling lang-en">2O45: A Quantum Hermitage</div>
             </div>
 
             <div style="text-align: center; line-height: 2.3; font-size: 0.95rem; margin-bottom: 60px; color:#ccc;">
@@ -495,6 +492,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q5">
                     <div class="lbl-item"><span class="lang-jp">流れに乗る</span><span class="lang-en">Passive</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">流れを動かす</span><span class="lang-en">Active</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
@@ -506,6 +506,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q6_1">
                     <div class="lbl-item"><span class="lang-jp">都市</span><span class="lang-en">Urban</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">田舎</span><span class="lang-en">Rural</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_1" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_1')"></div>
@@ -513,6 +516,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q6_2">
                     <div class="lbl-item"><span class="lang-jp">喧騒</span><span class="lang-en">Hectic</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">静寂</span><span class="lang-en">Calm</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_2" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_2')"></div>
@@ -520,6 +526,9 @@
             <div class="input-group">
                 <div class="slider-labels" id="labels-q6_3">
                     <div class="lbl-item"><span class="lang-jp">現実</span><span class="lang-en">Real</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">夢想</span><span class="lang-en">Dreamlike</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
@@ -556,6 +565,9 @@
                 <label class="lang-jp">エネルギー源</label><label class="lang-en">Drive</label>
                 <div class="slider-labels" id="labels-q10">
                     <div class="lbl-item"><span class="lang-jp">探求</span><span class="lang-en">Exploration</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">安全</span><span class="lang-en">Security</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q10" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q10')"></div>
@@ -567,6 +579,9 @@
                 <label class="lang-jp">因果観</label><label class="lang-en">Causality</label>
                 <div class="slider-labels" id="labels-q11">
                     <div class="lbl-item"><span class="lang-jp">因果</span><span class="lang-en">Causal</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">偶然</span><span class="lang-en">Random</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q11" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q11')"></div>
@@ -575,6 +590,9 @@
                 <label class="lang-jp">慈悲観</label><label class="lang-en">Compassion</label>
                 <div class="slider-labels" id="labels-q12">
                     <div class="lbl-item"><span class="lang-jp">自身のため</span><span class="lang-en">Self</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">他者のため</span><span class="lang-en">Others</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q12')"></div>
@@ -583,6 +601,9 @@
                 <label class="lang-jp">無常観</label><label class="lang-en">Impermanence</label>
                 <div class="slider-labels" id="labels-q13">
                     <div class="lbl-item"><span class="lang-jp">受け入れる</span><span class="lang-en">Accept</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">抗う</span><span class="lang-en">Resist</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q13')"></div>
@@ -602,6 +623,9 @@
                 <label class="lang-jp">向かうなら</label><label class="lang-en">Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
                     <div class="lbl-item"><span class="lang-jp">北国</span><span class="lang-en">North</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
                     <div class="lbl-item"><span class="lang-jp">南国</span><span class="lang-en">South</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q15')"></div>
