@@ -18,7 +18,6 @@
             --bg-color: #000000;
             --text-color: #ffffff;
             --font-main: 'Shippori Mincho', serif;
-            /* グローバルなランダム変数（初期ロード用） */
             --rand-x: 50%;
             --rand-y: 50%;
         }
@@ -34,15 +33,15 @@
         #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; }
 
-        /* マーブル文字・背景共通設定（超拡大） */
+        /* マーブル文字・背景共通設定（1000%拡大） */
         .text-marbling {
             background-image: url('/static/texture.jpg');
-            background-size: 500%; /* ★拡大 */
+            background-size: 1000%;
             background-position: var(--rand-x) var(--rand-y);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        /* 画面遷移アニメーション */
+        /* アニメーション */
         .dissolve-out { animation: fadeOut 0.8s ease forwards; pointer-events: none; }
         .dissolve-in { display: block !important; animation: fadeIn 0.8s ease forwards; }
         @keyframes fadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(10px); } }
@@ -62,8 +61,7 @@
         .lang-part { padding: 4px 14px; color: #fff; transition: 0.3s; }
         .lang-part.active {
             background-image: url('/static/texture.jpg'); 
-            background-size: 1000%; /* ★拡大 */
-            /* 個別にランダム位置を持たせるためJSで制御 */
+            background-size: 1000%;
             color: #000; font-weight: bold;
         }
 
@@ -85,7 +83,7 @@
         .menu-item { font-size: 1.6rem; color: #fff; text-decoration: none; letter-spacing: 0.2em; cursor: pointer; transition: 0.2s; }
         .menu-item.selected {
             background-image: url('/static/texture.jpg');
-            background-size: 500%; -webkit-background-clip: text; color: transparent; font-weight: bold;
+            background-size: 1000%; -webkit-background-clip: text; color: transparent; font-weight: bold;
         }
         .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
         .close-menu-footer { margin-top: 60px; font-size: 3rem; cursor: pointer; color: #fff; }
@@ -100,21 +98,51 @@
         .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
 
-        /* 入力系UI */
+        /* ボタン修正 (0.1秒変化、維持機能) */
         .btn-entry {
+            position: relative;
             display: block; width: 100%; max-width: 280px; margin: 60px auto; padding: 22px;
             font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
-            background: transparent; color: #fff; border: 1px solid #fff; cursor: pointer; transition: 0.3s;
+            background: transparent; 
+            color: #fff; 
+            border: 1px solid #fff; 
+            cursor: pointer; 
+            transition: border-color 0.1s ease, transform 0.1s;
+            z-index: 1;
         }
-        .btn-entry:hover, .btn-entry:active { 
-            background-image: url('/static/texture.jpg'); background-size: 500%; 
-            color: #000; font-weight: bold; border-color: transparent; 
+
+        .btn-entry::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border: 2px solid transparent; 
+            border-image: url('/static/texture.jpg') 30 stretch;
+            opacity: 0;
+            transition: opacity 0.1s ease; 
+            z-index: -1; 
+            pointer-events: none;
+        }
+
+        .btn-entry:active,
+        .btn-entry.clicked {
+            border-color: rgba(255, 255, 255, 0); 
+            transform: scale(0.98);
+        }
+        
+        .btn-entry:active::before,
+        .btn-entry.clicked::before {
+            opacity: 1; 
         }
 
         .clean-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: #fff; padding: 12px 0; font-size: 1.1rem; font-family: var(--font-main); border-radius: 0; }
         .clean-input:focus { border-bottom: 1px solid #fff; }
+        
+        .clean-textarea {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #444; color: #fff;
+            padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8;
+        }
+        .clean-textarea:focus { border-color: #fff; background: rgba(255,255,255,0.1); }
 
-        /* カラーピッカー用ボタンスタイル */
         .color-picker-trigger {
             width: 100%; padding: 12px 0;
             border-bottom: 1px solid #444;
@@ -123,7 +151,6 @@
         }
         .color-picker-trigger.selected { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 
-        /* カラーピッカーモーダル */
         #color-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 500;
@@ -153,18 +180,15 @@
             font-family: var(--font-main); font-size: 1rem; cursor: pointer; letter-spacing: 0.1em;
         }
 
-/* スライダー */
-.input-group { margin-bottom: 70px; }
+        /* スライダー */
+        .input-group { margin-bottom: 70px; }
         .slider-labels { display: flex; justify-content: space-between; margin-bottom: 10px; height: 1.2rem; }
         
-        /* ★修正: 選択肢ごとのラッパーを作成し、これを制御対象にする */
         .lbl-item { 
             text-align: center; width: 80px; font-size: 0.75rem; color: #999; transition: 0.4s; 
-            display: flex; justify-content: center; /* 中身のspanを中央寄せ */
+            display: flex; justify-content: center;
         }
         .lbl-item.active { color: #fff; font-weight: bold; }
-        
-        /* ラベル内の言語spanはブロック要素として扱う必要はないが、切り替えはbodyクラス依存 */
 
         .slider-wrapper { position: relative; width: 100%; height: 35px; display: flex; align-items: center; }
         .visual-track { position: absolute; width: calc(100% - 24px); left: 12px; height: 1px; background: #222; display: flex; justify-content: space-between; z-index: 1; }
@@ -174,16 +198,19 @@
             -webkit-appearance: none; width: 100%; background: transparent; z-index: 2; cursor: pointer; margin: 0;
             --thumb-x: 50%; --thumb-y: 50%;
         }
+        
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 26px; width: 26px; border-radius: 50%;
             background-image: url('/static/texture.jpg'); 
             background-size: 1000%; 
             background-position: var(--thumb-x) var(--thumb-y);
-            border: 1px solid #fff; transition: transform 0.1s;
+            border: 1px solid #fff;
+            transition: transform 0.1s;
         }
-        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
+        input[type=range]:active::-webkit-slider-thumb {
+            transform: scale(1.2);
+        }
 
-        /* タイトルセクション (参考画像のデザイン) */
         .title-section {
             text-align: center; margin: 120px 0 80px;
             border-bottom: 1px solid #fff; padding-bottom: 20px;
@@ -199,6 +226,32 @@
         .section-header { text-align: center; margin: 100px 0 50px; }
         .section-header h2 { font-size: 1.8rem; letter-spacing: 0.4em; margin: 0; color: #fff; }
         .section-header .sub { font-size: 0.8rem; color: #777; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
+        
+        .section-divider {
+            text-align: center; margin: 80px 0; color: #444; letter-spacing: 0.5em; font-size: 1.5rem;
+        }
+
+        /* 注意書きポップアップ */
+        #entry-warning {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 800;
+            display: flex; 
+            flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.8s ease, visibility 0.8s ease; 
+            padding: 20px;
+        }
+        #entry-warning.show { 
+            opacity: 1; visibility: visible; pointer-events: auto; 
+        }
+        
+        .warning-content {
+            max-width: 600px; width: 100%;
+            color: #ddd; font-size: 0.9rem; line-height: 2.2; 
+            text-align: center;
+            max-height: 80vh; overflow-y: auto; padding: 20px;
+        }
+        .warning-content p { margin-bottom: 20px; }
 
         /* ローディング */
         #loading-overlay { 
@@ -207,14 +260,28 @@
         }
         .loading-term-box {
             width: 100%; max-width: 500px; min-height: 120px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; 
         }
         .loading-term { 
-            font-size: 1rem; line-height: 1.8; letter-spacing: 0.1em; text-align: center; font-weight: bold; 
-            animation: breathe 3.5s infinite; 
+            font-size: 0.9rem; line-height: 1.8; letter-spacing: 0.1em; text-align: center; font-weight: bold; 
+            animation: breathe 3.5s infinite; color: #fff;
         }
-        @keyframes breathe { 0%, 100% { opacity: 0.1; filter: blur(3px); } 50% { opacity: 1; filter: blur(0); } }
+        @keyframes breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        .qr-section { border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); }
+        .btn-back-top {
+            margin-top: 40px; border: 1px solid #444; background: transparent; color: #888;
+            padding: 10px 20px; font-size: 0.75rem; cursor: pointer; transition: 0.3s;
+        }
+        .btn-back-top:hover { border-color: #fff; color: #fff; }
+
+        /* ★QRセクション修正（ラベルとQRコードを縦並びに） */
+        .qr-section { 
+            border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); 
+        }
+        /* ラベルをブロック要素にして上下余白を追加 */
+        .qr-section label {
+            display: block; width: 100%; margin-bottom: 20px;
+        }
         #qrcode { background: #fff; padding: 10px; display: inline-block; }
         .received-thumb { max-width: 100%; border: 1px solid #fff; margin-top: 25px; display: none; }
 
@@ -270,7 +337,7 @@
             <p class="lang-jp">鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。</p>
             <p class="lang-en">Interactive Mode reconfigures the virtual Pure Land on the spot through the viewer’s offering. Submitted fragments fall into computational obscurity and return not as a procedure, but as a result. This result coheres, just once, as a Karma Portrait. The experience is not participation, but verification—a time to release one’s semiotic self and gently overlay the sense of "where one returns" onto the image.</p>
         </div>
-
+        
         <div id="content-body-explanation" class="content-body hidden">
             <h3 class="text-marbling">Explanation</h3>
             <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryoshi-an</h4>
@@ -306,7 +373,6 @@
             <p class="lang-jp">鑑賞者は、アイデンティティという記号をいったん手放す。そして、掛軸型モニターの前で、自分に問われる。「どこへ還るか」ではなく、「どこへ還ってしまうのか」。量子庵が差し出すのは答えではない。答え“だけ”が存在してしまう時代の、受け取り方そのものだ。</p>
             <p class="lang-en">The viewer temporarily relinquishes identity. Before the monitor, they are asked: Not "Where will I return?" but "Where will I end up returning?" Ryoshi-an offers not an answer, but the very method of reception in an era where "only" the answer exists.</p>
         </div>
-
         <div id="content-body-about" class="content-body hidden" style="text-align:center;">
             <h3 class="text-marbling">About Us</h3>
             <p style="font-size:0.8rem; color:#888; margin-top:40px;">Concept, Art Direction & Spatial Design</p>
@@ -319,6 +385,30 @@
             </div>
             <p style="margin-top:40px; font-size:0.7rem; color:#444;">© 2025 KARMIC IDENTITY</p>
         </div>
+    </div>
+
+    <div id="entry-warning">
+        <div class="warning-content">
+            <p class="lang-jp">
+                ここで差し出すのは、正解ではなく、手がかりです。<br>
+                すべてに答える必要はありません。答えられる範囲だけで構いません。<br>
+                けれど、選択と言葉が多いほど、〈Karma Portrait〉はあなたの輪郭に近づきます。<br><br>
+                生成にかかる時間は、時刻と回線の混み具合に揺れます。<br>
+                早いときも、遅いときもあります。<br><br>
+                安全のため、クレジットカード番号やパスワードなどの重要な個人情報は入力しないでください。<br>
+                ここに残るのは、映像を組み上げるための最小限の痕跡です。
+            </p>
+            <p class="lang-en">
+                What you leave here is not an answer, but a cue.<br>
+                You don’t need to respond to everything—only what you can.<br>
+                The more you offer, the more closely your 〈Karma Portrait〉 can approach your outline.<br><br>
+                Generation time may shift with the hour and network congestion.<br>
+                Sometimes it is quick; sometimes it takes longer.<br><br>
+                For your safety, please do not enter sensitive personal information such as credit card details or passwords.<br>
+                What remains here is only a minimal trace used to assemble the visuals.
+            </p>
+        </div>
+        <button class="btn-entry" style="margin-top:20px; max-width:200px;" onclick="proceedToForm()">Continue</button>
     </div>
 
     <div class="container">
@@ -344,139 +434,225 @@
                     The submitted content is reorganized as a cycle of reincarnation.<br>AI constructs a virtual Pure Land in a computational darkness<br>that humans cannot reach, and inscribes within it<br>a one-time "Karma Portrait."
                 </p>
             </div>
-            <button class="btn-entry" onclick="goToForm()">Entry</button>
+            <button class="btn-entry" onclick="goToForm(this)">Entry</button>
         </div>
 
-<div id="form-page" class="hidden">
-            <div class="section-header"><h2>黄土</h2><span class="sub">Yellow Earth / Early Childhood</span></div>
+        <div id="form-page" class="hidden">
             <div class="input-group">
-                <label class="lang-jp">Q1; ニックネーム / Who are you?</label><label class="lang-en">Q1; Nickname / Who are you?</label>
-                <input type="text" id="nickname" class="clean-input">
+                <label class="lang-jp">Q1; ニックネーム</label><label class="lang-en">Q1; Nickname</label>
+                <input type="text" id="q1" class="clean-input">
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q2; 年齢は？</label><label class="lang-en">Q2; Your Age?</label>
-                <input type="text" id="age" class="clean-input">
+                <label class="lang-jp">Q2; 年齢</label><label class="lang-en">Q2; Age</label>
+                <input type="number" id="q2" class="clean-input" inputmode="numeric">
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q3; 好きな色</label><label class="lang-en">Q3; Favorite Color</label>
+                <input type="hidden" id="q3">
+                <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">Tap to select color...</div>
             </div>
 
-            <div class="section-header"><h2>環境</h2><span class="sub">Environment</span></div>
             <div class="input-group">
-                <label class="lang-jp">Q3; 朝 or 夜</label><label class="lang-en">Q3; Morning or Night</label>
-                <div class="slider-labels" id="labels-q3">
-                    <div class="lbl-item"><span>朝/Day</span></div>
+                <label class="lang-jp">Q4-1; 過ごすなら（時間帯）</label><label class="lang-en">Q4-1; Time of Day</label>
+                <div class="slider-labels" id="labels-q4_1">
+                    <div class="lbl-item"><span>明方/Dawn</span></div>
+                    <div class="lbl-item"><span>昼/Day</span></div>
+                    <div class="lbl-item"><span>夕方/Dusk</span></div>
                     <div class="lbl-item"><span>夜/Night</span></div>
                 </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q3" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q3')"></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_1" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_1')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q4; 好む景色は？</label><label class="lang-en">Q4; Preferred Scenery?</label>
-                <div class="slider-labels" id="labels-q4">
-                    <div class="lbl-item"><span>雨/Rain</span></div>
-                    <div class="lbl-item"><span>晴れ/Sun</span></div>
-                    <div class="lbl-item"><span>木漏れ日</span></div>
+                <label class="lang-jp">Q4-2; 過ごすなら（天候）</label><label class="lang-en">Q4-2; Weather</label>
+                <div class="slider-labels" id="labels-q4_2">
+                    <div class="lbl-item"><span>晴天/Sun</span></div>
+                    <div class="lbl-item"><span>曇天/Cloud</span></div>
+                    <div class="lbl-item"><span>雨天/Rain</span></div>
+                    <div class="lbl-item"><span>雷光/Lightn</span></div>
+                    <div class="lbl-item"><span>星空/Stars</span></div>
                 </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q4')"></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_2" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q4_2')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q5; 季節は？</label><label class="lang-en">Q5; Season?</label>
-                <div class="slider-labels" id="labels-q5">
+                <label class="lang-jp">Q4-3; 過ごすなら（季節）</label><label class="lang-en">Q4-3; Season</label>
+                <div class="slider-labels" id="labels-q4_3">
                     <div class="lbl-item"><span>春/Spr</span></div>
                     <div class="lbl-item"><span>夏/Sum</span></div>
                     <div class="lbl-item"><span>秋/Aut</span></div>
                     <div class="lbl-item"><span>冬/Win</span></div>
                 </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_3" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_3')"></div>
             </div>
 
-            <div class="section-header"><h2>青春</h2><span class="sub">Youth / Adolescence</span></div>
-            
+            <div class="section-divider">⸻</div>
+            <div class="section-header"><h2>青年期</h2><span class="sub">Adolescence</span></div>
+
             <div class="input-group">
-                <label class="lang-jp">Q6; 好きな色は？</label><label class="lang-en">Q6; Favorite Color?</label>
-                <input type="hidden" id="q6">
-                <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">Tap to select color...</div>
+                <label class="lang-jp">Q5; 行動</label><label class="lang-en">Q5; Approach</label>
+                <div class="slider-labels" id="labels-q5">
+                    <div class="lbl-item"><span>流れに乗る<br>Passive</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>流れを動かす<br>Active</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
             </div>
 
-            <p style="text-align:center; font-size:0.8rem; color:#666; margin-bottom:35px;" class="lang-jp">生きていたいのは/身を置くなら:</p>
-            <p style="text-align:center; font-size:0.8rem; color:#666; margin-bottom:35px;" class="lang-en">Where would you reside?</p>
             <div class="input-group">
+                <label class="lang-jp">Q6-1; 住処 (場所)</label><label class="lang-en">Q6-1; Environment (Place)</label>
+                <div class="slider-labels" id="labels-q6_1">
+                    <div class="lbl-item"><span>都市<br>Urban</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>田舎<br>Rural</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_1" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_1')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q6-2; 住処 (音)</label><label class="lang-en">Q6-2; Environment (Sound)</label>
+                <div class="slider-labels" id="labels-q6_2">
+                    <div class="lbl-item"><span>喧騒<br>Hectic</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>静寂<br>Calm</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_2" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_2')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q6-3; 住処 (感覚)</label><label class="lang-en">Q6-3; Environment (Sense)</label>
+                <div class="slider-labels" id="labels-q6_3">
+                    <div class="lbl-item"><span>現実<br>Real</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>夢想<br>Dreamlike</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
+            </div>
+
+            <div class="input-group">
+                <label class="lang-jp">Q7; 好きな香り</label><label class="lang-en">Q7; Scent</label>
                 <div class="slider-labels" id="labels-q7">
-                    <div class="lbl-item"><span class="lang-jp">都市の中</span><span class="lang-en">City</span></div>
-                    <div class="lbl-item"><span class="lang-jp">自然の中</span><span class="lang-en">Nature</span></div>
-                </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q7" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q7')"></div>
-            </div>
-            <div class="input-group">
-                <div class="slider-labels" id="labels-q8">
-                    <div class="lbl-item"><span class="lang-jp">喧騒</span><span class="lang-en">Noise</span></div>
-                    <div class="lbl-item"><span class="lang-jp">静寂</span><span class="lang-en">Silence</span></div>
-                </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q8" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q8')"></div>
-            </div>
-            <div class="input-group">
-                <div class="slider-labels" id="labels-q9">
-                    <div class="lbl-item"><span class="lang-jp">現実</span><span class="lang-en">Reality</span></div>
-                    <div class="lbl-item"><span class="lang-jp">夢想</span><span class="lang-en">Fantasy</span></div>
-                </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q9" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q9')"></div>
-            </div>
-
-            <div class="section-header"><h2>朱夏</h2><span class="sub">Vermilion Summer / Adulthood</span></div>
-            <div class="input-group"><label class="lang-jp">Q10; 旅行に行くなら（国）</label><label class="lang-en">Q10; Journey to (Country)?</label><input type="text" id="q10" class="clean-input"></div>
-            <div class="input-group">
-                <label class="lang-jp">Q11; 好きな匂いは / What smell do you love in?</label><label class="lang-en">Q11; Favorite Scent?</label>
-                <div class="slider-labels" id="labels-q11" style="font-size:0.6rem;">
+                    <div class="lbl-item"><span>Floral</span></div>
                     <div class="lbl-item"><span>Fruity</span></div>
                     <div class="lbl-item"><span>Woody</span></div>
-                    <div class="lbl-item"><span>Mellow</span></div>
                     <div class="lbl-item"><span>Spicy</span></div>
                     <div class="lbl-item"><span>Smoky</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q7" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q7')"></div>
+            </div>
+
+            <div class="section-divider">⸻</div>
+
+            <div class="input-group">
+                <label class="lang-jp">Q8; 旅行に行くなら (国や都市)</label><label class="lang-en">Q8; Destination</label>
+                <input type="text" id="q8" class="clean-input">
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q9; 願いが向くのは</label><label class="lang-en">Q9; Wish Direction</label>
+                <div class="slider-labels" id="labels-q9">
+                    <div class="lbl-item"><span>過去/Past</span></div>
+                    <div class="lbl-item"><span>現在/Now</span></div>
+                    <div class="lbl-item"><span>未来/Fut</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q9" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q9')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q10; エネルギー源</label><label class="lang-en">Q10; Drive</label>
+                <div class="slider-labels" id="labels-q10">
+                    <div class="lbl-item"><span>探求<br>Exploration</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>安全<br>Security</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q10" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q10')"></div>
+            </div>
+
+            <div class="section-divider">⸻</div>
+
+            <div class="input-group">
+                <label class="lang-jp">Q11; 因果観</label><label class="lang-en">Q11; Causality</label>
+                <div class="slider-labels" id="labels-q11">
+                    <div class="lbl-item"><span>因果<br>Causal</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>偶然<br>Random</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q11" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q11')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q12; 希望を感じるのは？</label><label class="lang-en">Q12; Where do you feel hope?</label>
+                <label class="lang-jp">Q12; 慈悲観</label><label class="lang-en">Q12; Compassion</label>
                 <div class="slider-labels" id="labels-q12">
-                    <div class="lbl-item"><span class="lang-jp">過去</span><span class="lang-en">Past</span></div>
-                    <div class="lbl-item"><span class="lang-jp">現在</span><span class="lang-en">Now</span></div>
-                    <div class="lbl-item"><span class="lang-jp">未来</span><span class="lang-en">Future</span></div>
+                    <div class="lbl-item"><span>自身のため<br>Self</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>他者のため<br>Others</span></div>
                 </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q12')"></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q12')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q13; 無常観</label><label class="lang-en">Q13; Impermanence</label>
+                <div class="slider-labels" id="labels-q13">
+                    <div class="lbl-item"><span>受け入れる<br>Accept</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>抗う<br>Resist</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q13')"></div>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q14; 死生観</label><label class="lang-en">Q14; Life & Death</label>
+                <div class="slider-labels" id="labels-q14">
+                    <div class="lbl-item"><span>肉体に留まる<br>Body</span></div>
+                    <div class="lbl-item"><span>オンラインへ<br>Online</span></div>
+                </div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q14" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q14')"></div>
             </div>
 
-            <div class="section-header"><h2>白冬</h2><span class="sub">White Winter / Mature Age</span></div>
-            <div class="input-group"><label class="lang-jp">Q14; 特別だと感じる存在は？</label><label class="lang-en">Q14; What is special to you?</label><input type="text" id="q14" class="clean-input"></div>
+            <div class="section-divider">⸻</div>
+
             <div class="input-group">
-                <label class="lang-jp">Q15; 向かうなら / Destination afterlife?</label><label class="lang-en">Q15; Destination?</label>
+                <label class="lang-jp">Q15; 向かうなら</label><label class="lang-en">Q15; Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
-                    <div class="lbl-item"><span class="lang-jp">北国へ</span><span class="lang-en">North</span></div>
-                    <div class="lbl-item"><span class="lang-jp">南国へ</span><span class="lang-en">South</span></div>
+                    <div class="lbl-item"><span>北国<br>North</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>-</span></div>
+                    <div class="lbl-item"><span>南国<br>South</span></div>
                 </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q15')"></div>
+                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q15')"></div>
             </div>
-
-            <div class="section-header"><h2>玄冬</h2><span class="sub">Black Winter / Old Age</span></div>
             <div class="input-group">
-                <label class="lang-jp">Q16; 還るなら</label><label class="lang-en">Q16; Return to...?</label>
+                <label class="lang-jp">Q16; 還るなら</label><label class="lang-en">Q16; Returning To</label>
                 <div class="slider-labels" id="labels-q16">
-                    <div class="lbl-item"><span class="lang-jp">海</span><span class="lang-en">Sea</span></div>
-                    <div class="lbl-item"><span class="lang-jp">土</span><span class="lang-en">Soil</span></div>
-                    <div class="lbl-item"><span class="lang-jp">空</span><span class="lang-en">Sky</span></div>
+                    <div class="lbl-item"><span>深海/Sea</span></div>
+                    <div class="lbl-item"><span>地中/Soil</span></div>
+                    <div class="lbl-item"><span>天空/Sky</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q16" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q16')"></div>
             </div>
             <div class="input-group">
-                <div class="slider-labels" id="labels-q17" style="font-size:0.5rem;">
-                    <div class="lbl-item">
-                        <span class="lang-jp">肉体を失いネットに生きる</span><span class="lang-en">Live in Net</span>
-                    </div>
-                    <div class="lbl-item">
-                        <span class="lang-jp">肉体こそが人間の価値</span><span class="lang-en">Body is value</span>
-                    </div>
-                </div>
-                <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q17" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q17')"></div>
+                <label class="lang-jp">Q17; ひとつだけ残すなら (1~3語)</label><label class="lang-en">Q17; One Thing to Keep (Short)</label>
+                <input type="text" id="q17" class="clean-input">
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q18; 好きなもの</label><label class="lang-en">Q18; Likes</label>
+                <textarea id="q18" class="clean-textarea" rows="4"></textarea>
+            </div>
+            <div class="input-group">
+                <label class="lang-jp">Q19; 嫌いなもの</label><label class="lang-en">Q19; Avoids</label>
+                <textarea id="q19" class="clean-textarea" rows="4"></textarea>
             </div>
 
             <div class="qr-section">
-                <label class="lang-jp">画像奉納</label><label class="lang-en">Image Offering</label>
+                <label class="lang-jp">Q20; 画像奉納</label><label class="lang-en">Q20; Image Offering</label>
                 <div id="qrcode"></div>
                 <div id="qr-status" style="margin-top:15px; font-size:0.75rem; color:#666;" class="lang-jp">スマホで読み取ってください</div>
                 <div id="qr-status-en" style="margin-top:15px; font-size:0.75rem; color:#666;" class="lang-en">Scan with your smartphone</div>
@@ -484,8 +660,10 @@
                 <button id="reset-img-btn" class="hidden" onclick="resetImage()" style="margin-top:25px; background:none; border:none; color:#fff; border-bottom:1px solid #fff; cursor:pointer; font-size:0.8rem;">× <span class="lang-jp">取り消す</span><span class="lang-en">Cancel</span></button>
             </div>
 
-            <button class="btn-entry" onclick="submitForm()">Initiate</button>
+            <button class="btn-entry" onclick="submitForm(this)">Initiate</button>
         </div>
+    </div>
+
     <div id="color-modal">
         <h3 style="color:#fff; margin-bottom:30px;">Select Color</h3>
         <div class="color-wheel-container" id="color-wheel" onclick="pickColor(event)">
@@ -497,7 +675,7 @@
 
     <div id="loading-overlay">
         <div class="loading-term-box">
-            <div id="loading-term-container" class="loading-term text-marbling">紐解いています...</div>
+            <div id="loading-term-container" class="loading-term">紐解いています...</div>
         </div>
         <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-jp">しばらくお待ちください</p>
         <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-en">Please wait a moment...</p>
@@ -507,6 +685,8 @@
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-jp">待ち時間に作品解説を読む</p>
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-en">Read documentation while waiting</p>
         </div>
+
+        <button class="btn-back-top" onclick="cancelLoading()">TOPへ戻る / Back to TOP</button>
     </div>
 
     <script>
@@ -515,7 +695,6 @@
         let currentLang = 'jp';
         let selectedColorHex = "";
 
-        // メッセージリスト省略なし
         const phrasesJp = [
             "二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。",
             "AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、一度きりの記号的自己像を刻む。",
@@ -542,7 +721,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             setLanguage('jp'); connectWebSocket(); generateAboutQR();
-            // スライダー操作時にランダム切り抜き位置を変更するリスナー
             document.querySelectorAll('input[type=range]').forEach(el => {
                 updLbl(el, 'labels-' + el.id);
                 el.addEventListener('input', (e) => {
@@ -556,7 +734,6 @@
         });
 
         function initMarbling() {
-            // 初期ランダム値
             const rX = Math.floor(Math.random() * 100) + '%';
             const rY = Math.floor(Math.random() * 100) + '%';
             document.documentElement.style.setProperty('--rand-x', rX);
@@ -585,12 +762,10 @@
         function updLbl(el, labelId) {
             const container = document.getElementById(labelId);
             if(!container) return;
-            // ★修正: spanではなく .lbl-item を取得して制御
             const labels = container.querySelectorAll('.lbl-item');
             labels.forEach((l, idx) => l.classList.toggle('active', idx === parseInt(el.value)));
         }
 
-        /* カラーピッカー */
         function openColorPicker() { document.getElementById('color-modal').classList.add('show'); }
         
         function pickColor(e) {
@@ -602,7 +777,6 @@
             const color = `hsl(${hue}, 100%, 50%)`;
             document.getElementById('color-preview').style.backgroundColor = color;
             
-            // HSL to HEX calc
             const temp = document.createElement("div");
             temp.style.color = color;
             document.body.appendChild(temp);
@@ -619,7 +793,7 @@
 
         function confirmColor() {
             if(selectedColorHex) {
-                document.getElementById('q6').value = selectedColorHex;
+                document.getElementById('q3').value = selectedColorHex;
                 const trigger = document.getElementById('color-trigger');
                 trigger.innerText = selectedColorHex;
                 trigger.style.color = selectedColorHex;
@@ -628,7 +802,6 @@
             document.getElementById('color-modal').classList.remove('show');
         }
 
-        /* メニュー & 画面遷移 */
         function toggleMenu() {
             const menu = document.getElementById('menu-overlay');
             const hamburger = document.querySelector('.hamburger');
@@ -669,23 +842,41 @@
             }, 800);
         }
 
-        function goToForm() {
+        function goToForm(btn) {
+            // ボタンの見た目を維持
+            btn.classList.add('clicked');
+            
             const landing = document.getElementById('landing-page');
-            const form = document.getElementById('form-page');
             landing.classList.add('dissolve-out');
             setTimeout(() => {
                 landing.classList.add('hidden'); landing.classList.remove('dissolve-out');
-                form.classList.remove('hidden'); form.classList.add('dissolve-in');
+                document.getElementById('entry-warning').classList.add('show');
                 document.getElementById('btn-back').classList.remove('hidden');
+                // クラスを外す（戻った時のため）
+                btn.classList.remove('clicked');
+            }, 800);
+        }
+
+        function proceedToForm() {
+            const warning = document.getElementById('entry-warning');
+            const form = document.getElementById('form-page');
+            warning.classList.remove('show');
+            setTimeout(() => {
+                warning.style.display = 'none'; 
+                form.classList.remove('hidden'); form.classList.add('dissolve-in');
                 window.scrollTo(0,0); updateQRCode();
                 initMarbling();
                 setTimeout(() => form.classList.remove('dissolve-in'), 800);
-            }, 800);
+            }, 500);
         }
 
         function backToTitle() { 
             const msg = (currentLang === 'jp') ? '入力を破棄して戻りますか？' : 'Discard input and return?';
-            if(confirm(msg)) resetView(); 
+            if(confirm(msg)) location.reload(); 
+        }
+
+        function cancelLoading() {
+            location.reload();
         }
 
         function toggleLanguage() { setLanguage(currentLang === 'jp' ? 'en' : 'jp'); }
@@ -722,7 +913,9 @@
             document.getElementById('reset-img-btn').classList.add('hidden');
         }
 
-        async function submitForm() {
+        async function submitForm(btn) {
+            if(btn) btn.classList.add('clicked');
+            
             const overlay = document.getElementById('loading-overlay');
             overlay.style.display = 'flex';
 
@@ -730,30 +923,40 @@
             qrLoading.innerHTML = "";
             new QRCode(qrLoading, { text: window.location.origin + "/static/info.html", width: 120, height: 120 });
 
+            // ローディングメッセージ演出
             let i = 0; 
             const termEl = document.getElementById('loading-term-container');
+            let loadTimer;
+
             const updatePhrase = () => {
                 const list = (currentLang === 'jp') ? phrasesJp : phrasesEn;
                 termEl.innerText = list[i % list.length];
                 i++;
             };
+
+            const nextPhrase = () => {
+                clearInterval(loadTimer);
+                updatePhrase();
+                loadTimer = setInterval(nextPhrase, 30000); // 30秒ごとに更新
+            };
+
+            // 初回表示
             updatePhrase(); 
-            const timer = setInterval(updatePhrase, 10000);
+            loadTimer = setInterval(nextPhrase, 30000); // タイマースタート
+
+            // タップで次へ
+            termEl.parentElement.onclick = nextPhrase;
 
             const formData = new FormData();
-            formData.append('nickname', document.getElementById('nickname').value || "Unknown");
             formData.append('image_b64', receivedImageBase64);
-            const q6Val = document.getElementById('q6').value || "";
-            formData.append('q6', q6Val);
-
-            const ids = ['age','q3','q4','q5','q7','q8','q9','q10','q11','q12','q14','q15','q16','q17'];
+            const ids = ['q1','q2','q3','q4_1','q4_2','q4_3','q5','q6_1','q6_2','q6_3','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19'];
             ids.forEach(id => formData.append(id, document.getElementById(id).value || ""));
 
             try {
                 const res = await fetch('/submit', { method: 'POST', body: formData });
-                if(res.ok) setTimeout(() => location.reload(), 30000); 
-                else { alert("Error"); clearInterval(timer); overlay.style.display='none'; }
-            } catch(e) { clearInterval(timer); overlay.style.display='none'; }
+                if(res.ok) setTimeout(() => location.reload(), 10000); 
+                else { alert("Error"); clearInterval(loadTimer); overlay.style.display='none'; if(btn) btn.classList.remove('clicked'); }
+            } catch(e) { clearInterval(loadTimer); overlay.style.display='none'; if(btn) btn.classList.remove('clicked'); }
         }
     </script>
 </body>
