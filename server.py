@@ -1,19 +1,25 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from typing import List, Optional
+import os
 import json
-import asyncio
 import base64
+import asyncio
+from typing import List, Optional
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Form, UploadFile, File
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# 静的ファイルの配信
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="static")
+# CORS設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# WebSocket接続管理
+# === WebSocket管理 ===
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -21,24 +27,36 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
+        print(f"🔌 Client connected. Total: {len(self.active_connections)}")
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
+        print(f"🔌 Client disconnected. Total: {len(self.active_connections)}")
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: dict):
         for connection in self.active_connections:
             try:
-                await connection.send_text(message)
-            except:
-                pass
+                await connection.send_text(json.dumps(message))
+            except Exception as e:
+                print(f"Broadcast error: {e}")
 
 manager = ConnectionManager()
 
-@app.get("/")
-async def get(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+# === ルーティング ===
 
-# WebSocketエンドポイント
+@app.get("/")
+async def get_index():
+    if os.path.exists("static/index.html"):
+        return FileResponse("static/index.html")
+    return FileResponse("index.html")
+
+# 静的ファイルマウント
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+else:
+    app.mount("/static", StaticFiles(directory="."), name="static")
+    app.mount("/", StaticFiles(directory="."), name="root")
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -48,71 +66,98 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# 画像アップロード (スマホ -> サーバー -> タブレット)
-@app.post("/upload-satellite")
-async def upload_satellite(session_id: str = Form(...), image: UploadFile = File(...)):
-    contents = await image.read()
-    b64_image = base64.b64encode(contents).decode('utf-8')
-    
-    # タブレット(index.html)へ通知
-    msg = json.dumps({
-        "type": "satellite_image",
-        "session_id": session_id,
-        "image_data": b64_image
-    })
-    await manager.broadcast(msg)
-    return JSONResponse({"status": "ok"})
-
-# ★修正: 新しい設問フォームの受付定義
+# === ★ここを修正しました (Q1-Q20に対応) ===
 @app.post("/submit")
-async def submit(
-    nickname: str = Form(...),
-    special_existence: str = Form(""),
-    favorite_smell: str = Form(""),
-    
-    slider_noise_silence: int = Form(2),
-    slider_city_country: int = Form(2),
-    slider_reality_fantasy: int = Form(2),
-    
-    slider_hell_time: int = Form(1),
-    text_dream: str = Form(""),
-    text_setback: str = Form(""),
-    text_lost_release: str = Form(""),
-    
-    slider_return_element: int = Form(1),
-    slider_go_north_south: int = Form(2),
-    
-    image_b64: str = Form("")
+async def handle_form(
+    q1: str = Form(""),  # Nickname
+    q2: str = Form(""),  # Age (文字として受け取る)
+    q3: str = Form(""),  # Color
+    q4_1: int = Form(0), # 過ごすなら(時間)
+    q4_2: int = Form(0), # 過ごすなら(天気)
+    q4_3: int = Form(0), # 過ごすなら(季節)
+    q5: int = Form(0),   # 行動
+    q6_1: int = Form(0), # 住処(場所)
+    q6_2: int = Form(0), # 住処(音)
+    q6_3: int = Form(0), # 住処(感覚)
+    q7: int = Form(0),   # 香り
+    q8: str = Form(""),  # 旅行
+    q9: int = Form(0),   # 願い
+    q10: int = Form(0),  # エネルギー
+    q11: int = Form(0),  # 因果
+    q12: int = Form(0),  # 慈悲
+    q13: int = Form(0),  # 無常
+    q14: int = Form(0),  # 死生
+    q15: int = Form(0),  # 向かう
+    q16: int = Form(0),  # 還る
+    q17: str = Form(""), # 残すもの
+    q18: str = Form(""), # 好きなもの
+    q19: str = Form(""), # 嫌いなもの
+    image_b64: str = Form("") # 画像データ
 ):
-    # データ構築（Bridgeへ送るJSONを作成）
+    print(f"📩 受信: {q1} ({q2})")
+    
+    # TouchDesignerなどが扱いやすいJSON形式にまとめる
     data = {
         "type": "form_submission",
         "identity": {
-            "nickname": nickname,
-            "special_existence": special_existence,
-            "favorite_smell": favorite_smell
+            "nickname": q1,
+            "age": q2,
+            "color": q3
         },
-        "seishun": {
-            "noise_silence": slider_noise_silence,
-            "city_country": slider_city_country,
-            "reality_fantasy": slider_reality_fantasy
+        "conditions": {
+            "time": q4_1,
+            "weather": q4_2,
+            "season": q4_3
         },
-        "shuka": {
-            "hell_time": slider_hell_time, # 0:Past, 1:Present, 2:Future
-            "dream": text_dream
+        "adolescence": {
+            "approach": q5,
+            "environment_place": q6_1,
+            "environment_sound": q6_2,
+            "environment_sense": q6_3,
+            "scent": q7
         },
-        "hakuto": {
-            "setback": text_setback,
-            "lost_release": text_lost_release
+        "adulthood": {
+            "destination": q8,
+            "wish_direction": q9,
+            "drive": q10
         },
-        "gento": {
-            "return_element": slider_return_element, # 0:Sea, 1:Soil, 2:Sky
-            "go_north_south": slider_go_north_south
+        "philosophy": {
+            "causality": q11,
+            "compassion": q12,
+            "impermanence": q13,
+            "life_death": q14
         },
-        "image_data": image_b64,
-        "has_image": bool(image_b64)
+        "afterlife": {
+            "heading": q15,
+            "returning": q16
+        },
+        "legacy": {
+            "keep": q17,
+            "likes": q18,
+            "avoids": q19
+        },
+        "has_image": bool(image_b64),
+        "image_data": image_b64
     }
+    
+    await manager.broadcast(data)
+    return {"message": "Success"}
 
-    # Bridge(AI)へ送信
-    await manager.broadcast(json.dumps(data))
-    return JSONResponse({"status": "ok"})
+# スマホ画像アップロード用
+@app.post("/upload-satellite")
+async def upload_satellite(session_id: str = Form(...), image: UploadFile = File(...)):
+    content = await image.read()
+    b64_img = base64.b64encode(content).decode("utf-8")
+    message = {
+        "type": "satellite_image",
+        "session_id": session_id,
+        "image_data": b64_img
+    }
+    await manager.broadcast(message)
+    return {"status": "success"}
+
+if __name__ == "__main__":
+    import uvicorn
+    # Renderでは環境変数PORTが使われるため、それに対応
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
