@@ -49,11 +49,11 @@
 
         .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; position: relative; z-index: 1; }
 
-        /* ヘッダー (最前面固定) */
+        /* ヘッダー (最前面固定・右寄せ) */
         .header-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
-            z-index: 9999; /* コンテンツやメニューより常に上 */
+            z-index: 9999; /* コンテンツオーバーレイより手前 */
             display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
         }
         .header-title { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
@@ -77,7 +77,7 @@
 
         #menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 9000; /* ヘッダーより下、コンテンツより上 */
+            background: rgba(0,0,0,0.98); z-index: 9990; /* ヘッダーより下、コンテンツより上 */
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.5s;
         }
@@ -90,8 +90,7 @@
             background-size: 1000%; -webkit-background-clip: text; color: transparent; font-weight: bold;
         }
         .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
-        /* 下部の×ボタンは削除しました */
-
+        
         /* コンテンツオーバーレイ */
         #content-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -131,6 +130,8 @@
             padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8;
         }
         .clean-textarea:focus { border-color: #fff; background: rgba(255,255,255,0.1); }
+        
+        /* プレースホルダー（グレー文字統一） */
         .clean-textarea::placeholder, .clean-input::placeholder, .color-picker-trigger {
             color: #666; font-size: 0.8rem;
         }
@@ -243,9 +244,14 @@
         }
         .btn-back-top:hover { border-color: #fff; color: #fff; }
 
+        /* QRセクション */
         .qr-section { border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); }
         .qr-section label { display: block; width: 100%; margin-bottom: 20px; font-size: 1rem; }
-        #qrcode { background: #fff; padding: 10px; display: inline-block; }
+        
+        /* ★QRコードの背景を黒に修正 */
+        #qrcode, #qrcode-about, #qrcode-loading { 
+            background: #000; padding: 10px; display: inline-block; border: 1px solid #333; 
+        }
         .received-thumb { max-width: 100%; border: 1px solid #fff; margin-top: 25px; display: none; }
 
         .hidden { display: none !important; }
@@ -283,7 +289,7 @@
             <li><div class="menu-item text-marbling" onclick="menuAction('spoiler', this)">Background<span class="menu-sub lang-jp">背景設定（ネタバレ）</span><span class="menu-sub lang-en">Background</span></div></li>
             <li><div class="menu-item text-marbling" onclick="menuAction('about', this)">About Us<span class="menu-sub lang-jp">プロジェクト紹介</span><span class="menu-sub lang-en">About Us</span></div></li>
         </ul>
-        </div>
+    </div>
 
     <div id="content-overlay">
         <div style="position: sticky; top:0; width:100%; display:flex; justify-content:flex-end; padding:20px; z-index:310;">
@@ -346,7 +352,7 @@
             <p style="font-size:1.2rem;">Haruto Kume</p>
             <div style="margin-top:60px; padding-top:40px; border-top:1px solid #222;">
                 <p style="font-size:0.75rem; color:#666;">Scan for Info (Mobile)</p>
-                <div id="qrcode-about" style="background:#fff; padding:10px; display:inline-block; margin-top:10px;"></div>
+                <div id="qrcode-about" style="background:#000; padding:10px; display:inline-block; margin-top:10px;"></div>
             </div>
             <p style="margin-top:40px; font-size:0.7rem; color:#444;">© 2025 KARMIC IDENTITY</p>
         </div>
@@ -645,13 +651,11 @@
         </div>
         <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-jp">しばらくお待ちください</p>
         <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-en">Please wait a moment...</p>
-        
         <div style="margin-top:40px; text-align:center;">
             <div id="qrcode-loading" style="background:#fff; padding:10px; display:inline-block;"></div>
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-jp">待ち時間に作品解説を読む</p>
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-en">Read documentation while waiting</p>
         </div>
-
         <button class="btn-back-top" onclick="cancelLoading()">TOPへ戻る / Back to TOP</button>
     </div>
 
@@ -824,7 +828,6 @@
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
             el.classList.add('selected');
             
-            // ★修正: メニューを閉じてからコンテンツを開く
             setTimeout(() => { 
                 document.getElementById('menu-overlay').classList.remove('show');
                 document.querySelector('.hamburger').classList.remove('open');
@@ -900,6 +903,8 @@
             document.getElementById('lang-part-jp').classList.toggle('active', lang === 'jp');
             document.getElementById('lang-part-en').classList.toggle('active', lang === 'en');
             
+            const p_q8_jp = "国や都市";
+            const p_q8_en = "Country or City";
             const p_q17_jp = "※短く：1〜3語 推奨";
             const p_q17_en = "1-3 words recommended";
             const p_q18_jp = "自由記述（例：海、雨音、ネオン、金属、森 など）";
@@ -907,6 +912,7 @@
             const p_q19_jp = "自由記述（例：混雑、強い光、騒音、湿気、煙 など）";
             const p_q19_en = "Free text (e.g., crowds, harsh light, noise, humidity, smoke)";
             
+            document.getElementById('q8').placeholder = (lang === 'jp') ? p_q8_jp : p_q8_en;
             document.getElementById('q17').placeholder = (lang === 'jp') ? p_q17_jp : p_q17_en;
             document.getElementById('q18').placeholder = (lang === 'jp') ? p_q18_jp : p_q18_en;
             document.getElementById('q19').placeholder = (lang === 'jp') ? p_q19_jp : p_q19_en;
@@ -923,14 +929,22 @@
         function generateAboutQR() {
             const container = document.getElementById("qrcode-about");
             container.innerHTML = "";
-            new QRCode(container, { text: window.location.origin + "/static/info.html", width: 100, height: 100 });
+            new QRCode(container, { 
+                text: window.location.origin + "/static/info.html", 
+                width: 100, height: 100, 
+                colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H 
+            });
         }
 
         function updateQRCode() {
             const container = document.getElementById("qrcode");
             container.innerHTML = "";
             const url = `${window.location.origin}/static/upload.html?session_id=${mySessionId}&lang=${currentLang}`;
-            new QRCode(container, { text: url, width: 140, height: 140 });
+            new QRCode(container, { 
+                text: url, 
+                width: 140, height: 140,
+                colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
+            });
         }
 
         function resetImage() {
@@ -951,7 +965,11 @@
 
             const qrLoading = document.getElementById("qrcode-loading");
             qrLoading.innerHTML = "";
-            new QRCode(qrLoading, { text: window.location.origin + "/static/info.html", width: 120, height: 120 });
+            new QRCode(qrLoading, { 
+                text: window.location.origin + "/static/info.html", 
+                width: 120, height: 120,
+                colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
+            });
 
             let i = 0; 
             const termEl = document.getElementById('loading-term-container');
