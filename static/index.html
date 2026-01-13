@@ -27,13 +27,13 @@
             font-family: var(--font-main); margin: 0; padding: 0;
             min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
         }
-        body.no-scroll { overflow: hidden; height: 100vh; }
+        body.no-scroll { overflow: hidden !important; height: 100vh; touch-action: none; }
 
         /* 背景動画 */
         #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; }
 
-        /* マーブル文字・背景共通設定（1000%拡大） */
+        /* マーブリング設定 */
         .text-marbling {
             background-image: url('/static/texture.jpg');
             background-size: 1000%;
@@ -62,6 +62,7 @@
         .lang-part.active {
             background-image: url('/static/texture.jpg'); 
             background-size: 1000%;
+            background-position: var(--rand-x) var(--rand-y); /* 位置もランダム反映 */
             color: #000; font-weight: bold;
         }
 
@@ -98,7 +99,7 @@
         .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
         .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
 
-        /* ボタン修正 (0.1秒変化、維持機能) */
+        /* ボタン修正 */
         .btn-entry {
             position: relative;
             display: block; width: 100%; max-width: 280px; margin: 60px auto; padding: 22px;
@@ -142,6 +143,8 @@
             padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8;
         }
         .clean-textarea:focus { border-color: #fff; background: rgba(255,255,255,0.1); }
+        .clean-textarea::placeholder { color: #666; font-size: 0.8rem; }
+        .clean-input::placeholder { color: #666; font-size: 0.8rem; }
 
         .color-picker-trigger {
             width: 100%; padding: 12px 0;
@@ -164,6 +167,7 @@
             background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
             box-shadow: 0 0 20px rgba(255,255,255,0.1);
             margin-bottom: 40px; cursor: crosshair;
+            touch-action: none;
         }
         .color-wheel-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -182,11 +186,12 @@
 
         /* スライダー */
         .input-group { margin-bottom: 70px; }
+        .input-label { display: block; margin-bottom: 20px; font-size: 1rem; letter-spacing: 0.1em; }
         .slider-labels { display: flex; justify-content: space-between; margin-bottom: 10px; height: 1.2rem; }
         
         .lbl-item { 
             text-align: center; width: 80px; font-size: 0.75rem; color: #999; transition: 0.4s; 
-            display: flex; justify-content: center;
+            display: flex; justify-content: center; align-items: center;
         }
         .lbl-item.active { color: #fff; font-weight: bold; }
 
@@ -235,8 +240,7 @@
         #entry-warning {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 800;
-            display: flex; 
-            flex-direction: column; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden; pointer-events: none;
             transition: opacity 0.8s ease, visibility 0.8s ease; 
             padding: 20px;
@@ -274,13 +278,12 @@
         }
         .btn-back-top:hover { border-color: #fff; color: #fff; }
 
-        /* ★QRセクション修正（ラベルとQRコードを縦並びに） */
+        /* QRセクション */
         .qr-section { 
             border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); 
         }
-        /* ラベルをブロック要素にして上下余白を追加 */
         .qr-section label {
-            display: block; width: 100%; margin-bottom: 20px;
+            display: block; width: 100%; margin-bottom: 20px; font-size: 1rem;
         }
         #qrcode { background: #fff; padding: 10px; display: inline-block; }
         .received-thumb { max-width: 100%; border: 1px solid #fff; margin-top: 25px; display: none; }
@@ -408,7 +411,7 @@
                 What remains here is only a minimal trace used to assemble the visuals.
             </p>
         </div>
-        <button class="btn-entry" style="margin-top:20px; max-width:200px;" onclick="proceedToForm()">Continue</button>
+        <button class="btn-entry" style="margin-top:20px; max-width:200px;" onclick="proceedToForm()">Proceed</button>
     </div>
 
     <div class="container">
@@ -439,102 +442,91 @@
 
         <div id="form-page" class="hidden">
             <div class="input-group">
-                <label class="lang-jp">Q1; ニックネーム</label><label class="lang-en">Q1; Nickname</label>
+                <label class="lang-jp">ニックネーム</label><label class="lang-en">Nickname</label>
                 <input type="text" id="q1" class="clean-input">
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q2; 年齢</label><label class="lang-en">Q2; Age</label>
+                <label class="lang-jp">年齢</label><label class="lang-en">Age</label>
                 <input type="number" id="q2" class="clean-input" inputmode="numeric">
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q3; 好きな色</label><label class="lang-en">Q3; Favorite Color</label>
+                <label class="lang-jp">好きな色</label><label class="lang-en">Favorite Color</label>
                 <input type="hidden" id="q3">
                 <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">Tap to select color...</div>
             </div>
 
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">過ごすなら</span><span class="lang-en">Conditions</span></h2>
+            </div>
             <div class="input-group">
-                <label class="lang-jp">Q4-1; 過ごすなら（時間帯）</label><label class="lang-en">Q4-1; Time of Day</label>
                 <div class="slider-labels" id="labels-q4_1">
-                    <div class="lbl-item"><span>明方/Dawn</span></div>
-                    <div class="lbl-item"><span>昼/Day</span></div>
-                    <div class="lbl-item"><span>夕方/Dusk</span></div>
-                    <div class="lbl-item"><span>夜/Night</span></div>
+                    <div class="lbl-item"><span class="lang-jp">明方</span><span class="lang-en">Dawn</span></div>
+                    <div class="lbl-item"><span class="lang-jp">昼</span><span class="lang-en">Day</span></div>
+                    <div class="lbl-item"><span class="lang-jp">夕方</span><span class="lang-en">Dusk</span></div>
+                    <div class="lbl-item"><span class="lang-jp">夜</span><span class="lang-en">Night</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_1" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_1')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q4-2; 過ごすなら（天候）</label><label class="lang-en">Q4-2; Weather</label>
                 <div class="slider-labels" id="labels-q4_2">
-                    <div class="lbl-item"><span>晴天/Sun</span></div>
-                    <div class="lbl-item"><span>曇天/Cloud</span></div>
-                    <div class="lbl-item"><span>雨天/Rain</span></div>
-                    <div class="lbl-item"><span>雷光/Lightn</span></div>
-                    <div class="lbl-item"><span>星空/Stars</span></div>
+                    <div class="lbl-item"><span class="lang-jp">晴天</span><span class="lang-en">Sun</span></div>
+                    <div class="lbl-item"><span class="lang-jp">曇天</span><span class="lang-en">Cloud</span></div>
+                    <div class="lbl-item"><span class="lang-jp">雨天</span><span class="lang-en">Rain</span></div>
+                    <div class="lbl-item"><span class="lang-jp">雷光</span><span class="lang-en">Lightn</span></div>
+                    <div class="lbl-item"><span class="lang-jp">星空</span><span class="lang-en">Stars</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_2" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q4_2')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q4-3; 過ごすなら（季節）</label><label class="lang-en">Q4-3; Season</label>
                 <div class="slider-labels" id="labels-q4_3">
-                    <div class="lbl-item"><span>春/Spr</span></div>
-                    <div class="lbl-item"><span>夏/Sum</span></div>
-                    <div class="lbl-item"><span>秋/Aut</span></div>
-                    <div class="lbl-item"><span>冬/Win</span></div>
+                    <div class="lbl-item"><span class="lang-jp">春</span><span class="lang-en">Spr</span></div>
+                    <div class="lbl-item"><span class="lang-jp">夏</span><span class="lang-en">Sum</span></div>
+                    <div class="lbl-item"><span class="lang-jp">秋</span><span class="lang-en">Aut</span></div>
+                    <div class="lbl-item"><span class="lang-jp">冬</span><span class="lang-en">Win</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_3" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_3')"></div>
             </div>
 
             <div class="section-divider">⸻</div>
-            <div class="section-header"><h2>青年期</h2><span class="sub">Adolescence</span></div>
-
+            
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">行動</span><span class="lang-en">Approach</span></h2>
+            </div>
             <div class="input-group">
-                <label class="lang-jp">Q5; 行動</label><label class="lang-en">Q5; Approach</label>
                 <div class="slider-labels" id="labels-q5">
-                    <div class="lbl-item"><span>流れに乗る<br>Passive</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>流れを動かす<br>Active</span></div>
+                    <div class="lbl-item"><span class="lang-jp">流れに乗る</span><span class="lang-en">Passive</span></div>
+                    <div class="lbl-item"><span class="lang-jp">流れを動かす</span><span class="lang-en">Active</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
             </div>
 
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">住処</span><span class="lang-en">Environment</span></h2>
+            </div>
             <div class="input-group">
-                <label class="lang-jp">Q6-1; 住処 (場所)</label><label class="lang-en">Q6-1; Environment (Place)</label>
                 <div class="slider-labels" id="labels-q6_1">
-                    <div class="lbl-item"><span>都市<br>Urban</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>田舎<br>Rural</span></div>
+                    <div class="lbl-item"><span class="lang-jp">都市</span><span class="lang-en">Urban</span></div>
+                    <div class="lbl-item"><span class="lang-jp">田舎</span><span class="lang-en">Rural</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_1" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_1')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q6-2; 住処 (音)</label><label class="lang-en">Q6-2; Environment (Sound)</label>
                 <div class="slider-labels" id="labels-q6_2">
-                    <div class="lbl-item"><span>喧騒<br>Hectic</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>静寂<br>Calm</span></div>
+                    <div class="lbl-item"><span class="lang-jp">喧騒</span><span class="lang-en">Hectic</span></div>
+                    <div class="lbl-item"><span class="lang-jp">静寂</span><span class="lang-en">Calm</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_2" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_2')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q6-3; 住処 (感覚)</label><label class="lang-en">Q6-3; Environment (Sense)</label>
                 <div class="slider-labels" id="labels-q6_3">
-                    <div class="lbl-item"><span>現実<br>Real</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>夢想<br>Dreamlike</span></div>
+                    <div class="lbl-item"><span class="lang-jp">現実</span><span class="lang-en">Real</span></div>
+                    <div class="lbl-item"><span class="lang-jp">夢想</span><span class="lang-en">Dreamlike</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
             </div>
 
             <div class="input-group">
-                <label class="lang-jp">Q7; 好きな香り</label><label class="lang-en">Q7; Scent</label>
+                <label class="lang-jp">好きな香り</label><label class="lang-en">Scent</label>
                 <div class="slider-labels" id="labels-q7">
                     <div class="lbl-item"><span>Floral</span></div>
                     <div class="lbl-item"><span>Fruity</span></div>
@@ -548,26 +540,23 @@
             <div class="section-divider">⸻</div>
 
             <div class="input-group">
-                <label class="lang-jp">Q8; 旅行に行くなら (国や都市)</label><label class="lang-en">Q8; Destination</label>
-                <input type="text" id="q8" class="clean-input">
+                <label class="lang-jp">旅行に行くなら</label><label class="lang-en">Destination</label>
+                <input type="text" id="q8" class="clean-input" placeholder="国や都市 / Country or City">
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q9; 願いが向くのは</label><label class="lang-en">Q9; Wish Direction</label>
+                <label class="lang-jp">願いが向くのは</label><label class="lang-en">Wish Direction</label>
                 <div class="slider-labels" id="labels-q9">
-                    <div class="lbl-item"><span>過去/Past</span></div>
-                    <div class="lbl-item"><span>現在/Now</span></div>
-                    <div class="lbl-item"><span>未来/Fut</span></div>
+                    <div class="lbl-item"><span class="lang-jp">過去</span><span class="lang-en">Past</span></div>
+                    <div class="lbl-item"><span class="lang-jp">現在</span><span class="lang-en">Now</span></div>
+                    <div class="lbl-item"><span class="lang-jp">未来</span><span class="lang-en">Fut</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q9" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q9')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q10; エネルギー源</label><label class="lang-en">Q10; Drive</label>
+                <label class="lang-jp">エネルギー源</label><label class="lang-en">Drive</label>
                 <div class="slider-labels" id="labels-q10">
-                    <div class="lbl-item"><span>探求<br>Exploration</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>安全<br>Security</span></div>
+                    <div class="lbl-item"><span class="lang-jp">探求</span><span class="lang-en">Exploration</span></div>
+                    <div class="lbl-item"><span class="lang-jp">安全</span><span class="lang-en">Security</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q10" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q10')"></div>
             </div>
@@ -575,43 +564,34 @@
             <div class="section-divider">⸻</div>
 
             <div class="input-group">
-                <label class="lang-jp">Q11; 因果観</label><label class="lang-en">Q11; Causality</label>
+                <label class="lang-jp">因果観</label><label class="lang-en">Causality</label>
                 <div class="slider-labels" id="labels-q11">
-                    <div class="lbl-item"><span>因果<br>Causal</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>偶然<br>Random</span></div>
+                    <div class="lbl-item"><span class="lang-jp">因果</span><span class="lang-en">Causal</span></div>
+                    <div class="lbl-item"><span class="lang-jp">偶然</span><span class="lang-en">Random</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q11" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q11')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q12; 慈悲観</label><label class="lang-en">Q12; Compassion</label>
+                <label class="lang-jp">慈悲観</label><label class="lang-en">Compassion</label>
                 <div class="slider-labels" id="labels-q12">
-                    <div class="lbl-item"><span>自身のため<br>Self</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>他者のため<br>Others</span></div>
+                    <div class="lbl-item"><span class="lang-jp">自身のため</span><span class="lang-en">Self</span></div>
+                    <div class="lbl-item"><span class="lang-jp">他者のため</span><span class="lang-en">Others</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q12')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q13; 無常観</label><label class="lang-en">Q13; Impermanence</label>
+                <label class="lang-jp">無常観</label><label class="lang-en">Impermanence</label>
                 <div class="slider-labels" id="labels-q13">
-                    <div class="lbl-item"><span>受け入れる<br>Accept</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>抗う<br>Resist</span></div>
+                    <div class="lbl-item"><span class="lang-jp">受け入れる</span><span class="lang-en">Accept</span></div>
+                    <div class="lbl-item"><span class="lang-jp">抗う</span><span class="lang-en">Resist</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q13')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q14; 死生観</label><label class="lang-en">Q14; Life & Death</label>
+                <label class="lang-jp">死生観</label><label class="lang-en">Life & Death</label>
                 <div class="slider-labels" id="labels-q14">
-                    <div class="lbl-item"><span>肉体に留まる<br>Body</span></div>
-                    <div class="lbl-item"><span>オンラインへ<br>Online</span></div>
+                    <div class="lbl-item"><span class="lang-jp">肉体に留まる</span><span class="lang-en">Body</span></div>
+                    <div class="lbl-item"><span class="lang-jp">オンラインへ</span><span class="lang-en">Online</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q14" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q14')"></div>
             </div>
@@ -619,40 +599,37 @@
             <div class="section-divider">⸻</div>
 
             <div class="input-group">
-                <label class="lang-jp">Q15; 向かうなら</label><label class="lang-en">Q15; Heading Toward</label>
+                <label class="lang-jp">向かうなら</label><label class="lang-en">Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
-                    <div class="lbl-item"><span>北国<br>North</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>-</span></div>
-                    <div class="lbl-item"><span>南国<br>South</span></div>
+                    <div class="lbl-item"><span class="lang-jp">北国</span><span class="lang-en">North</span></div>
+                    <div class="lbl-item"><span class="lang-jp">南国</span><span class="lang-en">South</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q15')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q16; 還るなら</label><label class="lang-en">Q16; Returning To</label>
+                <label class="lang-jp">還るなら</label><label class="lang-en">Returning To</label>
                 <div class="slider-labels" id="labels-q16">
-                    <div class="lbl-item"><span>深海/Sea</span></div>
-                    <div class="lbl-item"><span>地中/Soil</span></div>
-                    <div class="lbl-item"><span>天空/Sky</span></div>
+                    <div class="lbl-item"><span class="lang-jp">深海</span><span class="lang-en">Sea</span></div>
+                    <div class="lbl-item"><span class="lang-jp">地中</span><span class="lang-en">Soil</span></div>
+                    <div class="lbl-item"><span class="lang-jp">天空</span><span class="lang-en">Sky</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q16" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q16')"></div>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q17; ひとつだけ残すなら (1~3語)</label><label class="lang-en">Q17; One Thing to Keep (Short)</label>
-                <input type="text" id="q17" class="clean-input">
+                <label class="lang-jp">ひとつだけ残すなら</label><label class="lang-en">One Thing to Keep</label>
+                <input type="text" id="q17" class="clean-input" placeholder="※短く：1〜3語 推奨 / 1-3 words recommended">
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q18; 好きなもの</label><label class="lang-en">Q18; Likes</label>
-                <textarea id="q18" class="clean-textarea" rows="4"></textarea>
+                <label class="lang-jp">好きなもの</label><label class="lang-en">Likes</label>
+                <textarea id="q18" class="clean-textarea" rows="4" placeholder="自由記述（例：海、雨音、ネオン、金属、森 など）/ Free text (e.g., sea, rain, neon, metal, forest)"></textarea>
             </div>
             <div class="input-group">
-                <label class="lang-jp">Q19; 嫌いなもの</label><label class="lang-en">Q19; Avoids</label>
-                <textarea id="q19" class="clean-textarea" rows="4"></textarea>
+                <label class="lang-jp">嫌いなもの</label><label class="lang-en">Avoids</label>
+                <textarea id="q19" class="clean-textarea" rows="4" placeholder="自由記述（例：混雑、強い光、騒音、湿気、煙 など）/ Free text (e.g., crowds, harsh light, noise, humidity, smoke)"></textarea>
             </div>
 
             <div class="qr-section">
-                <label class="lang-jp">Q20; 画像奉納</label><label class="lang-en">Q20; Image Offering</label>
+                <label class="lang-jp">画像奉納</label><label class="lang-en">Image Offering</label>
                 <div id="qrcode"></div>
                 <div id="qr-status" style="margin-top:15px; font-size:0.75rem; color:#666;" class="lang-jp">スマホで読み取ってください</div>
                 <div id="qr-status-en" style="margin-top:15px; font-size:0.75rem; color:#666;" class="lang-en">Scan with your smartphone</div>
@@ -694,6 +671,7 @@
         let receivedImageBase64 = "";
         let currentLang = 'jp';
         let selectedColorHex = "";
+        let isDraggingColor = false;
 
         const phrasesJp = [
             "二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。",
@@ -729,8 +707,13 @@
                     e.target.style.setProperty('--thumb-x', rX);
                     e.target.style.setProperty('--thumb-y', rY);
                 });
+                const rX = Math.floor(Math.random() * 100) + '%';
+                const rY = Math.floor(Math.random() * 100) + '%';
+                el.style.setProperty('--thumb-x', rX);
+                el.style.setProperty('--thumb-y', rY);
             });
             initMarbling();
+            initColorPickerEvents();
         });
 
         function initMarbling() {
@@ -766,12 +749,41 @@
             labels.forEach((l, idx) => l.classList.toggle('active', idx === parseInt(el.value)));
         }
 
-        function openColorPicker() { document.getElementById('color-modal').classList.add('show'); }
+        function initColorPickerEvents() {
+            const wheel = document.getElementById('color-wheel');
+            wheel.addEventListener('mousedown', (e) => { isDraggingColor = true; pickColor(e); });
+            wheel.addEventListener('mousemove', (e) => { if(isDraggingColor) pickColor(e); });
+            wheel.addEventListener('mouseup', () => isDraggingColor = false);
+            wheel.addEventListener('mouseleave', () => isDraggingColor = false);
+            
+            wheel.addEventListener('touchstart', (e) => {
+                isDraggingColor = true;
+                e.preventDefault(); 
+                pickColor(e);
+            }, {passive: false});
+            
+            wheel.addEventListener('touchmove', (e) => {
+                if(isDraggingColor) {
+                    e.preventDefault();
+                    pickColor(e);
+                }
+            }, {passive: false});
+            
+            wheel.addEventListener('touchend', () => isDraggingColor = false);
+        }
+
+        function openColorPicker() { 
+            document.getElementById('color-modal').classList.add('show'); 
+            document.body.classList.add('no-scroll'); 
+        }
         
         function pickColor(e) {
             const rect = e.target.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const x = clientX - rect.left - rect.width / 2;
+            const y = clientY - rect.top - rect.height / 2;
             const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
             const hue = (angle < 0) ? angle + 360 : angle;
             const color = `hsl(${hue}, 100%, 50%)`;
@@ -800,6 +812,7 @@
                 trigger.classList.add('selected');
             }
             document.getElementById('color-modal').classList.remove('show');
+            document.body.classList.remove('no-scroll'); 
         }
 
         function toggleMenu() {
@@ -843,16 +856,13 @@
         }
 
         function goToForm(btn) {
-            // ボタンの見た目を維持
             btn.classList.add('clicked');
-            
             const landing = document.getElementById('landing-page');
             landing.classList.add('dissolve-out');
             setTimeout(() => {
                 landing.classList.add('hidden'); landing.classList.remove('dissolve-out');
                 document.getElementById('entry-warning').classList.add('show');
                 document.getElementById('btn-back').classList.remove('hidden');
-                // クラスを外す（戻った時のため）
                 btn.classList.remove('clicked');
             }, 800);
         }
@@ -875,9 +885,7 @@
             if(confirm(msg)) location.reload(); 
         }
 
-        function cancelLoading() {
-            location.reload();
-        }
+        function cancelLoading() { location.reload(); }
 
         function toggleLanguage() { setLanguage(currentLang === 'jp' ? 'en' : 'jp'); }
 
@@ -886,6 +894,19 @@
             document.body.className = 'lang-' + lang;
             document.getElementById('lang-part-jp').classList.toggle('active', lang === 'jp');
             document.getElementById('lang-part-en').classList.toggle('active', lang === 'en');
+            
+            // プレースホルダーの言語切り替え
+            const p_q17_jp = "※短く：1〜3語 推奨";
+            const p_q17_en = "1-3 words recommended";
+            const p_q18_jp = "自由記述（例：海、雨音、ネオン、金属、森 など）";
+            const p_q18_en = "Free text (e.g., sea, rain, neon, metal, forest)";
+            const p_q19_jp = "自由記述（例：混雑、強い光、騒音、湿気、煙 など）";
+            const p_q19_en = "Free text (e.g., crowds, harsh light, noise, humidity, smoke)";
+            
+            document.getElementById('q17').placeholder = (lang === 'jp') ? p_q17_jp : p_q17_en;
+            document.getElementById('q18').placeholder = (lang === 'jp') ? p_q18_jp : p_q18_en;
+            document.getElementById('q19').placeholder = (lang === 'jp') ? p_q19_jp : p_q19_en;
+
             initMarbling();
             updateQRCode();
         }
@@ -923,7 +944,6 @@
             qrLoading.innerHTML = "";
             new QRCode(qrLoading, { text: window.location.origin + "/static/info.html", width: 120, height: 120 });
 
-            // ローディングメッセージ演出
             let i = 0; 
             const termEl = document.getElementById('loading-term-container');
             let loadTimer;
@@ -937,14 +957,11 @@
             const nextPhrase = () => {
                 clearInterval(loadTimer);
                 updatePhrase();
-                loadTimer = setInterval(nextPhrase, 30000); // 30秒ごとに更新
+                loadTimer = setInterval(nextPhrase, 30000); 
             };
 
-            // 初回表示
             updatePhrase(); 
-            loadTimer = setInterval(nextPhrase, 30000); // タイマースタート
-
-            // タップで次へ
+            loadTimer = setInterval(nextPhrase, 30000); 
             termEl.parentElement.onclick = nextPhrase;
 
             const formData = new FormData();
@@ -954,7 +971,7 @@
 
             try {
                 const res = await fetch('/submit', { method: 'POST', body: formData });
-                if(res.ok) setTimeout(() => location.reload(), 10000); 
+                if(res.ok) setTimeout(() => location.reload(), 30000); 
                 else { alert("Error"); clearInterval(loadTimer); overlay.style.display='none'; if(btn) btn.classList.remove('clicked'); }
             } catch(e) { clearInterval(loadTimer); overlay.style.display='none'; if(btn) btn.classList.remove('clicked'); }
         }
