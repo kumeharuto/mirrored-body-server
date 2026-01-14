@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* === 共通設定 === */
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         :root {
@@ -19,23 +18,27 @@
             --rand-y: 50%;
         }
 
+        /* ★動画を確実に見せるための設定 */
+        html { background-color: #000; }
         body {
-            background-color: var(--bg-color); color: var(--text-color);
+            background-color: transparent; 
+            color: var(--text-color);
             font-family: var(--font-main); margin: 0; padding: 0;
             min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden; transition: opacity 1.5s ease; /* ページ遷移フェード用 */
+            overflow-x: hidden; transition: opacity 1.5s ease;
         }
         body.fade-out { opacity: 0; }
 
-        /* マーブリング設定 */
         .text-marbling {
-            background-image: url('/static/texture.jpg');
-            background-size: 1000%;
+            background-image: url('/static/texture.jpg'); background-size: 1000%;
             background-position: var(--rand-x) var(--rand-y);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        /* ヘッダー */
+        /* 背景動画 */
+        #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: -1; }
+
         .header-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
@@ -48,24 +51,16 @@
         .lang-part { padding: 4px 14px; color: #fff; transition: color 0.3s; }
         .lang-part.active {
             background-image: url('/static/texture.jpg'); 
-            background-size: 1000%;
-            background-position: var(--rand-x) var(--rand-y);
+            background-size: 1000%; background-position: var(--rand-x) var(--rand-y);
             color: #000; font-weight: bold;
         }
 
-        .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; text-align: center; }
+        .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; text-align: center; z-index: 1; }
 
-        /* ボタン */
         .btn-entry {
-            position: relative;
-            display: block; width: 100%; max-width: 280px; margin: 40px auto; padding: 22px;
+            position: relative; display: block; width: 100%; max-width: 280px; margin: 40px auto; padding: 22px;
             font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
-            background: transparent; 
-            color: #fff; 
-            border: 1px solid #fff; 
-            cursor: pointer; 
-            transition: transform 0.1s;
-            z-index: 1;
+            background: transparent; color: #fff; border: 1px solid #fff; cursor: pointer; transition: transform 0.1s; z-index: 1;
         }
         .btn-entry:active, .btn-entry.clicked {
             border: 2px solid transparent; border-image: url('/static/texture.jpg') 30 stretch;
@@ -75,25 +70,18 @@
         }
         .btn-entry:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #555; }
 
-        /* プレビューエリア */
         .preview-area {
-            width: 100%; height: 300px; border: 1px solid #444;
-            margin: 40px 0; display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 300px; border: 1px solid #444; margin: 40px 0; display: flex; justify-content: center; align-items: center;
             overflow: hidden; background: rgba(255,255,255,0.05); position: relative;
         }
         .preview-img { max-width: 100%; max-height: 100%; display: none; }
         .placeholder-text { color: #666; font-size: 0.9rem; letter-spacing: 0.1em; }
-
         #file-input { display: none; }
         .desc-text { line-height: 2.2; color: #ccc; margin-bottom: 30px; font-size: 0.95rem; }
 
-        /* 完了画面 */
         #success-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 200; display: none;
-            flex-direction: column; justify-content: center; align-items: center;
-            animation: fadeIn 0.5s;
-            text-align: center; /* ★修正: 全体センタリング */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200; display: none;
+            flex-direction: column; justify-content: center; align-items: center; animation: fadeIn 0.5s; text-align: center;
         }
         #success-overlay h2, #success-overlay p { text-align: center; width: 100%; }
 
@@ -105,6 +93,9 @@
     </style>
 </head>
 <body class="lang-jp">
+
+    <video autoplay muted loop playsinline id="bg-video"><source src="/static/DAMN2.m4v" type="video/mp4"></video>
+    <div class="video-overlay"></div>
 
     <div class="header-fixed">
         <div class="header-left"></div>
@@ -122,16 +113,10 @@
     <div class="container">
         <div class="desc-text">
             <span class="lang-jp">
-                あなたの端末にある画像を<br>
-                「量子庵」へ奉納します。<br>
-                この画像はKarma Portrait生成の<br>
-                重要な核となります。
+                あなたの端末にある画像を<br>「量子庵」へ奉納します。<br>この画像はKarma Portrait生成の<br>重要な核となります。
             </span>
             <span class="lang-en">
-                Offer an image from your device<br>
-                to the "Ryoshi-an".<br>
-                This image will become the core<br>
-                of your Karma Portrait generation.
+                Offer an image from your device<br>to the "Ryoshi-an".<br>This image will become the core<br>of your Karma Portrait generation.
             </span>
         </div>
 
@@ -222,12 +207,11 @@
                 if (res.ok) {
                     setTimeout(() => {
                         document.getElementById('success-overlay').style.display = 'flex';
-                        // 5秒後にInfoへ遷移
                         setTimeout(() => {
                             document.body.classList.add('fade-out');
                             setTimeout(() => {
                                 window.location.href = `/static/info.html?lang=${currentLang}`;
-                            }, 1500); // フェードアウト待ち
+                            }, 1500); 
                         }, 5000);
                     }, 500);
                 } else {

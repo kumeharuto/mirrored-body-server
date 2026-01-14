@@ -10,14 +10,29 @@
     <style>
         /* === 共通設定 === */
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         :root {
             --bg-color: #000000;
             --text-color: #ffffff;
             --font-main: 'Shippori Mincho', serif;
-            --rand-x: 50%; --rand-y: 50%;
+            --rand-x: 50%;
+            --rand-y: 50%;
         }
+        /* 背景動画 */
+        #bg-video { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; z-index: -2; 
+        }
+        /* オーバーレイ (0.4に統一) */
+        .video-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.4); z-index: -1; 
+        }
+        /* ★動画を確実に見せるための設定 */
+        html { background-color: #000; } /* 待機色はhtmlに設定 */
         body {
-            background-color: var(--bg-color); color: var(--text-color);
+            background-color: transparent; /* bodyは透明にして動画を通す */
+            color: var(--text-color);
             font-family: var(--font-main); margin: 0; padding: 0;
             min-height: 100vh; overflow-x: hidden;
             animation: fadeIn 1s ease;
@@ -25,9 +40,7 @@
         body.no-scroll { overflow: hidden !important; height: 100vh; touch-action: none; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 背景動画 */
-        #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; }
+
 
         .text-marbling {
             background-image: url('/static/texture.jpg'); background-size: 1000%;
@@ -52,7 +65,7 @@
             color: #000; font-weight: bold;
         }
 
-        /* バーガーメニュー */
+        /* ハンバーガーメニュー */
         .hamburger { width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 200; display: flex; flex-direction: column; justify-content: space-between; }
         .hamburger span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.4s; }
         .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 7px); }
@@ -75,10 +88,8 @@
         }
         .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
 
-        /* コンテナ */
-        .container { width: 100%; max-width: 650px; margin: 0 auto; padding: 120px 25px 60px; }
+        .container { width: 100%; max-width: 650px; margin: 0 auto; padding: 120px 25px 60px; position: relative; z-index: 1; }
 
-        /* セクションスタイル */
         .content-section { margin-bottom: 120px; color: #ddd; line-height: 2.3; text-align: justify; scroll-margin-top: 100px; }
         .content-section h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; letter-spacing: 0.2em; }
         .content-section h4 { 
@@ -86,24 +97,15 @@
             margin-top: 60px; margin-bottom: 25px; font-weight: bold; font-size: 1.1rem; 
         }
 
-        /* About Us */
         .about-section { text-align: center; margin-bottom: 60px; }
         .about-role { font-size: 0.8rem; color: #888; margin-top: 40px; margin-bottom: 10px; display: block; }
         .about-name { font-size: 1.2rem; display: block; }
 
-        /* SNSアイコン */
-        .sns-icons {
-            display: flex; justify-content: center; gap: 30px; margin-top: 60px; margin-bottom: 40px;
-        }
-        .sns-icons a {
-            display: inline-block; width: 24px; height: 24px; transition: opacity 0.3s;
-        }
+        .sns-icons { display: flex; justify-content: center; gap: 30px; margin-top: 60px; margin-bottom: 40px; }
+        .sns-icons a { display: inline-block; width: 24px; height: 24px; transition: opacity 0.3s; }
         .sns-icons a:hover { opacity: 0.7; }
-        .sns-icons svg {
-            fill: #fff; width: 100%; height: 100%;
-        }
+        .sns-icons svg { fill: #fff; width: 100%; height: 100%; }
 
-        /* フッター */
         .footer { text-align: center; font-size: 0.7rem; color: #444; margin-top: 40px; padding-bottom: 40px; }
 
         .hidden { display: none !important; }
@@ -268,15 +270,10 @@
         }
 
         function scrollToSection(id) {
-            // メニューを閉じる
             toggleMenu();
-            // スクロール
             const el = document.getElementById(id);
             if(el) {
-                // 少し遅らせてからスクロール（メニュー閉じアニメーションと干渉しないよう）
-                setTimeout(() => {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                }, 300);
+                setTimeout(() => { el.scrollIntoView({ behavior: 'smooth' }); }, 300);
             }
         }
     </script>

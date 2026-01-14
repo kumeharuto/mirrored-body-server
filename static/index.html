@@ -22,9 +22,32 @@
             --rand-y: 50%;
         }
 
+
+        /* 背景動画のスタイル */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 画面いっぱいに広げ、アスペクト比を維持して切り抜き */
+            z-index: -2; /* コンテンツより後ろに配置 */
+        }
+
+        /* 動画の上に被せる半透明のオーバーレイ（文字の可読性を上げるため） */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* 0.4の部分を大きくすると暗くなります */
+            z-index: -1;
+        }
+
+        /* 既存のbodyの背景設定を調整 */
         body {
-            /* background-color: var(--bg-color); color: var(--text-color); */
-            background-color: transparent; /* 透明にする */
+            background-color: #000; /* 動画が読み込まれるまでの待機色 */
             color: var(--text-color);
             font-family: var(--font-main); margin: 0; padding: 0;
             min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
@@ -32,8 +55,8 @@
         body.no-scroll { overflow: hidden !important; height: 100vh; touch-action: none; }
 
         /* 背景動画 */
-        #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; }
+        /* #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; } */
 
         /* マーブリング設定 */
         .text-marbling {
