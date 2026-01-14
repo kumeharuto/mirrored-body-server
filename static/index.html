@@ -49,11 +49,11 @@
 
         .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; position: relative; z-index: 1; }
 
-        /* ヘッダー (最前面固定・右寄せ) */
+        /* ヘッダー */
         .header-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
-            z-index: 9999; /* コンテンツオーバーレイより手前 */
+            z-index: 9999;
             display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
         }
         .header-title { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
@@ -77,7 +77,7 @@
 
         #menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 9990; /* ヘッダーより下、コンテンツより上 */
+            background: rgba(0,0,0,0.98); z-index: 9990; 
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.5s;
         }
@@ -94,9 +94,9 @@
         /* コンテンツオーバーレイ */
         #content-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 5000; /* メニューより下 */
+            background: #000; z-index: 5000; 
             display: none; flex-direction: column; overflow-y: auto;
-            padding-top: 80px; /* ヘッダーの高さ分 */
+            padding-top: 80px; 
         }
         #content-overlay.show { display: flex; }
         .content-body { padding: 0 25px 120px; max-width: 650px; margin: 0 auto; color: #ddd; line-height: 2.3; text-align: justify; }
@@ -130,8 +130,6 @@
             padding: 15px; font-size: 1rem; font-family: var(--font-main); resize: none; border-radius: 0; line-height: 1.8;
         }
         .clean-textarea:focus { border-color: #fff; background: rgba(255,255,255,0.1); }
-        
-        /* プレースホルダー（グレー文字統一） */
         .clean-textarea::placeholder, .clean-input::placeholder, .color-picker-trigger {
             color: #666; font-size: 0.8rem;
         }
@@ -229,14 +227,50 @@
         }
         .warning-content p { margin-bottom: 20px; }
 
-        /* ローディング */
+        /* ★ ローディング画面修正 ★ */
         #loading-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; 
             display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; 
         }
-        .loading-term-box { width: 100%; max-width: 500px; min-height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .loading-term { font-size: 0.9rem; line-height: 1.8; letter-spacing: 0.1em; text-align: center; font-weight: bold; animation: breathe 3.5s infinite; color: #fff; }
-        @keyframes breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .loading-content-box {
+            width: 100%; max-width: 600px; min-height: 300px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; /* タップ可能を示す */
+            position: relative;
+        }
+        /* 説明文のスタイル */
+        .loading-text-wrapper {
+            margin-bottom: 30px; text-align: justify;
+        }
+        .loading-text-wrapper h4 {
+            color: #fff; font-size: 1.4rem; letter-spacing: 0.2em; text-align: center; margin-bottom: 20px;
+            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; color: transparent;
+            background-size: 1000%; background-position: var(--rand-x) var(--rand-y);
+        }
+        .loading-text-wrapper p {
+            color: #ccc; font-size: 0.95rem; line-height: 2.2;
+        }
+
+        /* プログレスバー */
+        .loading-progress-bar {
+            width: 100%; height: 2px; background: #333; margin-top: 20px; position: relative;
+        }
+        .bar-inner {
+            position: absolute; left: 0; top: 0; height: 100%; background: #fff; width: 0%;
+            transition: width 0.1s linear; /* JSで制御するためlinear */
+        }
+        /* アニメーション用クラス */
+        .bar-anim {
+            animation: growBar 20s linear forwards;
+        }
+        @keyframes growBar { from { width: 0%; } to { width: 100%; } }
+
+        /* タップヒント */
+        .tap-hint {
+            margin-top: 10px; font-size: 0.7rem; color: #888; align-self: flex-end;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
         .btn-back-top {
             margin-top: 40px; border: 1px solid #444; background: transparent; color: #888;
@@ -247,7 +281,6 @@
         .qr-section { border: 1px solid #222; padding: 40px; text-align: center; margin: 80px 0; background: rgba(0,0,0,0.5); }
         .qr-section label { display: block; width: 100%; margin-bottom: 20px; font-size: 1rem; }
         
-        /* QRコードの背景を黒に修正 */
         #qrcode, #qrcode-about, #qrcode-loading { 
             background: #000; padding: 10px; display: inline-block; border: 1px solid #333; 
         }
@@ -384,12 +417,10 @@
     <div class="container">
         <div id="landing-page">
             <div style="height: 5vh;"></div>
-            
             <div class="title-section">
                 <div class="main-title-jp text-marbling lang-jp">量子庵 : 演算する彼岸∽二〇卌五</div>
                 <div class="main-title-jp text-marbling lang-en">2O45: A Quantum Hermitage</div>
             </div>
-
             <div style="text-align: center; line-height: 2.3; font-size: 0.95rem; margin-bottom: 60px; color:#ccc;">
                 <p class="lang-jp">
                     二畳の茶室「量子庵」の掛軸型モニターは、<br>此岸と彼岸のあわいにひらく小さな境界です。<br><br>
@@ -421,7 +452,6 @@
                 <input type="hidden" id="q3">
                 <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">タップして色を選択…</div>
             </div>
-
             <div class="section-header" style="margin-bottom:30px;">
                 <h2 style="font-size:1.2rem;"><span class="lang-jp">過ごすなら</span><span class="lang-en">Conditions</span></h2>
             </div>
@@ -453,9 +483,7 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_3" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_3')"></div>
             </div>
-
             <div class="section-divider">⸻</div>
-            
             <div class="section-header" style="margin-bottom:30px;">
                 <h2 style="font-size:1.2rem;"><span class="lang-jp">行動</span><span class="lang-en">Approach</span></h2>
             </div>
@@ -469,7 +497,6 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
             </div>
-
             <div class="section-header" style="margin-bottom:30px;">
                 <h2 style="font-size:1.2rem;"><span class="lang-jp">住処</span><span class="lang-en">Environment</span></h2>
             </div>
@@ -503,7 +530,6 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
             </div>
-
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">好きな香り</label><label class="lang-en input-label-center">Scent</label>
                 <div class="slider-labels" id="labels-q7">
@@ -515,9 +541,7 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q7" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q7')"></div>
             </div>
-
             <div class="section-divider">⸻</div>
-
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">旅行に行くなら</label><label class="lang-en input-label-center">Destination</label>
                 <input type="text" id="q8" class="clean-input" placeholder="国や都市 / Country or City">
@@ -542,9 +566,7 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q10" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q10')"></div>
             </div>
-
             <div class="section-divider">⸻</div>
-
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">因果観</label><label class="lang-en input-label-center">Causality</label>
                 <div class="slider-labels" id="labels-q11">
@@ -586,9 +608,7 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q14" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q14')"></div>
             </div>
-
             <div class="section-divider">⸻</div>
-
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">向かうなら</label><label class="lang-en input-label-center">Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
@@ -621,7 +641,6 @@
                 <label class="lang-jp input-label-center">嫌いなもの</label><label class="lang-en input-label-center">Avoids</label>
                 <textarea id="q19" class="clean-textarea" rows="4" placeholder="自由記述（例：混雑、強い光、騒音、湿気、煙 など）/ Free text (e.g., crowds, harsh light, noise, humidity, smoke)"></textarea>
             </div>
-
             <div class="qr-section">
                 <label class="lang-jp">画像奉納</label><label class="lang-en">Image Offering</label>
                 <div id="qrcode"></div>
@@ -630,7 +649,6 @@
                 <img id="received-image" class="received-thumb">
                 <button id="reset-img-btn" class="hidden" onclick="resetImage()" style="margin-top:25px; background:none; border:none; color:#fff; border-bottom:1px solid #fff; cursor:pointer; font-size:0.8rem;">× <span class="lang-jp">取り消す</span><span class="lang-en">Cancel</span></button>
             </div>
-
             <button class="btn-entry" onclick="submitForm(this)">Submit</button>
         </div>
     </div>
@@ -645,13 +663,19 @@
     </div>
 
     <div id="loading-overlay">
-        <div class="loading-term-box">
-            <div id="loading-term-container" class="loading-term">紐解いています...</div>
+        <div class="loading-content-box" onclick="nextLoadingTerm()">
+            <div class="loading-text-wrapper" id="loading-text-wrapper">
+                </div>
+            <div class="loading-progress-bar">
+                <div class="bar-inner" id="loading-bar"></div>
+            </div>
+            <div class="tap-hint">
+                <span class="lang-jp">タップで次へ ▷</span><span class="lang-en">Tap for next ▷</span>
+            </div>
         </div>
-        <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-jp">しばらくお待ちください</p>
-        <p style="margin-top:25px; font-size:0.8rem; color:#555; letter-spacing:0.15em;" class="lang-en">Please wait a moment...</p>
+        
         <div style="margin-top:40px; text-align:center;">
-            <div id="qrcode-loading" style="background:#fff; padding:10px; display:inline-block;"></div>
+            <div id="qrcode-loading" style="background:#000; padding:10px; display:inline-block; border:1px solid #333;"></div>
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-jp">待ち時間に作品解説を読む</p>
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-en">Read documentation while waiting</p>
         </div>
@@ -665,29 +689,37 @@
         let selectedColorHex = "";
         let isDraggingColor = false;
 
-        const phrasesJp = [
-            "二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。",
-            "AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、一度きりの記号的自己像を刻む。",
-            "そこには言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出する。",
-            "アイデンティティという記号をいったん手放し、自らの「どこへ還るか」という感覚に身をゆだねる。",
-            "量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名である。",
-            "Karma Portraitは、業（カルマ）としての偏りが映像の秩序へと翻訳された、一度きりの自己像。",
-            "彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。",
-            "演算は意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。",
-            "二〇卌五。人間が追えない計算が常態化し、結果だけが先に日常へ降りてくる地点。"
+        // ★ 新しいロード画面のコンテンツデータ
+        const loadingContent = [
+            {
+                title_jp: "量子庵",
+                desc_jp: "二畳という最小の器に、最大の遠さを折り畳むための名である。量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。量子庵は、過剰な情報から距離を取り、むしろ「演算だけが届く彼岸」を迎え入れるための暗室として設計される。光が少ないほど、像は強くなる。静けさが深いほど、閾値は薄くなる。",
+                title_en: "Ryoshi-an",
+                desc_en: "A name for folding maximal distance into the minimal vessel of a two-mat room. \"Quantum\" is another name for the intuition that the world is woven not from continuity, but from leaps and probabilities. Ryoshi-an is designed as a darkroom to withdraw from information saturation and instead welcome the \"other shore where only computation can reach.\" The less light there is, the stronger the image becomes. The deeper the silence, the thinner the threshold."
+            },
+            {
+                title_jp: "Karma Portrait",
+                desc_jp: "これは“顔”ではない。自己の似姿でもない。鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。Karma Portraitは、その偏りが映像の秩序へと翻訳された、一度きりの記号的自己像である。言語化以前に身体が抱え込んだ輪郭が、光とノイズのうねりとして析出し、像になる。",
+                title_en: "Karma Portrait",
+                desc_en: "This is not a \"face,\" nor is it a likeness of the self. The memories and choices offered by the viewer are treated not as a psychological profile, but as karmic bias. Karma Portrait is a one-time semiotic self-image produced when that bias is translated into the order of the moving image. Contours held by the body before language condense as swells of light and noise, manifesting as an image."
+            },
+            {
+                title_jp: "演算する彼岸",
+                desc_jp: "彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。",
+                title_en: "The Computed Higan",
+                desc_en: "Higan (the other shore) may not be a \"place over there,\" but rather the \"mode of arrival\" itself. Answers are generated at velocities beyond human comprehension, yet they undeniably exist as \"answers.\" In this computational obscurity, we provisionally place Higan. Here, computation does not explain meaning, but presents a fact that stands despite being inexplicable. The viewer encounters it not through understanding, but through fit."
+            },
+            {
+                title_jp: "二〇卌五",
+                desc_jp: "二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。",
+                title_en: "二〇卌五 (2O45)",
+                desc_en: "二〇卌五 is a notation, not just a date. By adding two strokes to the \"二\" (two) of 2025, it becomes \"卌\" (forty), linking 2025 and 2045 as a single line. It marks the point where \"computation humans cannot follow\" becomes ordinary, and only the results descend into daily life. Proof of truth detaches from human hands, leaving only reception. While singularity is spoken of as a \"distant future,\" its shadow is already cast upon the extension of the present."
+            }
         ];
 
-        const phrasesEn = [
-            "The scroll monitor in Ryoshi-an serves as a portal opening between this shore and the next.",
-            "AI constructs a virtual Pure Land in computational darkness, inscribing a unique semiotic self-image.",
-            "Emotions and desires held by the body prior to language precipitate as swells of light and noise.",
-            "Relinquish the sign called 'identity' and align with the embodied sense of 'where one returns.'",
-            "Quantum' is another name for the intuition that the world is woven from jumps and probabilities.",
-            "Karma Portrait is a unique self-image produced when karmic bias is translated into the order of imagery.",
-            "Higan (the other shore) may not be a place over there, but rather the mode of arrival itself.",
-            "Computation presents a fact that stands undeniably, even when it remains inexplicable.",
-            "2045. A point where results descend into daily life first, through computation humans cannot follow."
-        ];
+        let loadingIndex = 0;
+        let slideTimer;
+        let totalTimer;
 
         document.addEventListener('DOMContentLoaded', () => {
             setLanguage('jp'); connectWebSocket(); generateAboutQR();
@@ -811,12 +843,10 @@
             const isOpen = menu.classList.contains('show');
             
             if(isOpen) {
-                // 閉じる
                 menu.classList.remove('show');
                 hamburger.classList.remove('open');
                 document.body.classList.remove('no-scroll');
             } else {
-                // 開く
                 menu.classList.add('show');
                 hamburger.classList.add('open');
                 document.body.classList.add('no-scroll');
@@ -826,11 +856,9 @@
         function menuAction(action, el) {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
             el.classList.add('selected');
-            
             setTimeout(() => { 
                 document.getElementById('menu-overlay').classList.remove('show');
                 document.querySelector('.hamburger').classList.remove('open');
-                
                 showContent(action); 
             }, 200);
         }
@@ -923,6 +951,11 @@
 
             initMarbling();
             updateQRCode();
+            
+            // ローディング画面が表示中ならテキスト更新
+            if(document.getElementById('loading-overlay').style.display === 'flex') {
+                updateLoadingText();
+            }
         }
 
         function generateAboutQR() {
@@ -956,6 +989,38 @@
             document.getElementById('reset-img-btn').classList.add('hidden');
         }
 
+        // ★ 新しいローディング制御
+        function updateLoadingText() {
+            const item = loadingContent[loadingIndex];
+            const container = document.getElementById('loading-text-wrapper');
+            if(currentLang === 'jp') {
+                container.innerHTML = `<h4>${item.title_jp}</h4><p>${item.desc_jp}</p>`;
+            } else {
+                container.innerHTML = `<h4>${item.title_en}</h4><p>${item.desc_en}</p>`;
+            }
+        }
+
+        function nextLoadingTerm() {
+            clearInterval(slideTimer);
+            loadingIndex = (loadingIndex + 1) % loadingContent.length;
+            updateLoadingText();
+            resetProgressBar();
+            slideTimer = setInterval(autoSlide, 20000);
+        }
+
+        function autoSlide() {
+            loadingIndex = (loadingIndex + 1) % loadingContent.length;
+            updateLoadingText();
+            resetProgressBar();
+        }
+
+        function resetProgressBar() {
+            const bar = document.getElementById('loading-bar');
+            bar.classList.remove('bar-anim');
+            void bar.offsetWidth; // trigger reflow
+            bar.classList.add('bar-anim');
+        }
+
         async function submitForm(btn) {
             if(btn) btn.classList.add('clicked');
             
@@ -970,25 +1035,16 @@
                 colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
             });
 
-            let i = 0; 
-            const termEl = document.getElementById('loading-term-container');
-            let loadTimer;
-
-            const updatePhrase = () => {
-                const list = (currentLang === 'jp') ? phrasesJp : phrasesEn;
-                termEl.innerText = list[i % list.length];
-                i++;
-            };
-
-            const nextPhrase = () => {
-                clearInterval(loadTimer);
-                updatePhrase();
-                loadTimer = setInterval(nextPhrase, 30000); 
-            };
-
-            updatePhrase(); 
-            loadTimer = setInterval(nextPhrase, 30000); 
-            termEl.parentElement.onclick = nextPhrase;
+            // ローディング開始
+            loadingIndex = 0;
+            updateLoadingText();
+            resetProgressBar();
+            
+            // 20秒ごとにスライド
+            slideTimer = setInterval(autoSlide, 20000);
+            
+            // 2分後にリロード
+            totalTimer = setTimeout(() => location.reload(), 120000);
 
             const formData = new FormData();
             formData.append('image_b64', receivedImageBase64);
@@ -997,9 +1053,19 @@
 
             try {
                 const res = await fetch('/submit', { method: 'POST', body: formData });
-                if(res.ok) setTimeout(() => location.reload(), 30000); 
-                else { alert("Error"); clearInterval(loadTimer); overlay.style.display='none'; if(btn) btn.classList.remove('clicked'); }
-            } catch(e) { clearInterval(loadTimer); overlay.style.display='none'; if(btn) btn.classList.remove('clicked'); }
+                if(!res.ok) { 
+                    alert("Error"); 
+                    clearInterval(slideTimer); 
+                    clearTimeout(totalTimer);
+                    overlay.style.display='none'; 
+                    if(btn) btn.classList.remove('clicked'); 
+                }
+            } catch(e) { 
+                clearInterval(slideTimer); 
+                clearTimeout(totalTimer);
+                overlay.style.display='none'; 
+                if(btn) btn.classList.remove('clicked'); 
+            }
         }
     </script>
 </body>
