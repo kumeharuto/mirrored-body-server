@@ -3,123 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Image Offering</title>
+    <title>Image Offering | KARMIC IDENTITY</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { background: #000; color: #fff; font-family: 'Shippori Mincho', serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; opacity: 0.5; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: -1; }
-        .box { width: 85%; max-width: 400px; text-align: center; }
-        .text-marbling { background-image: url('/static/texture.jpg'); background-size: cover; background-position: center; -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 0.1em; }
-        .file-label { display: block; width: 100%; height: 280px; border: 1px solid #333; margin: 30px 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); cursor: pointer; position: relative; }
-        #preview { max-width: 100%; max-height: 100%; display: none; }
-        .btn { width: 100%; padding: 20px; background: transparent; border: 1px solid #fff; color: #fff; letter-spacing: 0.3em; cursor: pointer; font-size: 1rem; }
-        .btn:disabled { opacity: 0.3; cursor: default; }
-        .btn:active:not(:disabled) { background: #fff; color: #000; }
-        #cancel-btn { background: none; border: none; color: #888; margin-top: 25px; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
+        /* === index.htmlと共通のデザイン基盤 === */
+        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --font-main: 'Shippori Mincho', serif;
+            --rand-x: 50%;
+            --rand-y: 50%;
+        }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: var(--font-main); margin: 0; padding: 0;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* マーブリング設定 */
+        .text-marbling {
+            background-image: url('/static/texture.jpg');
+            background-size: 1000%;
+            background-position: var(--rand-x) var(--rand-y);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        /* ヘッダー (Indexと統一) */
+        .header-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+            z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
+        }
+        .header-title { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
+        .header-right { display: flex; gap: 15px; align-items: center; justify-self: end; }
+
+        .lang-switch-wrapper { display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.7rem; cursor: pointer; }
+        .lang-part { padding: 4px 14px; color: #fff; transition: color 0.3s; }
+        .lang-part.active {
+            background-image: url('/static/texture.jpg'); 
+            background-size: 1000%;
+            background-position: var(--rand-x) var(--rand-y);
+            color: #000; font-weight: bold;
+        }
+
+        .container { width: 100%; max-width: 600px; padding: 20px; padding-top: 100px; padding-bottom: 120px; text-align: center; }
+
+        /* ボタン (Indexと統一) */
+        .btn-entry {
+            position: relative;
+            display: block; width: 100%; max-width: 280px; margin: 40px auto; padding: 22px;
+            font-family: var(--font-main); font-size: 1.2rem; letter-spacing: 0.3em;
+            background: transparent; 
+            color: #fff; 
+            border: 1px solid #fff; 
+            cursor: pointer; 
+            transition: transform 0.1s;
+            z-index: 1;
+        }
+        .btn-entry:active, .btn-entry.clicked {
+            border: 2px solid transparent; border-image: url('/static/texture.jpg') 30 stretch;
+            background-image: url('/static/texture.jpg'); background-size: 1000%; background-position: var(--rand-x) var(--rand-y);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            transform: scale(0.98);
+        }
+        .btn-entry:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #555; }
+
+        /* プレビューエリア */
+        .preview-area {
+            width: 100%; height: 300px; border: 1px solid #444;
+            margin: 40px 0; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; background: rgba(255,255,255,0.05); position: relative;
+        }
+        .preview-img { max-width: 100%; max-height: 100%; display: none; }
+        .placeholder-text { color: #666; font-size: 0.9rem; letter-spacing: 0.1em; }
+
+        /* ファイル入力隠し */
+        #file-input { display: none; }
+
+        /* 説明文 */
+        .desc-text { line-height: 2.2; color: #ccc; margin-bottom: 30px; font-size: 0.95rem; }
+
+        /* 完了画面 */
+        #success-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 200; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .hidden { display: none !important; }
+        .lang-jp .lang-en { display: none; }
+        .lang-en .lang-jp { display: none; }
     </style>
 </head>
-<body>
-    <video autoplay muted loop playsinline id="bg-video"><source src="/static/DAMN2.m4v" type="video/mp4"></video>
-    <div class="overlay"></div>
-    <div class="box">
-        <h2 class="text-marbling" id="title-text">画像の奉納</h2>
-        <p id="sub-text" style="font-size:0.85rem; color:#999; line-height:1.8;">記憶や癖を拾い上げるための手がかり</p>
-        <label class="file-label">
-            <span id="placeholder" style="color:#555;">+ SELECT IMAGE</span>
-            <img id="preview">
-            <input type="file" id="file" accept="image/*" style="display:none">
-        </label>
-        <button class="btn" id="upload-btn" onclick="upload()">奉納する</button>
-        <button id="cancel-btn" style="display:none;" onclick="location.reload()">× 取り消す</button>
+<body class="lang-jp">
+
+    <div class="header-fixed">
+        <div class="header-left"></div>
+        <div class="header-center">
+            <h1 class="header-title"><span class="text-marbling">Image Offering</span></h1>
+        </div>
+        <div class="header-right">
+            <div class="lang-switch-wrapper" onclick="toggleLanguage()">
+                <div id="lang-part-jp" class="lang-part active">JP</div>
+                <div id="lang-part-en" class="lang-part">EN</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="desc-text">
+            <span class="lang-jp">
+                あなたの端末にある画像を<br>
+                「量子庵」へ奉納します。<br>
+                この画像はKarma Portrait生成の<br>
+                重要な核となります。
+            </span>
+            <span class="lang-en">
+                Offer an image from your device<br>
+                to the "Ryoshi-an".<br>
+                This image will become the core<br>
+                of your Karma Portrait generation.
+            </span>
+        </div>
+
+        <div class="preview-area" onclick="document.getElementById('file-input').click()">
+            <span class="placeholder-text lang-jp" id="ph-jp">タップして画像を選択</span>
+            <span class="placeholder-text lang-en" id="ph-en">Tap to select image</span>
+            <img id="preview" class="preview-img">
+        </div>
+        
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+
+        <button id="submit-btn" class="btn-entry" onclick="uploadImage()" disabled>Submit</button>
+        
+        <div style="margin-top:60px; font-size:0.7rem; color:#444;">© GOKURAKU FINE ARTS</div>
+    </div>
+
+    <div id="success-overlay">
+        <h2 class="text-marbling" style="font-size:1.5rem; letter-spacing:0.2em; margin-bottom:30px;">
+            <span class="lang-jp">奉納完了</span><span class="lang-en">Done</span>
+        </h2>
+        <p style="color:#ccc; line-height:2;">
+            <span class="lang-jp">画像が転送されました。<br>メイン画面を確認してください。</span>
+            <span class="lang-en">Image transferred.<br>Please check the main screen.</span>
+        </p>
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const sessionId = params.get('session_id');
-        const lang = params.get('lang') || 'jp';
+        // URLパラメータからセッションIDを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        let currentLang = urlParams.get('lang') || 'jp';
 
-        // 言語対応
-        if(lang === 'en') {
-            document.getElementById('title-text').innerText = "Image Offering";
-            document.getElementById('sub-text').innerText = "A clue to pick up memories and habits.";
-            document.getElementById('upload-btn').innerText = "SEND";
-            document.getElementById('cancel-btn').innerText = "× Cancel";
+        document.addEventListener('DOMContentLoaded', () => {
+            setLanguage(currentLang);
+            initMarbling();
+        });
+
+        function initMarbling() {
+            const rX = Math.floor(Math.random() * 100) + '%';
+            const rY = Math.floor(Math.random() * 100) + '%';
+            document.documentElement.style.setProperty('--rand-x', rX);
+            document.documentElement.style.setProperty('--rand-y', rY);
         }
 
-        const fileInput = document.getElementById('file');
-        fileInput.onchange = (e) => {
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                const p = document.getElementById('preview'); p.src = reader.result; p.style.display = 'block';
-                document.getElementById('placeholder').style.display = 'none';
-                document.getElementById('cancel-btn').style.display = 'inline-block';
-            };
-            reader.readAsDataURL(file);
-        };
+        function toggleLanguage() {
+            setLanguage(currentLang === 'jp' ? 'en' : 'jp');
+        }
 
-        // 画像を軽量化して送信する関数
-        async function upload() {
-            const file = fileInput.files[0];
-            if(!file || !sessionId) {
-                alert(lang === 'en' ? "Please select an image." : "画像を選択してください。");
-                return;
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.body.className = 'lang-' + lang;
+            document.getElementById('lang-part-jp').classList.toggle('active', lang === 'jp');
+            document.getElementById('lang-part-en').classList.toggle('active', lang === 'en');
+            initMarbling();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('ph-jp').style.display = 'none';
+                    document.getElementById('ph-en').style.display = 'none';
+                    document.getElementById('submit-btn').disabled = false;
+                }
+                reader.readAsDataURL(file);
             }
+        }
 
-            const btn = document.getElementById('upload-btn');
-            btn.disabled = true;
-            btn.innerText = (lang === 'en') ? "Sending..." : "送信中...";
+        async function uploadImage() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if (!file || !sessionId) return;
+
+            const btn = document.getElementById('submit-btn');
+            btn.classList.add('clicked');
+            btn.innerText = (currentLang === 'jp') ? "送信中..." : "Sending...";
+
+            const formData = new FormData();
+            formData.append('session_id', sessionId);
+            formData.append('image', file);
 
             try {
-                // 画像の圧縮処理
-                const compressedFile = await compressImage(file);
-                const formData = new FormData();
-                formData.append('session_id', sessionId);
-                formData.append('image', compressedFile);
-
                 const res = await fetch('/upload-satellite', {
                     method: 'POST',
                     body: formData
                 });
-
-                if(res.ok) {
-                    btn.innerText = (lang === 'en') ? "SENT" : "完了しました";
-                    alert(lang === 'en' ? "Offering complete. Check the tablet screen." : "奉納が完了しました。タブレット画面をご確認ください。");
+                
+                if (res.ok) {
+                    setTimeout(() => {
+                        document.getElementById('success-overlay').style.display = 'flex';
+                    }, 500);
                 } else {
-                    throw new Error("Server error");
+                    alert("Upload failed.");
+                    btn.classList.remove('clicked');
+                    btn.innerText = "Submit";
                 }
             } catch (e) {
-                console.error(e);
-                alert(lang === 'en' ? "Failed to send. Please try again." : "送信に失敗しました。もう一度お試しください。");
-                btn.disabled = false;
-                btn.innerText = (lang === 'en') ? "SEND" : "奉納する";
+                alert("Error: " + e);
+                btn.classList.remove('clicked');
+                btn.innerText = "Submit";
             }
-        }
-
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const maxSide = 1000; // 最大1000pxにリサイズ
-                        if (width > height && width > maxSide) { height *= maxSide / width; width = maxSide; }
-                        else if (height > maxSide) { width *= maxSide / height; height = maxSide; }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        canvas.toBlob((blob) => {
-                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-                        }, 'image/jpeg', 0.7); // 画質70%
-                    };
-                };
-            });
         }
     </script>
 </body>
