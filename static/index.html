@@ -96,12 +96,21 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 5000; 
             display: none; flex-direction: column; overflow-y: auto;
-            padding-top: 80px; 
+            padding-top: 80px; padding-bottom: 100px;
         }
         #content-overlay.show { display: flex; }
-        .content-body { padding: 0 25px 120px; max-width: 650px; margin: 0 auto; color: #ddd; line-height: 2.3; text-align: justify; }
+        .content-body { padding: 0 25px 40px; max-width: 650px; margin: 0 auto; color: #ddd; line-height: 2.3; text-align: justify; }
         .content-body h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; }
-        .content-body h4 { color: #fff; border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
+        .content-body h4 { 
+            color: #fff; border-left: 2px solid #fff; padding-left: 15px; 
+            margin-top: 60px; margin-bottom: 25px; font-weight: bold; font-size: 1.1rem;
+        }
+
+        .close-content-btn {
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+            background: none; border: none; color: #fff; font-size: 3rem; 
+            font-weight: 100; cursor: pointer; z-index: 5010; opacity: 0.8;
+        }
 
         /* ボタン */
         .btn-entry {
@@ -148,19 +157,30 @@
         }
         #color-modal.show { display: flex; animation: fadeIn 0.3s; }
         
-        .color-wheel-container {
+        /* カラーピッカー円形配置 */
+        .color-picker-wrapper {
             position: relative; width: 300px; height: 300px;
-            border-radius: 50%;
-            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-            margin-bottom: 40px; cursor: crosshair; touch-action: none;
+            margin-bottom: 30px;
         }
-        .color-wheel-overlay {
+        /* 外側：色相リング */
+        .color-hue-ring {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0) 51%, rgba(0,0,0,1) 100%);
-            pointer-events: none;
+            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+            /* 中央をくり抜いてリングにする */
+            -webkit-mask: radial-gradient(transparent 55%, black 56%);
+            mask: radial-gradient(transparent 55%, black 56%);
+            cursor: crosshair; touch-action: none;
         }
+        /* 内側：明度円（黒〜白） */
+        .color-lightness-disc {
+            position: absolute; top: 22%; left: 22%; width: 56%; height: 56%;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, white, black);
+            cursor: crosshair; touch-action: none;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
         .color-preview-box {
             width: 60px; height: 60px; border-radius: 50%; border: 2px solid #fff;
             margin-bottom: 20px; background-color: #fff;
@@ -235,44 +255,20 @@
         .loading-content-box {
             width: 100%; max-width: 600px; min-height: 300px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; /* タップ可能を示す */
-            position: relative;
+            cursor: pointer; position: relative;
         }
-        /* 説明文のスタイル */
-        .loading-text-wrapper {
-            margin-bottom: 30px; text-align: justify;
-        }
+        .loading-text-wrapper { margin-bottom: 30px; text-align: justify; }
         .loading-text-wrapper h4 {
             color: #fff; font-size: 1.4rem; letter-spacing: 0.2em; text-align: center; margin-bottom: 20px;
-            /* 背景設定はJSで個別にランダム付与するため、ここでは基本設定のみ */
-            background-image: url('/static/texture.jpg'); 
-            -webkit-background-clip: text; color: transparent;
-            background-size: 1000%; 
-            /* background-position はJSでインライン付与 */
+            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; color: transparent;
+            background-size: 1000%;
         }
-        .loading-text-wrapper p {
-            color: #ccc; font-size: 0.95rem; line-height: 2.2;
-        }
-
-        /* プログレスバー */
-        .loading-progress-bar {
-            width: 100%; height: 2px; background: #333; margin-top: 20px; position: relative;
-        }
-        .bar-inner {
-            position: absolute; left: 0; top: 0; height: 100%; background: #fff; width: 0%;
-            transition: width 0.1s linear; /* JSで制御するためlinear */
-        }
-        /* アニメーション用クラス */
-        .bar-anim {
-            animation: growBar 20s linear forwards;
-        }
+        .loading-text-wrapper p { color: #ccc; font-size: 0.95rem; line-height: 2.2; }
+        .loading-progress-bar { width: 100%; height: 2px; background: #333; margin-top: 20px; position: relative; }
+        .bar-inner { position: absolute; left: 0; top: 0; height: 100%; background: #fff; width: 0%; transition: width 0.1s linear; }
+        .bar-anim { animation: growBar 20s linear forwards; }
         @keyframes growBar { from { width: 0%; } to { width: 100%; } }
-
-        /* タップヒント */
-        .tap-hint {
-            margin-top: 10px; font-size: 0.7rem; color: #888; align-self: flex-end;
-            animation: blink 2s infinite;
-        }
+        .tap-hint { margin-top: 10px; font-size: 0.7rem; color: #888; align-self: flex-end; animation: blink 2s infinite; }
         @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
         .btn-back-top {
@@ -292,8 +288,6 @@
         .hidden { display: none !important; }
         .lang-jp .lang-en { display: none; }
         .lang-en .lang-jp { display: none; }
-        
-        .lang-en .menu-sub.lang-en { display: none; }
     </style>
 </head>
 <body class="lang-jp">
@@ -319,26 +313,27 @@
 
     <div id="menu-overlay">
         <ul class="menu-list">
-            <li><div class="menu-item text-marbling" onclick="menuAction('concept', this)">Concept<span class="menu-sub lang-jp">コンセプト</span><span class="menu-sub lang-en">Concept</span></div></li>
-            <li><div class="menu-item text-marbling" onclick="menuAction('explanation', this)">Explanation<span class="menu-sub lang-jp">作品＆用語解説</span><span class="menu-sub lang-en">Glossary</span></div></li>
-            <li><div class="menu-item text-marbling" onclick="menuAction('spoiler', this)">Background<span class="menu-sub lang-jp">背景設定（ネタバレ）</span><span class="menu-sub lang-en">Background</span></div></li>
-            <li><div class="menu-item text-marbling" onclick="menuAction('about', this)">About Us<span class="menu-sub lang-jp">プロジェクト紹介</span><span class="menu-sub lang-en">About Us</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="menuAction('concept', this)">Concept<span class="menu-sub lang-jp">コンセプト</span><span class="menu-sub lang-en">Core idea</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="menuAction('explanation', this)">Explanation<span class="menu-sub lang-jp">作品＆用語解説</span><span class="menu-sub lang-en">Guide & key terms</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="menuAction('spoiler', this)">Background<span class="menu-sub lang-jp">背景設定（ネタバレ）</span><span class="menu-sub lang-en">Story (spoilers)</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="menuAction('about', this)">About Us<span class="menu-sub lang-jp">プロジェクト紹介</span><span class="menu-sub lang-en">Project & team</span></div></li>
         </ul>
     </div>
 
     <div id="content-overlay">
-        <div style="position: sticky; top:0; width:100%; display:flex; justify-content:flex-end; padding:20px; z-index:310;">
-            <button onclick="closeContentToMenu()" style="background:none; border:none; color:#fff; font-size:3.5rem; cursor:pointer;">×</button>
-        </div>
+        <button onclick="closeContentToMenu()" class="close-content-btn">×</button>
         
         <div id="content-body-concept" class="content-body hidden">
             <h3 class="text-marbling">Concept</h3>
-            <p class="lang-jp" style="margin-bottom:20px; font-weight:bold; text-align:center;">量子庵 : 演算する彼岸∽二〇卌五</p>
+            <h4 class="lang-jp">量子庵 : 演算する彼岸∽二〇卌五</h4>
+            <h4 class="lang-en">2O45: A Quantum Hermitage</h4>
             <p class="lang-jp">二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
             <p class="lang-en">In the two-mat tea room "Ryoshi-an," a hanging-scroll–shaped monitor functions as a portal opening between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within the computational darkness humans cannot traverse, inscribing within it a one-time semiotic self-image: "Karma Portrait." What emerges is a landscape where emotions and desires—held by the body prior to language—precipitate as swells of light and noise. The viewer is invited to relinquish the sign called "identity" and to let the image quietly prompt a sense of "where one returns."</p>
+            
             <h4 class="lang-jp">Exhibition Mode:</h4><h4 class="lang-en">Exhibition Mode:</h4>
             <p class="lang-jp">量子庵の掛軸に、常設のループ映像が静かに流れ続けるモードである。入力は必要ない。空間は待ち、光は呼吸し、仮想浄土の“気配”だけが反復される。ここでは作品は説明をしない。鑑賞者が「見る」前に、まず「暗さに馴染む」ことが優先される。</p>
             <p class="lang-en">Exhibition Mode sustains a permanent loop on the scroll of Ryoshi-an. No input is required. The space waits, light breathes, and only the "presence" of the virtual Pure Land is reiterated. Here, the work offers no explanation. Before "looking," priority is given to the viewer becoming acclimated to the darkness.</p>
+            
             <h4 class="lang-jp">Interactive Mode:</h4><h4 class="lang-en">Interactive Mode:</h4>
             <p class="lang-jp">鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。</p>
             <p class="lang-en">Interactive Mode reconfigures the virtual Pure Land on the spot through the viewer’s offering. Submitted fragments fall into computational obscurity and return not as a procedure, but as a result. This result coheres, just once, as a Karma Portrait. The experience is not participation, but verification—a time to release one’s semiotic self and gently overlay the sense of "where one returns" onto the image.</p>
@@ -414,18 +409,16 @@
                 What remains here is only a minimal trace used to assemble the visuals.
             </p>
         </div>
-        <button class="btn-entry" style="margin-top:20px; max-width:200px;" onclick="proceedToForm()">Proceed</button>
+        <button class="btn-entry" style="margin-top:20px; max-width:280px;" onclick="proceedToForm()">Proceed</button>
     </div>
 
     <div class="container">
         <div id="landing-page">
             <div style="height: 5vh;"></div>
-            
             <div class="title-section">
                 <div class="main-title-jp text-marbling lang-jp">量子庵 : 演算する彼岸∽二〇卌五</div>
                 <div class="main-title-jp text-marbling lang-en">2O45: A Quantum Hermitage</div>
             </div>
-
             <div style="text-align: center; line-height: 2.3; font-size: 0.95rem; margin-bottom: 60px; color:#ccc;">
                 <p class="lang-jp">
                     二畳の茶室「量子庵」の掛軸型モニターは、<br>此岸と彼岸のあわいにひらく小さな境界です。<br><br>
@@ -444,16 +437,24 @@
         </div>
 
         <div id="form-page" class="hidden">
+            <div class="section-header" style="margin-bottom:30px; margin-top:50px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">ニックネーム</span><span class="lang-en">Nickname</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">ニックネーム</label><label class="lang-en input-label-center">Nickname</label>
                 <input type="text" id="q1" class="clean-input">
             </div>
-            <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">年齢</label><label class="lang-en input-label-center">Age</label>
-                <input type="number" id="q2" class="clean-input" inputmode="numeric">
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">年齢</span><span class="lang-en">Age</span></h2>
             </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">好きな色</label><label class="lang-en input-label-center">Favorite Color</label>
+                <input type="number" id="q2" class="clean-input" inputmode="numeric">
+            </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">好きな色</span><span class="lang-en">Favorite Color</span></h2>
+            </div>
+            <div class="input-group centered-group">
                 <input type="hidden" id="q3">
                 <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">タップして色を選択…</div>
             </div>
@@ -482,10 +483,10 @@
             </div>
             <div class="input-group">
                 <div class="slider-labels" id="labels-q4_3">
-                    <div class="lbl-item"><span class="lang-jp">春</span><span class="lang-en">Spr</span></div>
-                    <div class="lbl-item"><span class="lang-jp">夏</span><span class="lang-en">Sum</span></div>
-                    <div class="lbl-item"><span class="lang-jp">秋</span><span class="lang-en">Aut</span></div>
-                    <div class="lbl-item"><span class="lang-jp">冬</span><span class="lang-en">Win</span></div>
+                    <div class="lbl-item"><span class="lang-jp">春</span><span class="lang-en">Spring</span></div>
+                    <div class="lbl-item"><span class="lang-jp">夏</span><span class="lang-en">Summer</span></div>
+                    <div class="lbl-item"><span class="lang-jp">秋</span><span class="lang-en">Autumn</span></div>
+                    <div class="lbl-item"><span class="lang-jp">冬</span><span class="lang-en">Winter</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_3" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_3')"></div>
             </div>
@@ -540,8 +541,10 @@
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
             </div>
 
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">好きな香り</span><span class="lang-en">Scent</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">好きな香り</label><label class="lang-en input-label-center">Scent</label>
                 <div class="slider-labels" id="labels-q7">
                     <div class="lbl-item"><span class="lang-jp">フローラル</span><span class="lang-en">Floral</span></div>
                     <div class="lbl-item"><span class="lang-jp">フルーティ</span><span class="lang-en">Fruity</span></div>
@@ -554,21 +557,29 @@
 
             <div class="section-divider">⸻</div>
 
-            <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">旅行に行くなら</label><label class="lang-en input-label-center">Destination</label>
-                <input type="text" id="q8" class="clean-input" placeholder="国や都市 / Country or City">
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">旅行に行くなら</span><span class="lang-en">Destination</span></h2>
             </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">願いが向くのは</label><label class="lang-en input-label-center">Wish Direction</label>
+                <input type="text" id="q8" class="clean-input" placeholder="国や都市 / Country or City">
+            </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">願いが向くのは</span><span class="lang-en">Wish Direction</span></h2>
+            </div>
+            <div class="input-group centered-group">
                 <div class="slider-labels" id="labels-q9">
                     <div class="lbl-item"><span class="lang-jp">過去</span><span class="lang-en">Past</span></div>
                     <div class="lbl-item"><span class="lang-jp">現在</span><span class="lang-en">Now</span></div>
-                    <div class="lbl-item"><span class="lang-jp">未来</span><span class="lang-en">Fut</span></div>
+                    <div class="lbl-item"><span class="lang-jp">未来</span><span class="lang-en">Future</span></div>
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q9" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q9')"></div>
             </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">エネルギー源</span><span class="lang-en">Drive</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">エネルギー源</label><label class="lang-en input-label-center">Drive</label>
                 <div class="slider-labels" id="labels-q10">
                     <div class="lbl-item"><span class="lang-jp">探求</span><span class="lang-en">Exploration</span></div>
                     <div class="lbl-item"><span></span></div>
@@ -581,8 +592,10 @@
 
             <div class="section-divider">⸻</div>
 
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">因果観</span><span class="lang-en">Causality</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">因果観</label><label class="lang-en input-label-center">Causality</label>
                 <div class="slider-labels" id="labels-q11">
                     <div class="lbl-item"><span class="lang-jp">因果</span><span class="lang-en">Causal</span></div>
                     <div class="lbl-item"><span></span></div>
@@ -592,8 +605,11 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q11" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q11')"></div>
             </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">慈悲観</span><span class="lang-en">Compassion</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">慈悲観</label><label class="lang-en input-label-center">Compassion</label>
                 <div class="slider-labels" id="labels-q12">
                     <div class="lbl-item"><span class="lang-jp">自身のため</span><span class="lang-en">Self</span></div>
                     <div class="lbl-item"><span></span></div>
@@ -603,8 +619,11 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q12" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q12')"></div>
             </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">無常観</span><span class="lang-en">Impermanence</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">無常観</label><label class="lang-en input-label-center">Impermanence</label>
                 <div class="slider-labels" id="labels-q13">
                     <div class="lbl-item"><span class="lang-jp">受け入れる</span><span class="lang-en">Accept</span></div>
                     <div class="lbl-item"><span></span></div>
@@ -614,8 +633,11 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q13" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q13')"></div>
             </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">死生観</span><span class="lang-en">Life & Death</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">死生観</label><label class="lang-en input-label-center">Life & Death</label>
                 <div class="slider-labels" id="labels-q14">
                     <div class="lbl-item"><span class="lang-jp">肉体に留まる</span><span class="lang-en">Remain Embodied</span></div>
                     <div class="lbl-item"><span class="lang-jp">オンラインへ移行する</span><span class="lang-en">Go Online</span></div>
@@ -625,8 +647,10 @@
 
             <div class="section-divider">⸻</div>
 
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">向かうなら</span><span class="lang-en">Heading Toward</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">向かうなら</label><label class="lang-en input-label-center">Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
                     <div class="lbl-item"><span class="lang-jp">北国</span><span class="lang-en">North</span></div>
                     <div class="lbl-item"><span></span></div>
@@ -636,8 +660,11 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q15" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q15')"></div>
             </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">還るなら</span><span class="lang-en">Returning To</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">還るなら</label><label class="lang-en input-label-center">Returning To</label>
                 <div class="slider-labels" id="labels-q16">
                     <div class="lbl-item"><span class="lang-jp">深海</span><span class="lang-en">Deep Sea</span></div>
                     <div class="lbl-item"><span class="lang-jp">地中</span><span class="lang-en">Underground</span></div>
@@ -645,16 +672,25 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q16" min="0" max="2" value="0" step="1" oninput="updLbl(this,'labels-q16')"></div>
             </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">ひとつだけ残すなら</span><span class="lang-en">One Thing to Keep</span></h2>
+            </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">ひとつだけ残すなら</label><label class="lang-en input-label-center">One Thing to Keep</label>
                 <input type="text" id="q17" class="clean-input" placeholder="※短く：1〜3語 推奨 / 1-3 words recommended">
             </div>
-            <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">好きなもの</label><label class="lang-en input-label-center">Likes</label>
-                <textarea id="q18" class="clean-textarea" rows="4" placeholder="自由記述（例：海、雨音、ネオン、金属、森 など）/ Free text (e.g., sea, rain, neon, metal, forest)"></textarea>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">好きなもの</span><span class="lang-en">Likes</span></h2>
             </div>
             <div class="input-group centered-group">
-                <label class="lang-jp input-label-center">嫌いなもの</label><label class="lang-en input-label-center">Avoids</label>
+                <textarea id="q18" class="clean-textarea" rows="4" placeholder="自由記述（例：海、雨音、ネオン、金属、森 など）/ Free text (e.g., sea, rain, neon, metal, forest)"></textarea>
+            </div>
+
+            <div class="section-header" style="margin-bottom:30px;">
+                <h2 style="font-size:1.2rem;"><span class="lang-jp">嫌いなもの</span><span class="lang-en">Avoids</span></h2>
+            </div>
+            <div class="input-group centered-group">
                 <textarea id="q19" class="clean-textarea" rows="4" placeholder="自由記述（例：混雑、強い光、騒音、湿気、煙 など）/ Free text (e.g., crowds, harsh light, noise, humidity, smoke)"></textarea>
             </div>
 
@@ -673,8 +709,9 @@
 
     <div id="color-modal">
         <h3 style="color:#fff; margin-bottom:30px;">Select Color</h3>
-        <div class="color-wheel-container" id="color-wheel" onclick="pickColor(event)">
-            <div class="color-wheel-overlay"></div>
+        <div class="color-picker-wrapper">
+            <div class="color-hue-ring" id="color-hue-ring"></div>
+            <div class="color-lightness-disc" id="color-lightness-disc"></div>
         </div>
         <div class="color-preview-box" id="color-preview"></div>
         <button class="close-color-btn" onclick="confirmColor()">OK</button>
@@ -708,8 +745,76 @@
         let currentLang = 'jp';
         let selectedColorHex = "";
         let isDraggingColor = false;
+        let currentHue = 0;
+        let currentLightness = 50;
 
-        // ★ 新しいロード画面のコンテンツデータ
+        // ★ 新しいカラーピッカー実装（リングと円）
+        function initColorPickerEvents() {
+            const ring = document.getElementById('color-hue-ring');
+            const disc = document.getElementById('color-lightness-disc');
+
+            // Hue Ring Events
+            const handleHue = (e) => {
+                e.preventDefault();
+                const rect = ring.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const x = clientX - rect.left - rect.width / 2;
+                const y = clientY - rect.top - rect.height / 2;
+                let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+                if(angle < 0) angle += 360;
+                currentHue = angle;
+                applyColor();
+            };
+
+            ring.addEventListener('mousedown', (e) => { isDraggingColor = true; handleHue(e); });
+            window.addEventListener('mousemove', (e) => { if(isDraggingColor && e.target === ring) handleHue(e); });
+            
+            ring.addEventListener('touchstart', (e) => { isDraggingColor = true; handleHue(e); }, {passive:false});
+            ring.addEventListener('touchmove', (e) => { if(isDraggingColor) handleHue(e); }, {passive:false});
+
+            // Lightness Disc Events
+            const handleLightness = (e) => {
+                e.preventDefault();
+                const rect = disc.getBoundingClientRect();
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                let y = clientY - rect.top;
+                // 0 to height -> 100 to 0
+                let pct = 100 - (y / rect.height) * 100;
+                if(pct < 0) pct = 0; if(pct > 100) pct = 100;
+                currentLightness = pct;
+                applyColor();
+            };
+
+            disc.addEventListener('mousedown', (e) => { isDraggingColor = true; handleLightness(e); });
+            window.addEventListener('mousemove', (e) => { if(isDraggingColor && e.target === disc) handleLightness(e); });
+            
+            disc.addEventListener('touchstart', (e) => { isDraggingColor = true; handleLightness(e); }, {passive:false});
+            disc.addEventListener('touchmove', (e) => { if(isDraggingColor) handleLightness(e); }, {passive:false});
+
+            window.addEventListener('mouseup', () => isDraggingColor = false);
+            window.addEventListener('touchend', () => isDraggingColor = false);
+        }
+
+        function applyColor() {
+            const color = `hsl(${currentHue}, 100%, ${currentLightness}%)`;
+            document.getElementById('color-preview').style.backgroundColor = color;
+            document.getElementById('color-lightness-disc').style.backgroundColor = `hsl(${currentHue}, 100%, 50%)`; // Update disc base color
+            
+            const temp = document.createElement("div");
+            temp.style.color = color;
+            document.body.appendChild(temp);
+            const rgb = window.getComputedStyle(temp).color;
+            document.body.removeChild(temp);
+            const rgbMatch = rgb.match(/\d+/g);
+            if(rgbMatch) {
+                const r = parseInt(rgbMatch[0]).toString(16).padStart(2,'0');
+                const g = parseInt(rgbMatch[1]).toString(16).padStart(2,'0');
+                const b = parseInt(rgbMatch[2]).toString(16).padStart(2,'0');
+                selectedColorHex = `#${r}${g}${b}`;
+            }
+        }
+
         const loadingContent = [
             {
                 title_jp: "量子庵",
@@ -744,17 +849,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             setLanguage('jp'); connectWebSocket(); generateAboutQR();
             document.querySelectorAll('input[type=range]').forEach(el => {
-                updLbl(el, 'labels-' + el.id);
-                el.addEventListener('input', (e) => {
+                if(el.id !== 'lightness-slider') {
+                    updLbl(el, 'labels-' + el.id);
+                    el.addEventListener('input', (e) => {
+                        const rX = Math.floor(Math.random() * 100) + '%';
+                        const rY = Math.floor(Math.random() * 100) + '%';
+                        e.target.style.setProperty('--thumb-x', rX);
+                        e.target.style.setProperty('--thumb-y', rY);
+                    });
                     const rX = Math.floor(Math.random() * 100) + '%';
                     const rY = Math.floor(Math.random() * 100) + '%';
-                    e.target.style.setProperty('--thumb-x', rX);
-                    e.target.style.setProperty('--thumb-y', rY);
-                });
-                const rX = Math.floor(Math.random() * 100) + '%';
-                const rY = Math.floor(Math.random() * 100) + '%';
-                el.style.setProperty('--thumb-x', rX);
-                el.style.setProperty('--thumb-y', rY);
+                    el.style.setProperty('--thumb-x', rX);
+                    el.style.setProperty('--thumb-y', rY);
+                }
             });
             initMarbling();
             initColorPickerEvents();
@@ -793,58 +900,13 @@
             labels.forEach((l, idx) => l.classList.toggle('active', idx === parseInt(el.value)));
         }
 
-        function initColorPickerEvents() {
-            const wheel = document.getElementById('color-wheel');
-            wheel.addEventListener('mousedown', (e) => { isDraggingColor = true; pickColor(e); });
-            wheel.addEventListener('mousemove', (e) => { if(isDraggingColor) pickColor(e); });
-            wheel.addEventListener('mouseup', () => isDraggingColor = false);
-            wheel.addEventListener('mouseleave', () => isDraggingColor = false);
-            
-            wheel.addEventListener('touchstart', (e) => {
-                isDraggingColor = true;
-                e.preventDefault(); 
-                pickColor(e);
-            }, {passive: false});
-            
-            wheel.addEventListener('touchmove', (e) => {
-                if(isDraggingColor) {
-                    e.preventDefault();
-                    pickColor(e);
-                }
-            }, {passive: false});
-            
-            wheel.addEventListener('touchend', () => isDraggingColor = false);
-        }
-
         function openColorPicker() { 
             document.getElementById('color-modal').classList.add('show'); 
             document.body.classList.add('no-scroll'); 
         }
-        
+
         function pickColor(e) {
-            const rect = e.target.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            const x = clientX - rect.left - rect.width / 2;
-            const y = clientY - rect.top - rect.height / 2;
-            const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
-            const hue = (angle < 0) ? angle + 360 : angle;
-            const color = `hsl(${hue}, 100%, 50%)`;
-            document.getElementById('color-preview').style.backgroundColor = color;
-            
-            const temp = document.createElement("div");
-            temp.style.color = color;
-            document.body.appendChild(temp);
-            const rgb = window.getComputedStyle(temp).color;
-            document.body.removeChild(temp);
-            const rgbMatch = rgb.match(/\d+/g);
-            if(rgbMatch) {
-                const r = parseInt(rgbMatch[0]).toString(16).padStart(2,'0');
-                const g = parseInt(rgbMatch[1]).toString(16).padStart(2,'0');
-                const b = parseInt(rgbMatch[2]).toString(16).padStart(2,'0');
-                selectedColorHex = `#${r}${g}${b}`;
-            }
+            // 後方互換性のため残すが、initColorPickerEventsで制御
         }
 
         function confirmColor() {
@@ -865,12 +927,10 @@
             const isOpen = menu.classList.contains('show');
             
             if(isOpen) {
-                // 閉じる
                 menu.classList.remove('show');
                 hamburger.classList.remove('open');
                 document.body.classList.remove('no-scroll');
             } else {
-                // 開く
                 menu.classList.add('show');
                 hamburger.classList.add('open');
                 document.body.classList.add('no-scroll');
@@ -880,11 +940,9 @@
         function menuAction(action, el) {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
             el.classList.add('selected');
-            
             setTimeout(() => { 
                 document.getElementById('menu-overlay').classList.remove('show');
                 document.querySelector('.hamburger').classList.remove('open');
-                
                 showContent(action); 
             }, 200);
         }
@@ -923,7 +981,6 @@
             setTimeout(() => {
                 landing.classList.add('hidden'); landing.classList.remove('dissolve-out');
                 document.getElementById('entry-warning').classList.add('show');
-                document.getElementById('btn-back').classList.remove('hidden');
                 btn.classList.remove('clicked');
             }, 800);
         }
@@ -986,10 +1043,11 @@
         function generateAboutQR() {
             const container = document.getElementById("qrcode-about");
             container.innerHTML = "";
+            // 白飛び防止のためコード色をグレーに (#bfbfbf)
             new QRCode(container, { 
                 text: window.location.origin + "/static/info.html", 
                 width: 100, height: 100, 
-                colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H 
+                colorDark : "#bfbfbf", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H 
             });
         }
 
@@ -1000,7 +1058,7 @@
             new QRCode(container, { 
                 text: url, 
                 width: 140, height: 140,
-                colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
+                colorDark : "#bfbfbf", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
             });
         }
 
@@ -1014,12 +1072,10 @@
             document.getElementById('reset-img-btn').classList.add('hidden');
         }
 
-        // ★ 新しいローディング制御
         function updateLoadingText() {
             const item = loadingContent[loadingIndex];
             const container = document.getElementById('loading-text-wrapper');
 
-            // 毎回ランダムな座標を生成してインラインで適用
             const rX = Math.floor(Math.random() * 100) + '%';
             const rY = Math.floor(Math.random() * 100) + '%';
             const style = `style="background-position: ${rX} ${rY};"`;
@@ -1063,18 +1119,15 @@
             new QRCode(qrLoading, { 
                 text: window.location.origin + "/static/info.html", 
                 width: 120, height: 120,
-                colorDark : "#ffffff", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
+                colorDark : "#bfbfbf", colorLight : "#000000", correctLevel : QRCode.CorrectLevel.H
             });
 
-            // ローディング開始
             loadingIndex = 0;
             updateLoadingText();
             resetProgressBar();
             
-            // 20秒ごとにスライド
             slideTimer = setInterval(autoSlide, 20000);
             
-            // 2分後にリロード
             totalTimer = setTimeout(() => location.reload(), 120000);
 
             const formData = new FormData();
