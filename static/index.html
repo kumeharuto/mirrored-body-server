@@ -250,7 +250,17 @@
         .section-header { text-align: center; margin: 100px 0 50px; }
         .section-header h2 { font-size: 1.8rem; letter-spacing: 0.4em; margin: 0; color: #fff; }
         .section-header .sub { font-size: 0.8rem; color: #777; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
-        .section-divider { text-align: center; margin: 80px 0; color: #444; letter-spacing: 0.5em; font-size: 1.5rem; }
+        .section-divider {
+            display: flex;            /* Flexboxを使用 */
+            justify-content: center;  /* 横方向の中央揃え */
+            align-items: center;      /* 縦方向の中央揃え（念のため） */
+            width: 100%;             /* 親要素いっぱいに広げる */
+            margin: 80px 0;
+            color: #444;
+            letter-spacing: 0.5em;
+            font-size: 1.5rem;
+            text-align: center;       /* フォールバック用 */
+        }
 
         #entry-warning {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -374,7 +384,7 @@
             <h4 class="lang-jp">演算する彼岸</h4><h4 class="lang-en">The Computed Higan</h4>
             <p class="lang-jp">彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。</p>
             <p class="lang-en">Higan (the other shore) may not be a "place over there," but rather the "mode of arrival" itself. Answers are generated at velocities beyond human comprehension, yet they undeniably exist as "answers." In this computational obscurity, we provisionally place Higan. Here, computation does not explain meaning, but presents a fact that stands despite being inexplicable. The viewer encounters it not through understanding, but through fit.</p>
-            <h4 class="lang-jp">二〇卌五</h4><h4 class="lang-en">二〇卌五 (2O45)</h4>
+            <h4 class="lang-jp">二〇卌五</h4><h4 class="lang-en">二〇卌五 (2〇45)</h4>
             <p class="lang-jp">二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。</p>
             <p class="lang-en">二〇卌五 is a notation, not just a date. By adding two strokes to the "二" (two) of 2025, it becomes "卌" (forty), linking 2025 and 2045 as a single line. It marks the point where "computation humans cannot follow" becomes ordinary, and only the results descend into daily life. Proof of truth detaches from human hands, leaving only reception. While singularity is spoken of as a "distant future," its shadow is already cast upon the extension of the present.</p>
         </div>
@@ -942,7 +952,20 @@
                 document.getElementById('q3').value = selectedColorHex;
                 const trigger = document.getElementById('color-trigger');
                 trigger.innerText = selectedColorHex;
-                trigger.style.color = selectedColorHex;
+                
+                // === 案3: 背景色バッジ化 ===
+                // 背景色を選択した色にする
+                trigger.style.backgroundColor = selectedColorHex;
+                
+                // 明度(currentLightness: 0~100) に応じて文字色を白/黒に振り分け
+                // 50%より明るい色は黒文字、暗い色は白文字で見やすくする
+                trigger.style.color = (currentLightness > 50) ? "#000000" : "#ffffff";
+                
+                // デザイン調整（バッジ風にするため下線を消して角丸に）
+                trigger.style.borderBottom = "none";
+                trigger.style.borderRadius = "6px";
+                trigger.style.textShadow = "none";
+                
                 trigger.classList.add('selected');
             }
             document.getElementById('color-modal').classList.remove('show');
