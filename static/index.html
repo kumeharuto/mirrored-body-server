@@ -157,22 +157,18 @@
         }
         #color-modal.show { display: flex; animation: fadeIn 0.3s; }
         
-        /* カラーピッカー円形配置 */
         .color-picker-wrapper {
             position: relative; width: 300px; height: 300px;
             margin-bottom: 30px;
         }
-        /* 外側：色相リング */
         .color-hue-ring {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             border-radius: 50%;
             background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
-            /* 中央をくり抜いてリングにする */
             -webkit-mask: radial-gradient(transparent 55%, black 56%);
             mask: radial-gradient(transparent 55%, black 56%);
             cursor: crosshair; touch-action: none;
         }
-        /* 内側：明度円（黒〜白） */
         .color-lightness-disc {
             position: absolute; top: 22%; left: 22%; width: 56%; height: 56%;
             border-radius: 50%;
@@ -288,6 +284,9 @@
         .hidden { display: none !important; }
         .lang-jp .lang-en { display: none; }
         .lang-en .lang-jp { display: none; }
+        
+        /* 英語モード時のメニューサブタイトル */
+        .lang-en .menu-sub.lang-jp { display: none; }
     </style>
 </head>
 <body class="lang-jp">
@@ -384,7 +383,7 @@
                 <p style="font-size:0.75rem; color:#666;">Scan for Info (Mobile)</p>
                 <div id="qrcode-about" style="background:#000; padding:10px; display:inline-block; margin-top:10px;"></div>
             </div>
-            <p style="margin-top:40px; font-size:0.7rem; color:#444;">© 2025 KARMIC IDENTITY</p>
+            <p style="margin-top:40px; font-size:0.7rem; color:#444;">© GOKURAKU FINE ARTS</p>
         </div>
     </div>
 
@@ -421,16 +420,30 @@
             </div>
             <div style="text-align: center; line-height: 2.3; font-size: 0.95rem; margin-bottom: 60px; color:#ccc;">
                 <p class="lang-jp">
-                    二畳の茶室「量子庵」の掛軸型モニターは、<br>此岸と彼岸のあわいにひらく小さな境界です。<br><br>
-                    ここで入力される言葉と選択は、<br>あなたの内側に沈んでいる記憶や癖<br>（まだ説明になりきらない部分）を<br>拾い上げるための、最小限の手がかりになります。<br><br>
-                    送信された内容は、そのまま「答え」として保存されるのではなく、<br>ひとつの輪廻として再編成されます。<br><br>
-                    AIは人間には辿り着けない計算の暗がりで仮想浄土を組み上げ、<br>その内部に一度きりの『Karma Portrait』を刻みます。<br><br>
-                    掛軸に現れるのは、あなたの「情報」ではなく、<br>言語化以前に身体が抱え込んだ感情や欲望が、<br>光とノイズとして析出した風景です。
+                    二畳の茶室「量子庵」の掛軸型モニターは、<br>
+                    此岸と彼岸のあわいにひらく小さな境界です。<br><br>
+                    ここで入力される言葉と選択は、<br>
+                    あなたの内側に沈んでいる記憶や癖<br>
+                    （まだ説明になりきらない部分）を<br>
+                    拾い上げるための、最小限の手がかりになります。<br><br>
+                    送信された内容は、そのまま「答え」として保存されるのではなく、<br>
+                    ひとつの輪廻として再編成されます。<br><br>
+                    AIは人間には辿り着けない計算の暗がりで仮想浄土を組み上げ、<br>
+                    その内部に一度きりの『Karma Portrait』を刻みます。<br><br>
+                    掛軸に現れるのは、あなたの「情報」ではなく、<br>
+                    言語化以前に身体が抱え込んだ感情や欲望が、<br>
+                    光とノイズとして析出した風景です。
                 </p>
                 <p class="lang-en">
-                    The hanging scroll monitor in the tea room "Ryoshi-an"<br>is a small boundary opening between this world and the other.<br><br>
-                    The words and choices you enter here are minimal clues<br>to pick up the memories and habits sunk deep inside you<br>—the parts that haven't yet become an explanation.<br><br>
-                    The submitted content is reorganized as a cycle of reincarnation.<br>AI constructs a virtual Pure Land in a computational darkness<br>that humans cannot reach, and inscribes within it<br>a one-time "Karma Portrait."
+                    The hanging scroll monitor in the tea room "Ryoshi-an"<br>
+                    is a small boundary opening between this world and the other.<br><br>
+                    The words and choices you enter here are minimal clues<br>
+                    to pick up the memories and habits sunk deep inside you<br>
+                    —the parts that haven't yet become an explanation.<br><br>
+                    The submitted content is reorganized as a cycle of reincarnation.<br>
+                    AI constructs a virtual Pure Land in a computational darkness<br>
+                    that humans cannot reach, and inscribes within it<br>
+                    a one-time "Karma Portrait."
                 </p>
             </div>
             <button class="btn-entry" onclick="goToForm(this)">Entry</button>
@@ -748,12 +761,10 @@
         let currentHue = 0;
         let currentLightness = 50;
 
-        // ★ 新しいカラーピッカー実装（リングと円）
         function initColorPickerEvents() {
             const ring = document.getElementById('color-hue-ring');
             const disc = document.getElementById('color-lightness-disc');
 
-            // Hue Ring Events
             const handleHue = (e) => {
                 e.preventDefault();
                 const rect = ring.getBoundingClientRect();
@@ -769,17 +780,14 @@
 
             ring.addEventListener('mousedown', (e) => { isDraggingColor = true; handleHue(e); });
             window.addEventListener('mousemove', (e) => { if(isDraggingColor && e.target === ring) handleHue(e); });
-            
             ring.addEventListener('touchstart', (e) => { isDraggingColor = true; handleHue(e); }, {passive:false});
             ring.addEventListener('touchmove', (e) => { if(isDraggingColor) handleHue(e); }, {passive:false});
 
-            // Lightness Disc Events
             const handleLightness = (e) => {
                 e.preventDefault();
                 const rect = disc.getBoundingClientRect();
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const clientY = e.touches ? e.touches[0].clientX : e.clientY;
                 let y = clientY - rect.top;
-                // 0 to height -> 100 to 0
                 let pct = 100 - (y / rect.height) * 100;
                 if(pct < 0) pct = 0; if(pct > 100) pct = 100;
                 currentLightness = pct;
@@ -788,7 +796,6 @@
 
             disc.addEventListener('mousedown', (e) => { isDraggingColor = true; handleLightness(e); });
             window.addEventListener('mousemove', (e) => { if(isDraggingColor && e.target === disc) handleLightness(e); });
-            
             disc.addEventListener('touchstart', (e) => { isDraggingColor = true; handleLightness(e); }, {passive:false});
             disc.addEventListener('touchmove', (e) => { if(isDraggingColor) handleLightness(e); }, {passive:false});
 
@@ -799,7 +806,7 @@
         function applyColor() {
             const color = `hsl(${currentHue}, 100%, ${currentLightness}%)`;
             document.getElementById('color-preview').style.backgroundColor = color;
-            document.getElementById('color-lightness-disc').style.backgroundColor = `hsl(${currentHue}, 100%, 50%)`; // Update disc base color
+            document.getElementById('color-lightness-disc').style.backgroundColor = `hsl(${currentHue}, 100%, 50%)`;
             
             const temp = document.createElement("div");
             temp.style.color = color;
@@ -903,10 +910,6 @@
         function openColorPicker() { 
             document.getElementById('color-modal').classList.add('show'); 
             document.body.classList.add('no-scroll'); 
-        }
-
-        function pickColor(e) {
-            // 後方互換性のため残すが、initColorPickerEventsで制御
         }
 
         function confirmColor() {
@@ -1043,7 +1046,6 @@
         function generateAboutQR() {
             const container = document.getElementById("qrcode-about");
             container.innerHTML = "";
-            // 白飛び防止のためコード色をグレーに (#bfbfbf)
             new QRCode(container, { 
                 text: window.location.origin + "/static/info.html", 
                 width: 100, height: 100, 
