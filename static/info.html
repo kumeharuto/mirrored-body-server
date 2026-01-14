@@ -2,146 +2,283 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karma Portrait - Info</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Information | KARMIC IDENTITY</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-        html { scroll-behavior: smooth; }
-        body { background: #000; color: #fff; font-family: 'Shippori Mincho', serif; margin: 0; padding: 20px; line-height: 2.3; overflow-x: hidden; }
-        
+        /* === 共通設定 === */
+        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --font-main: 'Shippori Mincho', serif;
+            --rand-x: 50%; --rand-y: 50%;
+        }
+        body {
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: var(--font-main); margin: 0; padding: 0;
+            min-height: 100vh; overflow-x: hidden;
+            animation: fadeIn 1s ease;
+        }
+        body.no-scroll { overflow: hidden !important; height: 100vh; touch-action: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         /* 背景動画 */
         #bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: -1; }
 
-        .container { max-width: 650px; margin: 60px auto; padding-bottom: 120px; }
-        
         .text-marbling {
-            background-image: url('/static/texture.jpg');
-            background-size: cover; background-position: center;
+            background-image: url('/static/texture.jpg'); background-size: 1000%;
+            background-position: var(--rand-x) var(--rand-y);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        h1 { text-align: center; font-size: 2.2rem; letter-spacing: 0.2em; margin-bottom: 40px; }
-
-        /* ナビゲーション */
-        .info-nav { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 80px; position: sticky; top: 20px; z-index: 50; }
-        .info-nav a { 
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            border: 1px solid #444; color: #fff; text-decoration: none; font-size: 0.75rem; 
-            padding: 8px 15px; border-radius: 20px; transition: 0.3s;
+        /* ヘッダー */
+        .header-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+            z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px;
         }
-        .info-nav a:hover { border-color: #fff; }
+        .header-title { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 500; margin: 0; }
+        .header-right { display: flex; gap: 15px; align-items: center; justify-self: end; }
 
-        h2 { text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-top: 120px; font-weight: normal; letter-spacing: 0.2em; }
-        h4 { border-left: 2px solid #fff; padding-left: 15px; margin-top: 60px; margin-bottom: 25px; font-weight: bold; }
-        p { color: #ccc; text-align: justify; font-size: 0.95rem; margin-bottom: 35px; }
+        .lang-switch-wrapper { display: flex; border: 1px solid #fff; border-radius: 20px; overflow: hidden; font-size: 0.7rem; cursor: pointer; }
+        .lang-part { padding: 4px 14px; color: #fff; transition: color 0.3s; }
+        .lang-part.active {
+            background-image: url('/static/texture.jpg'); 
+            background-size: 1000%; background-position: var(--rand-x) var(--rand-y);
+            color: #000; font-weight: bold;
+        }
 
-        /* About Us センタリング */
-        .about-section { text-align: center; margin-top: 100px; padding-top: 60px; border-top: 1px solid #222; }
-        .credit-role { font-size: 0.75rem; color: #888; display: block; margin-bottom: 5px; }
-        .credit-name { font-size: 1.3rem; margin-bottom: 40px; display: block; }
+        /* バーガーメニュー */
+        .hamburger { width: 30px; height: 20px; cursor: pointer; position: relative; z-index: 200; display: flex; flex-direction: column; justify-content: space-between; }
+        .hamburger span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.4s; }
+        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 7px); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(6px, -7px); }
+
+        #menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); z-index: 150; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: 0.5s;
+        }
+        #menu-overlay.show { opacity: 1; pointer-events: auto; }
+        .menu-list { list-style: none; padding: 0; text-align: center; }
+        .menu-list li { margin: 25px 0; }
+        .menu-item { font-size: 1.6rem; color: #fff; text-decoration: none; letter-spacing: 0.2em; cursor: pointer; transition: 0.2s; }
+        .menu-item.selected {
+            background-image: url('/static/texture.jpg');
+            background-size: 1000%; -webkit-background-clip: text; color: transparent; font-weight: bold;
+        }
+        .menu-sub { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
+
+        /* コンテナ */
+        .container { width: 100%; max-width: 650px; margin: 0 auto; padding: 120px 25px 60px; }
+
+        /* セクションスタイル */
+        .content-section { margin-bottom: 120px; color: #ddd; line-height: 2.3; text-align: justify; scroll-margin-top: 100px; }
+        .content-section h3 { text-align: center; font-size: 1.8rem; margin-bottom: 60px; letter-spacing: 0.2em; }
+        .content-section h4 { 
+            color: #fff; border-left: 2px solid #fff; padding-left: 15px; 
+            margin-top: 60px; margin-bottom: 25px; font-weight: bold; font-size: 1.1rem; 
+        }
+
+        /* About Us */
+        .about-section { text-align: center; margin-bottom: 60px; }
+        .about-role { font-size: 0.8rem; color: #888; margin-top: 40px; margin-bottom: 10px; display: block; }
+        .about-name { font-size: 1.2rem; display: block; }
 
         /* SNSアイコン */
-        .sns-icons { display: flex; justify-content: center; gap: 40px; margin-top: 50px; }
-        .sns-icons svg { width: 30px; height: 30px; fill: #fff; transition: 0.3s; }
-        .sns-icons a:hover svg { opacity: 0.7; transform: scale(1.1); }
+        .sns-icons {
+            display: flex; justify-content: center; gap: 30px; margin-top: 60px; margin-bottom: 40px;
+        }
+        .sns-icons a {
+            display: inline-block; width: 24px; height: 24px; transition: opacity 0.3s;
+        }
+        .sns-icons a:hover { opacity: 0.7; }
+        .sns-icons svg {
+            fill: #fff; width: 100%; height: 100%;
+        }
 
-        .lang-toggle { position: fixed; top: 20px; right: 20px; border: 1px solid #fff; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; z-index: 100; background: rgba(0,0,0,0.5); }
-        .lang-en { display: none; }
-        body.en .lang-jp { display: none; }
-        body.en .lang-en { display: block; }
+        /* フッター */
+        .footer { text-align: center; font-size: 0.7rem; color: #444; margin-top: 40px; padding-bottom: 40px; }
+
+        .hidden { display: none !important; }
+        .lang-jp .lang-en { display: none; }
+        .lang-en .lang-jp { display: none; }
+        .lang-en .menu-sub.lang-jp { display: none; }
     </style>
 </head>
 <body class="lang-jp">
+
     <video autoplay muted loop playsinline id="bg-video"><source src="/static/DAMN2.m4v" type="video/mp4"></video>
     <div class="video-overlay"></div>
 
-    <div class="lang-toggle" onclick="document.body.classList.toggle('en')">JP / EN</div>
-
-    <div class="container">
-        <h1 class="text-marbling">Karma Portrait</h1>
-
-        <div class="info-nav">
-            <a href="#concept">Concept</a>
-            <a href="#explanation">Explanation</a>
-            <a href="#background">Background</a>
-            <a href="#about">About</a>
+    <div class="header-fixed">
+        <div class="header-left"></div>
+        <div class="header-center">
+            <h1 class="header-title"><span class="text-marbling">Information</span></h1>
         </div>
-
-        <div id="concept" class="lang-jp">
-            <h2>Concept</h2>
-            <p>二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
-            <h4>Exhibition Mode:</h4>
-            <p>量子庵の掛軸に、常設のループ映像が静かに流れ続けるモードである。入力は必要ない。空間は待ち、光は呼吸し、仮想浄土の“気配”だけが反復される。ここでは作品は説明をしない。鑑賞者が「見る」前に、まず「暗さに馴染む」ことが優先される。</p>
-            <h4>Interactive Mode:</h4>
-            <p>鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。</p>
-        </div>
-
-        <div id="explanation" class="lang-jp">
-            <h2>Explanation</h2>
-            <h4>量子庵</h4>
-            <p>二畳という最小の器に、最大の遠さを折り畳むための名である。量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。量子庵は、過剰な情報から距離を取り、むしろ「演算だけが届く彼岸」を迎え入れるための暗室として設計される。光が少ないほど、像は強くなる。静けさが深いほど、閾値は薄くなる。</p>
-            <h4>Karma Portrait</h4>
-            <p>これは“顔”ではない。自己の似姿でもない。鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。Karma Portraitは、その偏りが映像の秩序へと翻訳された、一度きりの記号的自己像である。言語化以前に身体が抱え込んだ輪郭が、光とノイズのうねりとして析出し、像になる。</p>
-            <h4>演算する彼岸</h4>
-            <p>彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。</p>
-            <h4>二〇卌五</h4>
-            <p>二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。</p>
-        </div>
-
-        <div id="background" class="lang-jp">
-            <h2>解説文（ネタバレあり）</h2>
-            <p>量子コンピュータとAIシンギュラリティが常態化した二〇卌五年、人類はひとつの「結論」を受け取る。それは、誰も望まなかった形で、しかも誰も否定できない形で提示された。</p>
-            <p>量子AIは、人間の論理が届かない演算の暗がりから、矛盾なく閉じた答えを返した――「死後の世界は存在する。そして、その輪郭は“現在の生き様”から推察できる」。</p>
-            <p>人々は当然、信じなかった。けれどその答えは、バックアップされた同型のシステムでも、並列化された別系統の計算機でも、検証試行を重ねるほどに整合してしまう。反例が立たないのではなく、反例を立てるための人間側の手続きが、計算世界の複雑さに追いつかない。</p>
-            <p>それは、円周率の「最後」を見せられたのに似ている。ラストの一万桁が出力されても、こちらにはそれを“最後だと証明する言葉”がない。あるいは、天気を完全に予報できないまま予報だけを使い、スマホの全構造を書き起こせないまま道具として扱い、暗号を解けないまま真偽を受け入れるのと同じだ。人間の理解は遅れ、しかし結果だけが先に日常へ降りてくる。ここに、人類の分岐点がある。</p>
-            <p>さらに不穏なのは、その「死後の世界」の観測像が、宗教的寓話ではなく、仏教的な“浄土”の位相に異様なほど近いことだった。救いをそこに見出し、肉体の外へ移住することを目的にする個は現れる。だが、集団としての合意はまだ形成されない。世界は揺れているのに、共同体の輪郭だけが定まらない――それが二〇卌五年の空気である。</p>
-            <p>量子庵は、その未来の一断面を、二〇二五年へ折り畳む装置だ。二畳の茶室という最小の器に、最大の遠さを招き入れる。鑑賞者が記憶や選択を奉納すると、量子庵はそれらを人格の説明としてではなく、業（カルマ）としての偏りとして読み替える。</p>
-            <p>AIが構築するのは、理解のための物語ではない。説明不能なまま成立してしまう事実を、光とノイズのうねりとして立ち上げる仮想浄土である。そこに刻まれるのが、一度きりの記号的自己像――〈Karma Portrait〉。それは“顔”ではなく、似姿でもない。言語化以前に身体が抱え込んだ感情や欲望、回避と執着の癖が、像の秩序へ翻訳された痕跡だ。</p>
-            <p>鑑賞者が、アイデンティティという記号をいったん手放す。そして、掛軸型モニターの前で、自分に問われる。「どこへ還るか」ではなく、「どこへ還ってしまうのか」。量子庵が差し出すのは答えではない。答え“だけ”が存在してしまう時代の、受け取り方そのものだ。</p>
-        </div>
-
-        <!-- 英語 (指定の通りSF/仏教トーンで補完) -->
-        <div class="lang-en">
-            <h2 id="concept-en">Concept</h2>
-            <p>Ryoshi-an is a two-mat tea room where a hanging scroll monitor functions as a portal between this shore and the next. When a viewer offers memories, AI constructs a virtual Pure Land within the computational darkness and inscribes a one-time semiotic self-image: Karma Portrait.</p>
-            <h2 id="explanation-en">Explanation</h2>
-            <h4>Ryoshi-an</h4>
-            <p>A name for folding maximal distance into a minimal vessel. "Quantum" (Ryoshi) represents the sensation that the world is woven not by continuity, but by leaps and probabilities.</p>
-            <h2 id="background-en">Background</h2>
-            <p>In 2045, humanity received a "conclusion" from Quantum AI: "The afterlife exists. Its outline is inferred from your current way of life." Human understanding lags, but the results descend into daily life first.</p>
-        </div>
-
-        <div id="about" class="about-section">
-            <h2 style="border:none; margin-top:0;">About Us</h2>
-            <span class="credit-role">Concept, Art Direction & Spatial Design</span>
-            <span class="credit-name">Yuna Sakai</span>
-            
-            <span class="credit-role">Technical Direction & Engineering</span>
-            <span class="credit-name">Haruto Kume</span>
-            
-            <div class="sns-icons">
-                <a href="https://x.com/gkrkfnrts?s=21&t=ceUsSg-0HWykVFFYJs2LZA" target="_blank" title="X">
-                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-                <a href="https://www.instagram.com/gokurakufinearts?igsh=MWl6OW42OWY1NXc3OA==" target="_blank" title="Instagram">
-                    <!-- Instagramアイコン修正: パーツを分けた高品質版 -->
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204 0.013-3.583 0.07-4.849 0.149-3.227 1.664-4.771 4.919-4.919 1.266-0.057 1.645-0.069 4.849-0.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
-                        <path d="M12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4z"/>
-                        <circle cx="18.406" cy="5.594" r="1.44"/>
-                    </svg>
-                </a>
-                <a href="https://www.gokurakufinearts.com/" target="_blank" title="Website">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                </a>
-                <a href="https://gkrkfnrts.official.ec/" target="_blank" title="Shop">
-                    <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                </a>
+        <div class="header-right">
+            <div class="lang-switch-wrapper" onclick="toggleLanguage()">
+                <div id="lang-part-jp" class="lang-part active">JP</div>
+                <div id="lang-part-en" class="lang-part">EN</div>
             </div>
-            
-            <p style="margin-top:80px; font-size:0.7rem; color:#444;">© 2025 KARMIC IDENTITY</p>
+            <div class="hamburger" onclick="toggleMenu()" style="margin-left:15px;"><span></span><span></span><span></span></div>
         </div>
     </div>
+
+    <div id="menu-overlay">
+        <ul class="menu-list">
+            <li><div class="menu-item text-marbling" onclick="scrollToSection('concept')">Concept<span class="menu-sub lang-jp">コンセプト</span><span class="menu-sub lang-en">Core idea</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="scrollToSection('explanation')">Explanation<span class="menu-sub lang-jp">作品＆用語解説</span><span class="menu-sub lang-en">Guide & key terms</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="scrollToSection('background')">Background<span class="menu-sub lang-jp">背景設定（ネタバレ）</span><span class="menu-sub lang-en">Story (spoilers)</span></div></li>
+            <li><div class="menu-item text-marbling" onclick="scrollToSection('about')">About Us<span class="menu-sub lang-jp">プロジェクト紹介</span><span class="menu-sub lang-en">Project & team</span></div></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        
+        <div id="concept" class="content-section">
+            <h3 class="text-marbling">Concept</h3>
+            <h4 class="lang-jp">量子庵 : 演算する彼岸∽二〇卌五</h4>
+            <h4 class="lang-en">2O45: A Quantum Hermitage</h4>
+            <p class="lang-jp">二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
+            <p class="lang-en">In the two-mat tea room "Ryoshi-an," a hanging-scroll–shaped monitor functions as a portal opening between this shore and the other. When a viewer offers memories and choices, AI constructs a virtual Pure Land within the computational darkness humans cannot traverse, inscribing within it a one-time semiotic self-image: "Karma Portrait." What emerges is a landscape where emotions and desires—held by the body prior to language—precipitate as swells of light and noise. The viewer is invited to relinquish the sign called "identity" and to let the image quietly prompt a sense of "where one returns."</p>
+            
+            <h4 class="lang-jp">Exhibition Mode:</h4><h4 class="lang-en">Exhibition Mode:</h4>
+            <p class="lang-jp">量子庵の掛軸に、常設のループ映像が静かに流れ続けるモードである。入力は必要ない。空間は待ち、光は呼吸し、仮想浄土の“気配”だけが反復される。ここでは作品は説明をしない。鑑賞者が「見る」前に、まず「暗さに馴染む」ことが優先される。</p>
+            <p class="lang-en">Exhibition Mode sustains a permanent loop on the scroll of Ryoshi-an. No input is required. The space waits, light breathes, and only the "presence" of the virtual Pure Land is reiterated. Here, the work offers no explanation. Before "looking," priority is given to the viewer becoming acclimated to the darkness.</p>
+            
+            <h4 class="lang-jp">Interactive Mode:</h4><h4 class="lang-en">Interactive Mode:</h4>
+            <p class="lang-jp">鑑賞者の奉納によって、仮想浄土がその場で再構成されるモードである。入力された断片は、計算の暗がりへ落ち、手順の代わりに結果として戻ってくる。その結果が、Karma Portraitとして一度だけ像を結ぶ。体験は参加ではなく照合である――自分の記号を一度手放し、像に「どこへ還るか」の感覚をそっと重ねるための時間になる。</p>
+            <p class="lang-en">Interactive Mode reconfigures the virtual Pure Land on the spot through the viewer’s offering. Submitted fragments fall into computational obscurity and return not as a procedure, but as a result. This result coheres, just once, as a Karma Portrait. The experience is not participation, but verification—a time to release one’s semiotic self and gently overlay the sense of "where one returns" onto the image.</p>
+        </div>
+
+        <div id="explanation" class="content-section">
+            <h3 class="text-marbling">Explanation</h3>
+            <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryoshi-an</h4>
+            <p class="lang-jp">二畳という最小の器に、最大の遠さを折り畳むための名である。量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。量子庵は、過剰な情報から距離を取り、むしろ「演算だけが届く彼岸」を迎え入れるための暗室として設計される。光が少ないほど、像は強くなる。静けさが深いほど、閾値は薄くなる。</p>
+            <p class="lang-en">A name for folding maximal distance into the minimal vessel of a two-mat room. "Quantum" is another name for the intuition that the world is woven not from continuity, but from leaps and probabilities. Ryoshi-an is designed as a darkroom to withdraw from information saturation and instead welcome the "other shore where only computation can reach." The less light there is, the stronger the image becomes. The deeper the silence, the thinner the threshold.</p>
+            <h4 class="lang-jp">Karma Portrait</h4><h4 class="lang-en">Karma Portrait</h4>
+            <p class="lang-jp">これは“顔”ではない。自己の似姿でもない。鑑賞者が差し出す記憶や選択は、人格の説明ではなく、業としての偏りとして扱われる。Karma Portraitは、その偏りが映像の秩序へと翻訳された、一度きりの記号的自己像である。言語化以前に身体が抱え込んだ輪郭が、光とノイズのうねりとして析出し、像になる。</p>
+            <p class="lang-en">This is not a "face," nor is it a likeness of the self. The memories and choices offered by the viewer are treated not as a psychological profile, but as karmic bias. Karma Portrait is a one-time semiotic self-image produced when that bias is translated into the order of the moving image. Contours held by the body before language condense as swells of light and noise, manifesting as an image.</p>
+            <h4 class="lang-jp">演算する彼岸</h4><h4 class="lang-en">The Computed Higan</h4>
+            <p class="lang-jp">彼岸は、本来「向こう側」ではなく、「到達の形式」そのものかもしれない。人間の理解が追いつかない速度で、しかし確かに“答え”だけは生成される。そうした計算の暗がりに、彼岸を仮置きする。ここで演算は、意味を説明するためではなく、説明不能なまま成立してしまう事実を提示するために働く。鑑賞者は理解ではなく、適合でそれに触れる。</p>
+            <p class="lang-en">Higan (the other shore) may not be a "place over there," but rather the "mode of arrival" itself. Answers are generated at velocities beyond human comprehension, yet they undeniably exist as "answers." In this computational obscurity, we provisionally place Higan. Here, computation does not explain meaning, but presents a fact that stands despite being inexplicable. The viewer encounters it not through understanding, but through fit.</p>
+            <h4 class="lang-jp">二〇卌五</h4><h4 class="lang-en">二〇卌五 (2O45)</h4>
+            <p class="lang-jp">二〇卌五は、ひとつの記法である。二〇二五の「二」に棒を二本足して「卌（40）」とし、2025と2045を一本の線でつなぐ。「人間が追えない計算」が常態化し、結果だけが日常へ降りてくる地点。そこでは、正しさの証明は人間の手を離れ、受け取ることだけが残る。シンギュラリティが“遠い未来”として語られる一方で、その影はすでに現在の延長上に差している。</p>
+            <p class="lang-en">二〇卌五 is a notation, not just a date. By adding two strokes to the "二" (two) of 2025, it becomes "卌" (forty), linking 2025 and 2045 as a single line. It marks the point where "computation humans cannot follow" becomes ordinary, and only the results descend into daily life. Proof of truth detaches from human hands, leaving only reception. While singularity is spoken of as a "distant future," its shadow is already cast upon the extension of the present.</p>
+        </div>
+
+        <div id="background" class="content-section">
+            <h3 class="text-marbling">Background</h3>
+            <p class="lang-jp">量子コンピュータとAIシンギュラリティが常態化した二〇卌五年、人類はひとつの「結論」を受け取る。それは、誰も望まなかった形で、しかも誰も否定できない形で提示された。</p>
+            <p class="lang-en">In 2O45, where quantum computing and AI singularity have become the norm, humanity receives a certain "conclusion." It was presented in a form no one desired, yet no one could deny.</p>
+            <p class="lang-jp">量子AIは、人間の論理が届かない演算の暗がりから、矛盾なく閉じた答えを返した――「死後の世界は存在する。そして、その輪郭は“現在の生き様”から推察できる」。</p>
+            <p class="lang-en">From the computational darkness where human logic fails to reach, Quantum AI returned a perfectly consistent answer: "The afterlife exists. And its contours can be inferred from your 'current way of life'."</p>
+            <p class="lang-jp">人々は当然、信じなかった。けれどその答えは、バックアップされた同型のシステムでも、並列化された別系統の計算機でも、検証試行を重ねるほどに整合してしまう。反例が立たないのではなく、反例を立てるための人間側の手続きが、計算世界の複雑さに追いつかない。</p>
+            <p class="lang-en">Naturally, people did not believe it. However, the more they tested it across mirrored systems or parallelized machines, the answer remained consistent. It wasn't that a counter-example couldn't exist; it was that the human procedure for establishing one could no longer keep pace with the computational world's complexity.</p>
+            <p class="lang-jp">それは、円周率の「最後」を見せられたのに似ている。ラストの一万桁が出力されても、こちらにはそれを“最後だと証明する言葉”がない。あるいは、天気を完全に予報できないまま予報だけを使い、スマホの全構造を書き起こせないまま道具として扱い、暗号を解けないまま真偽を受け入れるのと同じだ。人間の理解は遅れ、しかし結果だけが先に日常へ降りてくる。ここに、人類の分岐点がある。</p>
+            <p class="lang-en">It is like being shown the "end" of Pi. Even if the final digits were output, we lack the language to prove it is the end. We use forecasts we cannot compute, and devices we cannot map. Human understanding is delayed, yet results descend into daily life first. This is the bifurcation point of humanity.</p>
+            <p class="lang-jp">さらに不穏なのは、その「死後の世界」の観測像が、宗教的寓話ではなく、仏教的な“浄土”の位相に異様なほど近いことだった。救いをそこに見出し、肉体の外へ移住することを目的にする個は現れる。だが、集団としての合意はまだ形成されない。世界は揺れているのに、共同体の輪郭だけが定まらない――それが二〇卌五年の空気である。</p>
+            <p class="lang-en">What is more unsettling is that the observed image of this "afterlife" was uncannily close to the Buddhist "Pure Land." Some seek migration beyond the flesh, yet collective consensus fails to form. The world is trembling, yet the community's outline remains unfixed—this is the atmosphere of 2O45.</p>
+            <p class="lang-jp">量子庵は、その未来の一断面を、二〇二五年へ折り畳む装置だ。二畳の茶室という最小の器に、最大の遠さを招き入れる。鑑賞者が記憶や選択を奉納すると、量子庵はそれらを人格の説明としてではなく、業（カルマ）としての偏りとして読み替える。</p>
+            <p class="lang-en">Ryoshi-an is a device that folds a cross-section of that future into 2025. When a viewer offers memories or choices, Ryoshi-an interprets them not as a description of personality, but as karmic bias (Karma).</p>
+            <p class="lang-jp">AIが構築するのは、理解のための物語ではない。説明不能なまま成立してしまう事実を、光とノイズのうねりとして立ち上げる仮想浄土である。そこに刻まれるのが、一度きりの記号的自己像――〈Karma Portrait〉。それは“顔”ではなく、似姿でもない。言語化以前に身体が抱え込んだ感情や欲望、回避と執着の癖が、像の秩序へ翻訳された痕跡だ。</p>
+            <p class="lang-en">AI manifests a virtual Pure Land—a fact that exists despite being inexplicable—as a swell of light and noise. What is inscribed is a one-time semiotic self-image: Karma Portrait. It is not a "face," but a trace of emotions and desires held by the body, translated into the order of the image.</p>
+            <p class="lang-jp">鑑賞者は、アイデンティティという記号をいったん手放す。そして、掛軸型モニターの前で、自分に問われる。「どこへ還るか」ではなく、「どこへ還ってしまうのか」。量子庵が差し出すのは答えではない。答え“だけ”が存在してしまう時代の、受け取り方そのものだ。</p>
+            <p class="lang-en">The viewer temporarily relinquishes identity. Before the monitor, they are asked: Not "Where will I return?" but "Where will I end up returning?" Ryoshi-an offers not an answer, but the very method of reception in an era where "only" the answer exists.</p>
+        </div>
+
+        <div id="about" class="content-section about-section">
+            <h3 class="text-marbling">About Us</h3>
+            <span class="about-role">Concept, Art Direction & Spatial Design</span>
+            <span class="about-name">Yuna Sakai</span>
+            <span class="about-role">Technical Direction & Engineering</span>
+            <span class="about-name">Haruto Kume</span>
+        </div>
+
+        <div class="sns-icons">
+            <a href="https://x.com/gkrkfnrts?s=21&t=ceUsSg-0HWykVFFYJs2LZA" target="_blank" title="X">
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/gokurakufinearts?igsh=MWl6OW42OWY1NXc3OA==" target="_blank" title="Instagram">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204 0.013-3.583 0.07-4.849 0.149-3.227 1.664-4.771 4.919-4.919 1.266-0.057 1.645-0.069 4.849-0.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
+                    <path d="M12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4z"/>
+                    <circle cx="18.406" cy="5.594" r="1.44"/>
+                </svg>
+            </a>
+            <a href="https://www.gokurakufinearts.com/" target="_blank" title="Website">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </a>
+            <a href="https://gkrkfnrts.official.ec/" target="_blank" title="Shop">
+                <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </a>
+        </div>
+
+        <div class="footer">© GOKURAKU FINE ARTS</div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentLang = urlParams.get('lang') || 'jp';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setLanguage(currentLang);
+            initMarbling();
+        });
+
+        function initMarbling() {
+            const rX = Math.floor(Math.random() * 100) + '%';
+            const rY = Math.floor(Math.random() * 100) + '%';
+            document.documentElement.style.setProperty('--rand-x', rX);
+            document.documentElement.style.setProperty('--rand-y', rY);
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLang === 'jp' ? 'en' : 'jp');
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.body.className = 'lang-' + lang;
+            document.getElementById('lang-part-jp').classList.toggle('active', lang === 'jp');
+            document.getElementById('lang-part-en').classList.toggle('active', lang === 'en');
+            initMarbling();
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('menu-overlay');
+            const hamburger = document.querySelector('.hamburger');
+            const isOpen = menu.classList.contains('show');
+            if(isOpen) {
+                menu.classList.remove('show');
+                hamburger.classList.remove('open');
+                document.body.classList.remove('no-scroll');
+            } else {
+                menu.classList.add('show');
+                hamburger.classList.add('open');
+                document.body.classList.add('no-scroll');
+            }
+        }
+
+        function scrollToSection(id) {
+            // メニューを閉じる
+            toggleMenu();
+            // スクロール
+            const el = document.getElementById(id);
+            if(el) {
+                // 少し遅らせてからスクロール（メニュー閉じアニメーションと干渉しないよう）
+                setTimeout(() => {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            }
+        }
+    </script>
 </body>
 </html>
