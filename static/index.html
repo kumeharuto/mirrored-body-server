@@ -227,7 +227,7 @@
         }
         .warning-content p { margin-bottom: 20px; }
 
-        /* ★ ローディング画面修正 ★ */
+        /* ローディング */
         #loading-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; 
             display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; 
@@ -244,8 +244,11 @@
         }
         .loading-text-wrapper h4 {
             color: #fff; font-size: 1.4rem; letter-spacing: 0.2em; text-align: center; margin-bottom: 20px;
-            background-image: url('/static/texture.jpg'); -webkit-background-clip: text; color: transparent;
-            background-size: 1000%; background-position: var(--rand-x) var(--rand-y);
+            /* 背景設定はJSで個別にランダム付与するため、ここでは基本設定のみ */
+            background-image: url('/static/texture.jpg'); 
+            -webkit-background-clip: text; color: transparent;
+            background-size: 1000%; 
+            /* background-position はJSでインライン付与 */
         }
         .loading-text-wrapper p {
             color: #ccc; font-size: 0.95rem; line-height: 2.2;
@@ -417,10 +420,12 @@
     <div class="container">
         <div id="landing-page">
             <div style="height: 5vh;"></div>
+            
             <div class="title-section">
                 <div class="main-title-jp text-marbling lang-jp">量子庵 : 演算する彼岸∽二〇卌五</div>
                 <div class="main-title-jp text-marbling lang-en">2O45: A Quantum Hermitage</div>
             </div>
+
             <div style="text-align: center; line-height: 2.3; font-size: 0.95rem; margin-bottom: 60px; color:#ccc;">
                 <p class="lang-jp">
                     二畳の茶室「量子庵」の掛軸型モニターは、<br>此岸と彼岸のあわいにひらく小さな境界です。<br><br>
@@ -452,6 +457,7 @@
                 <input type="hidden" id="q3">
                 <div class="color-picker-trigger" id="color-trigger" onclick="openColorPicker()">タップして色を選択…</div>
             </div>
+
             <div class="section-header" style="margin-bottom:30px;">
                 <h2 style="font-size:1.2rem;"><span class="lang-jp">過ごすなら</span><span class="lang-en">Conditions</span></h2>
             </div>
@@ -483,7 +489,9 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q4_3" min="0" max="3" value="0" step="1" oninput="updLbl(this,'labels-q4_3')"></div>
             </div>
+
             <div class="section-divider">⸻</div>
+            
             <div class="section-header" style="margin-bottom:30px;">
                 <h2 style="font-size:1.2rem;"><span class="lang-jp">行動</span><span class="lang-en">Approach</span></h2>
             </div>
@@ -497,6 +505,7 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q5" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q5')"></div>
             </div>
+
             <div class="section-header" style="margin-bottom:30px;">
                 <h2 style="font-size:1.2rem;"><span class="lang-jp">住処</span><span class="lang-en">Environment</span></h2>
             </div>
@@ -530,6 +539,7 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q6_3" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q6_3')"></div>
             </div>
+
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">好きな香り</label><label class="lang-en input-label-center">Scent</label>
                 <div class="slider-labels" id="labels-q7">
@@ -541,7 +551,9 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q7" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q7')"></div>
             </div>
+
             <div class="section-divider">⸻</div>
+
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">旅行に行くなら</label><label class="lang-en input-label-center">Destination</label>
                 <input type="text" id="q8" class="clean-input" placeholder="国や都市 / Country or City">
@@ -566,7 +578,9 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q10" min="0" max="4" value="0" step="1" oninput="updLbl(this,'labels-q10')"></div>
             </div>
+
             <div class="section-divider">⸻</div>
+
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">因果観</label><label class="lang-en input-label-center">Causality</label>
                 <div class="slider-labels" id="labels-q11">
@@ -608,7 +622,9 @@
                 </div>
                 <div class="slider-wrapper"><div class="visual-track"><div class="track-dot"></div><div class="track-dot"></div></div><input type="range" id="q14" min="0" max="1" value="0" step="1" oninput="updLbl(this,'labels-q14')"></div>
             </div>
+
             <div class="section-divider">⸻</div>
+
             <div class="input-group centered-group">
                 <label class="lang-jp input-label-center">向かうなら</label><label class="lang-en input-label-center">Heading Toward</label>
                 <div class="slider-labels" id="labels-q15">
@@ -641,6 +657,7 @@
                 <label class="lang-jp input-label-center">嫌いなもの</label><label class="lang-en input-label-center">Avoids</label>
                 <textarea id="q19" class="clean-textarea" rows="4" placeholder="自由記述（例：混雑、強い光、騒音、湿気、煙 など）/ Free text (e.g., crowds, harsh light, noise, humidity, smoke)"></textarea>
             </div>
+
             <div class="qr-section">
                 <label class="lang-jp">画像奉納</label><label class="lang-en">Image Offering</label>
                 <div id="qrcode"></div>
@@ -649,6 +666,7 @@
                 <img id="received-image" class="received-thumb">
                 <button id="reset-img-btn" class="hidden" onclick="resetImage()" style="margin-top:25px; background:none; border:none; color:#fff; border-bottom:1px solid #fff; cursor:pointer; font-size:0.8rem;">× <span class="lang-jp">取り消す</span><span class="lang-en">Cancel</span></button>
             </div>
+
             <button class="btn-entry" onclick="submitForm(this)">Submit</button>
         </div>
     </div>
@@ -679,7 +697,9 @@
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-jp">待ち時間に作品解説を読む</p>
             <p style="margin-top:10px; font-size:0.7rem; color:#888;" class="lang-en">Read documentation while waiting</p>
         </div>
-        <button class="btn-back-top" onclick="cancelLoading()">TOPへ戻る / Back to TOP</button>
+        <button class="btn-back-top" onclick="cancelLoading()">
+            <span class="lang-jp">TOPへ戻る</span><span class="lang-en">Back to TOP</span>
+        </button>
     </div>
 
     <script>
@@ -805,12 +825,14 @@
             const rect = e.target.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
             const x = clientX - rect.left - rect.width / 2;
             const y = clientY - rect.top - rect.height / 2;
             const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
             const hue = (angle < 0) ? angle + 360 : angle;
             const color = `hsl(${hue}, 100%, 50%)`;
             document.getElementById('color-preview').style.backgroundColor = color;
+            
             const temp = document.createElement("div");
             temp.style.color = color;
             document.body.appendChild(temp);
@@ -843,10 +865,12 @@
             const isOpen = menu.classList.contains('show');
             
             if(isOpen) {
+                // 閉じる
                 menu.classList.remove('show');
                 hamburger.classList.remove('open');
                 document.body.classList.remove('no-scroll');
             } else {
+                // 開く
                 menu.classList.add('show');
                 hamburger.classList.add('open');
                 document.body.classList.add('no-scroll');
@@ -856,9 +880,11 @@
         function menuAction(action, el) {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('selected'));
             el.classList.add('selected');
+            
             setTimeout(() => { 
                 document.getElementById('menu-overlay').classList.remove('show');
                 document.querySelector('.hamburger').classList.remove('open');
+                
                 showContent(action); 
             }, 200);
         }
@@ -952,7 +978,6 @@
             initMarbling();
             updateQRCode();
             
-            // ローディング画面が表示中ならテキスト更新
             if(document.getElementById('loading-overlay').style.display === 'flex') {
                 updateLoadingText();
             }
@@ -993,10 +1018,16 @@
         function updateLoadingText() {
             const item = loadingContent[loadingIndex];
             const container = document.getElementById('loading-text-wrapper');
+
+            // 毎回ランダムな座標を生成してインラインで適用
+            const rX = Math.floor(Math.random() * 100) + '%';
+            const rY = Math.floor(Math.random() * 100) + '%';
+            const style = `style="background-position: ${rX} ${rY};"`;
+
             if(currentLang === 'jp') {
-                container.innerHTML = `<h4>${item.title_jp}</h4><p>${item.desc_jp}</p>`;
+                container.innerHTML = `<h4 ${style}>${item.title_jp}</h4><p>${item.desc_jp}</p>`;
             } else {
-                container.innerHTML = `<h4>${item.title_en}</h4><p>${item.desc_en}</p>`;
+                container.innerHTML = `<h4 ${style}>${item.title_en}</h4><p>${item.desc_en}</p>`;
             }
         }
 
