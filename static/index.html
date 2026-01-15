@@ -182,26 +182,42 @@
         }
         #color-modal.show { display: flex; animation: fadeIn 0.3s; }
         
+        /* --- カラーピッカー刷新用スタイル --- */
         .color-picker-wrapper {
-            position: relative; width: 300px; height: 300px;
-            margin-bottom: 30px;
+            position: relative; width: 280px; height: 280px; margin-bottom: 30px;
+            user-select: none; -webkit-user-drag: none;
         }
         .color-hue-ring {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             border-radius: 50%;
             background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
-            -webkit-mask: radial-gradient(transparent 55%, black 56%);
-            mask: radial-gradient(transparent 55%, black 56%);
-            cursor: crosshair; touch-action: none;
+            -webkit-mask: radial-gradient(transparent 60%, black 61%);
+            mask: radial-gradient(transparent 60%, black 61%);
+            cursor: crosshair;
         }
+        /* 内側の選択エリアを「彩度・明度」の2次元選択パネルに変更 */
         .color-lightness-disc {
-            position: absolute; top: 22%; left: 22%; width: 56%; height: 56%;
-            border-radius: 50%;
-            background: linear-gradient(to bottom, white, black);
-            cursor: crosshair; touch-action: none;
+            position: absolute; top: 25%; left: 25%; width: 50%; height: 50%;
+            border-radius: 4px; /* 四角形の方が彩度・明度を選びやすいため */
+            background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+            background-color: red; /* JavaScriptで動的に変更 */
+            cursor: crosshair;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-
+        /* カラーピッカーのポインター（白抜きの円） */
+        .picker-pointer {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            pointer-events: none; /* ポインター自体がタッチを邪魔しないようにする */
+            z-index: 10;
+            transform: translate(-50%, -50%); /* 中心をタッチ位置に合わせる */
+            will-change: top, left;
+        }
         .color-preview-box {
             width: 60px; height: 60px; border-radius: 50%; border: 2px solid #fff;
             margin-bottom: 20px; background-color: #fff;
@@ -209,6 +225,19 @@
         .close-color-btn {
             padding: 10px 40px; border: 1px solid #fff; background: transparent; color: #fff;
             font-family: var(--font-main); font-size: 1rem; cursor: pointer; letter-spacing: 0.1em;
+        }
+        /* --- 追加：カラーピッカーのポインター（カーソル） --- */
+        .picker-pointer {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+            pointer-events: none; /* クリックの邪魔をしない */
+            z-index: 10;
+            transform: translate(-50%, -50%); /* 中心を合わせる */
         }
 
         .centered-group { text-align: center; }
@@ -250,16 +279,19 @@
         .section-header { text-align: center; margin: 100px 0 50px; }
         .section-header h2 { font-size: 1.8rem; letter-spacing: 0.4em; margin: 0; color: #fff; }
         .section-header .sub { font-size: 0.8rem; color: #777; letter-spacing: 0.1em; margin-top: 8px; display: block; font-family: sans-serif; }
+        /* --- 修正：区切り線の位置調整 --- */
         .section-divider {
-            display: flex;            /* Flexboxを使用 */
-            justify-content: center;  /* 横方向の中央揃え */
-            align-items: center;      /* 縦方向の中央揃え（念のため） */
-            width: 100%;             /* 親要素いっぱいに広げる */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
             margin: 80px 0;
             color: #444;
+            /* letter-spacingを消すか、同じ分量だけtext-indentを入れると中央になります */
             letter-spacing: 0.5em;
+            text-indent: 0.5em; 
             font-size: 1.5rem;
-            text-align: center;       /* フォールバック用 */
+            text-align: center;
         }
 
         #entry-warning {
@@ -756,10 +788,14 @@
     </div>
 
     <div id="color-modal">
-        <h3 style="color:#fff; margin-bottom:30px;">Select Color</h3>
+        <h3 style="color:#fff; margin-bottom:20px; font-weight: normal; letter-spacing: 0.2em;">Select Color</h3>
         <div class="color-picker-wrapper">
             <div class="color-hue-ring" id="color-hue-ring"></div>
-            <div class="color-lightness-disc" id="color-lightness-disc"></div>
+            <div id="hue-pointer" class="picker-pointer"></div>
+            
+            <div class="color-lightness-disc" id="color-lightness-disc">
+                <div id="sl-pointer" class="picker-pointer"></div>
+            </div>
         </div>
         <div class="color-preview-box" id="color-preview"></div>
         <button class="close-color-btn" onclick="confirmColor()">OK</button>
@@ -795,66 +831,100 @@
         let isDraggingColor = false;
         let currentHue = 0;
         let currentLightness = 50;
+        let curH = 0;
+        let curS = 100;
+        let curL = 50;
+        let isDraggingHue = false;
+        let isDraggingSL = false;
 
         function initColorPickerEvents() {
             const ring = document.getElementById('color-hue-ring');
             const disc = document.getElementById('color-lightness-disc');
 
+            // 共通の座標取得・更新関数
             const handleHue = (e) => {
-                e.preventDefault();
                 const rect = ring.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const x = clientX - rect.left - rect.width / 2;
-                const y = clientY - rect.top - rect.height / 2;
+                const touch = e.touches ? e.touches[0] : e;
+                const x = touch.clientX - (rect.left + rect.width / 2);
+                const y = touch.clientY - (rect.top + rect.height / 2);
                 let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
-                if(angle < 0) angle += 360;
-                currentHue = angle;
+                curH = (angle + 360) % 360;
                 applyColor();
+                e.preventDefault(); // スクロール防止
             };
 
-            ring.addEventListener('mousedown', (e) => { isDraggingColor = true; handleHue(e); });
-            window.addEventListener('mousemove', (e) => { if(isDraggingColor && e.target === ring) handleHue(e); });
-            ring.addEventListener('touchstart', (e) => { isDraggingColor = true; handleHue(e); }, {passive:false});
-            ring.addEventListener('touchmove', (e) => { if(isDraggingColor) handleHue(e); }, {passive:false});
-
-            const handleLightness = (e) => {
-                e.preventDefault();
+            const handleSL = (e) => {
                 const rect = disc.getBoundingClientRect();
-                const clientY = e.touches ? e.touches[0].clientX : e.clientY;
-                let y = clientY - rect.top;
-                let pct = 100 - (y / rect.height) * 100;
-                if(pct < 0) pct = 0; if(pct > 100) pct = 100;
-                currentLightness = pct;
+                const touch = e.touches ? e.touches[0] : e;
+                let x = (touch.clientX - rect.left) / rect.width;
+                let y = (touch.clientY - rect.top) / rect.height;
+                x = Math.max(0, Math.min(1, x));
+                y = Math.max(0, Math.min(1, y));
+                curS = x * 100;
+                curL = (1 - y) * 100;
                 applyColor();
+                e.preventDefault(); // スクロール防止
             };
 
-            disc.addEventListener('mousedown', (e) => { isDraggingColor = true; handleLightness(e); });
-            window.addEventListener('mousemove', (e) => { if(isDraggingColor && e.target === disc) handleLightness(e); });
-            disc.addEventListener('touchstart', (e) => { isDraggingColor = true; handleLightness(e); }, {passive:false});
-            disc.addEventListener('touchmove', (e) => { if(isDraggingColor) handleLightness(e); }, {passive:false});
+            // タッチ開始
+            ring.addEventListener('touchstart', (e) => { isDraggingHue = true; handleHue(e); }, {passive: false});
+            disc.addEventListener('touchstart', (e) => { isDraggingSL = true; handleSL(e); }, {passive: false});
 
-            window.addEventListener('mouseup', () => isDraggingColor = false);
-            window.addEventListener('touchend', () => isDraggingColor = false);
+            // タッチ移動（触れたまま動かす操作）
+            window.addEventListener('touchmove', (e) => {
+                if (isDraggingHue) handleHue(e);
+                if (isDraggingSL) handleSL(e);
+            }, {passive: false});
+
+            // タッチ終了
+            window.addEventListener('touchend', () => {
+                isDraggingHue = false;
+                isDraggingSL = false;
+            });
+
+            // PCマウス操作用（念のため）
+            ring.addEventListener('mousedown', (e) => { isDraggingHue = true; handleHue(e); });
+            disc.addEventListener('mousedown', (e) => { isDraggingSL = true; handleSL(e); });
+            window.addEventListener('mousemove', (e) => {
+                if (isDraggingHue) handleHue(e);
+                if (isDraggingSL) handleSL(e);
+            });
+            window.addEventListener('mouseup', () => {
+                isDraggingHue = false;
+                isDraggingSL = false;
+            });
         }
 
         function applyColor() {
-            const color = `hsl(${currentHue}, 100%, ${currentLightness}%)`;
-            document.getElementById('color-preview').style.backgroundColor = color;
-            document.getElementById('color-lightness-disc').style.backgroundColor = `hsl(${currentHue}, 100%, 50%)`;
+            const disc = document.getElementById('color-lightness-disc');
+            const preview = document.getElementById('color-preview');
             
-            const temp = document.createElement("div");
-            temp.style.color = color;
-            document.body.appendChild(temp);
-            const rgb = window.getComputedStyle(temp).color;
-            document.body.removeChild(temp);
-            const rgbMatch = rgb.match(/\d+/g);
-            if(rgbMatch) {
-                const r = parseInt(rgbMatch[0]).toString(16).padStart(2,'0');
-                const g = parseInt(rgbMatch[1]).toString(16).padStart(2,'0');
-                const b = parseInt(rgbMatch[2]).toString(16).padStart(2,'0');
-                selectedColorHex = `#${r}${g}${b}`;
-            }
+            // 彩度・明度パネルの背景色を現在の色相にする
+            disc.style.backgroundColor = `hsl(${curH}, 100%, 50%)`;
+            
+            // プレビューの更新
+            const color = `hsl(${curH}, ${curS}%, ${curL}%)`;
+            preview.style.backgroundColor = color;
+            selectedColorHex = rgbToHex(window.getComputedStyle(preview).backgroundColor);
+
+            // ポインターの位置更新（画像に合わせて半径を120に変更）
+            const hPointer = document.getElementById('hue-pointer');
+            const angleRad = (curH - 90) * (Math.PI / 180);
+            const radius = 120; // 円周の真上に乗るように調整
+            const centerX = 140; // wrapper(280px)の半分
+            const centerY = 140;
+            hPointer.style.left = (centerX + radius * Math.cos(angleRad)) + 'px';
+            hPointer.style.top = (centerY + radius * Math.sin(angleRad)) + 'px';
+
+            const slPointer = document.getElementById('sl-pointer');
+            slPointer.style.left = curS + '%';
+            slPointer.style.top = (100 - curL) + '%';
+        }
+
+        // 便利な補助関数：RGB文字列をHEXに変換
+        function rgbToHex(rgb) {
+            const res = rgb.match(/\d+/g);
+            return res ? "#" + res.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : "#ffffff";
         }
 
         const loadingContent = [
