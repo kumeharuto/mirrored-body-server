@@ -218,6 +218,7 @@
             z-index: 10;
             transform: translate(-50%, -50%); /* 中心をタッチ位置に合わせる */
             will-change: top, left;
+            transform: translate(-50%, -50%);
         }
         .color-preview-box {
             width: 60px; height: 60px; border-radius: 50%; border: 2px solid #fff;
@@ -278,7 +279,7 @@
         .section-sub {
             display: block;
             font-size: 0.8rem;
-            color: #888;
+            color: #fff;
             margin-top: 10px;
             letter-spacing: 0.1em;
             font-weight: normal;
@@ -400,7 +401,10 @@
         <button onclick="closeContentToMenu()" class="close-content-btn">×</button>
         
         <div id="content-body-concept" class="content-body hidden">
-            <h3 class="text-marbling">Concept</h3>
+            <h3 class="text-marbling">Concept
+                <span class="section-sub lang-jp">コンセプト</span>
+                <span class="section-sub lang-en">Core idea</span>
+            </h3>
             <h4 class="lang-jp">量子庵 : 演算する彼岸∽二〇卌五</h4>
             <h4 class="lang-en">2〇45: A Quantum Hermitage</h4>
             <p class="lang-jp">二畳の茶室「量子庵」の掛軸型モニターは、此岸と彼岸のあわいに口をひらくポータルとして機能する。鑑賞者が記憶や選択を奉納すると、AIは人間には辿り着けない計算の暗がりで仮想浄土を構築し、その内部に一度きりの記号的自己像〈Karma Portrait〉を刻む。そこに立ち上がるのは、言語化以前に身体が抱え込んだ感情や欲望が、光とノイズのうねりとして析出した風景であり、観る者はアイデンティティという記号をいったん手放し、その像に自らの「どこへ還るか」という感覚を静かに促す。</p>
@@ -416,7 +420,10 @@
         </div>
         
         <div id="content-body-explanation" class="content-body hidden">
-            <h3 class="text-marbling">Explanation</h3>
+            <h3 class="text-marbling">Explanation
+                <span class="section-sub lang-jp">作品＆用語解説</span>
+                <span class="section-sub lang-en">Guide & key terms</span>
+            </h3>
             <h4 class="lang-jp">量子庵</h4><h4 class="lang-en">Ryoshi-an</h4>
             <p class="lang-jp">二畳という最小の器に、最大の遠さを折り畳むための名である。量子とは、世界が連続ではなく、跳躍と確率で編まれているという感触の別名だ。量子庵は、過剰な情報から距離を取り、むしろ「演算だけが届く彼岸」を迎え入れるための暗室として設計される。光が少ないほど、像は強くなる。静けさが深いほど、閾値は薄くなる。</p>
             <p class="lang-en">A name for folding maximal distance into the minimal vessel of a two-mat room. "Quantum" is another name for the intuition that the world is woven not from continuity, but from leaps and probabilities. Ryoshi-an is designed as a darkroom to withdraw from information saturation and instead welcome the "other shore where only computation can reach." The less light there is, the stronger the image becomes. The deeper the silence, the thinner the threshold.</p>
@@ -432,7 +439,10 @@
         </div>
 
         <div id="content-body-spoiler" class="content-body hidden">
-            <h3 class="text-marbling">Background</h3>
+            <h3 class="text-marbling">Background
+                <span class="section-sub lang-jp">背景設定（ネタバレ）</span>
+                <span class="section-sub lang-en">Story (spoilers)</span>
+            </h3>
             <p class="lang-jp">量子コンピュータとAIシンギュラリティが常態化した二〇卌五年、人類はひとつの「結論」を受け取る。それは、誰も望まなかった形で、しかも誰も否定できない形で提示された。</p>
             <p class="lang-en">In 2O45, where quantum computing and AI singularity have become the norm, humanity receives a certain "conclusion." It was presented in a form no one desired, yet no one could deny.</p>
             <p class="lang-jp">量子AIは、人間の論理が届かない演算の暗がりから、矛盾なく閉じた答えを返した――「死後の世界は存在する。そして、その輪郭は“現在の生き様”から推察できる」。</p>
@@ -451,7 +461,10 @@
             <p class="lang-en">The viewer temporarily relinquishes identity. Before the monitor, they are asked: Not "Where will I return?" but "Where will I end up returning?" Ryoshi-an offers not an answer, but the very method of reception in an era where "only" the answer exists.</p>
         </div>
         <div id="content-body-about" class="content-body hidden" style="text-align:center;">
-            <h3 class="text-marbling">About Us</h3>
+            <h3 class="text-marbling">About Us
+                <span class="section-sub lang-jp">プロジェクト紹介</span>
+                <span class="section-sub lang-en">Project & team</span>
+            </h3>
             <p style="font-size:0.8rem; color:#888; margin-top:40px;">Concept, Art Direction & Spatial Design</p>
             <p style="margin-bottom:30px; font-size:1.2rem;">Yuna Sakai</p>
             <p style="font-size:0.8rem; color:#888;">Technical Direction & Engineering</p>
@@ -842,7 +855,7 @@
         let currentHue = 0;
         let currentLightness = 50;
         let curH = 0;
-        let curS = 100;
+        let curS = 50;
         let curL = 50;
         let isDraggingHue = false;
         let isDraggingSL = false;
@@ -920,7 +933,7 @@
             // ポインターの位置更新（画像に合わせて半径を120に変更）
             const hPointer = document.getElementById('hue-pointer');
             const angleRad = (curH - 90) * (Math.PI / 180);
-            const radius = 120; // 円周の真上に乗るように調整
+            const radius = 130; // 円周の真上に乗るように調整
             const centerX = 140; // wrapper(280px)の半分
             const centerY = 140;
             hPointer.style.left = (centerX + radius * Math.cos(angleRad)) + 'px';
@@ -987,6 +1000,7 @@
             });
             initMarbling();
             initColorPickerEvents();
+            applyColor();
         });
 
         function initMarbling() {
@@ -1025,6 +1039,7 @@
         function openColorPicker() { 
             document.getElementById('color-modal').classList.add('show'); 
             document.body.classList.add('no-scroll'); 
+            applyColor();
         }
 
         function confirmColor() {
@@ -1105,15 +1120,28 @@
             }, 800);
         }
 
+        // goToForm 関数を修正
         function goToForm(btn) {
             btn.classList.add('clicked');
             const landing = document.getElementById('landing-page');
             landing.classList.add('dissolve-out');
             setTimeout(() => {
-                landing.classList.add('hidden'); landing.classList.remove('dissolve-out');
+                landing.classList.add('hidden'); 
+                landing.classList.remove('dissolve-out');
                 document.getElementById('entry-warning').classList.add('show');
                 btn.classList.remove('clicked');
+                
+                // 追加：ヘッダーの「←」を表示
+                document.getElementById('btn-back').classList.remove('hidden');
             }, 800);
+        }
+
+        // backToTitle 関数を修正（確認ダイアログ付きでTOPへ）
+        function backToTitle() { 
+            const msg = (currentLang === 'jp') ? '入力を破棄してTOPに戻りますか？' : 'Discard input and return to TOP?';
+            if(confirm(msg)) {
+                location.reload(); // 確実にTOP状態に戻すためリロード
+            }
         }
 
         function proceedToForm() {
